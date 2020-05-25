@@ -25,6 +25,7 @@
 
 ![Architecture](/doc/architecture.jpg)
 
+- Assume this all runs in Kubernetes or Docker Swarm.
 
 ## Possible monetization (if it catches):
 
