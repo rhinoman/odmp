@@ -21,6 +21,10 @@
 
 - It would be cool.
 
+## Hypothetical Architecture
+
+![Architecture](/doc/architecture.jpg)
+
 
 ## Possible monetization (if it catches):
 
