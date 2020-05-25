@@ -1,5 +1,11 @@
 # Open Data Management Platform
 
+## Rationale:
+
+- Eliminate bespoke data management systems being implemented for every organization/program/project and concomitant duplication of effort.
+
+- It would be cool.
+
 ## Goals:
 
 - Create a system that makes as few assumptions as possible about how users work with, store, process, and analyze data.
@@ -14,12 +20,6 @@
 
 - There are some commercial, closed-source solutions out there, most of which are very expensive.  But I’m unaware of any similar open-source solution.
 
-
-## Rationale:
-
-- Eliminate bespoke data management systems being implemented for every organization/program/project and concomitant duplication of effort.
-
-- It would be cool.
 
 ## Hypothetical Architecture
 
