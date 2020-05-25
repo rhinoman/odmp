@@ -1,0 +1,63 @@
+@import "fomantic/semantic.min.css";
+
+body {
+  height: 100%;
+}
+
+body #app {
+  height: 100vh;
+}
+
+body #app .ui.inverted.oxford.menu {
+  background-color: 12524079;
+}
+
+body #app .main-sidebar {
+  transition: width 1s ease;
+  position: fixed;
+  border-radius: 0px;
+  display: block;
+  left: 0px;
+  top: 0px;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body #app .main-sidebar .sidebar-brand {
+  text-align: center;
+  color: white;
+  margin-top: 10px;
+  height: 45px;
+}
+
+body #app .main-sidebar .sidebar-brand i {
+  margin-right: 0;
+}
+
+body #app .main-sidebar a.item {
+  padding-top: 13px;
+  padding-bottom: 13px;
+  height: 41px;
+}
+
+body #app .main-sidebar a.item i.icon {
+  float: left;
+  width: 2rem;
+}
+
+body #app .main-sidebar a.item label {
+  margin-left: 10px;
+}
+
+body #app .main-content-area {
+  display: block;
+  transition: width 1s ease;
+}
+
+body #app .main-topbar {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+}

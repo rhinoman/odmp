@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "highlight.js": "9.18.1",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-highlight.js": "1.0.7",
+    "semantic-ui-react": "^0.88.1"
+  },
+  "devDependencies": {
+    "shadow-cljs": "2.8.109",
+    "fomantic-ui": "^2.8.4"
+  }
+}
