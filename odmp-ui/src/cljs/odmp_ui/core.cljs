@@ -8,8 +8,7 @@
    [odmp-ui.events :as events]
    [odmp-ui.routes :as routes]
    [odmp-ui.views.main :as views]
-   [odmp-ui.config :as config]
-   ))
+   [odmp-ui.config :as config]))
 
 
 (defn dev-setup []

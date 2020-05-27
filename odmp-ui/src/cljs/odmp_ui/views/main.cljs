@@ -1,21 +1,23 @@
 (ns odmp-ui.views.main
   (:require
-   [re-frame.core :as re-frame]
+   [re-frame.core :as rf]
    [breaking-point.core :as bp]
    [odmp-ui.subs :as subs]  
    [odmp-ui.config :refer [topbar-height]]
-   [semantic-ui-reagent.core :as sui]
    [odmp-ui.views.topbar :refer [topbar]]
    [odmp-ui.views.sidebar :refer [sidebar]]
    [odmp-ui.components.common :as tcom]
    [odmp-ui.views.home :refer [home-panel]]
-   ))
+   ["@material-ui/core" :refer [ThemeProvider
+                                createMuiTheme
+                                CssBaseline
+                                Container]]))
 
 ;; about
 
 (defn about-panel []
   [:div
-   [sui/Header
+   [:div
     [:h1 "This is the About Page."]]
 
    [:div
@@ -33,14 +35,21 @@
 (defn show-panel [panel-name]
   [panels panel-name])
 
+(defn set-theme [dark-theme?]
+  (createMuiTheme (clj->js {:palette {:type (if dark-theme? "dark" "light")}
+                            :status {:danger "red"}})))
+
 (defn main-panel []
-  (let [active-panel (re-frame/subscribe [::subs/active-panel])
-        sidebar-expanded (re-frame/subscribe [::subs/sidebar-expanded])]
-     [sui/Container {:fluid true :style {:height "100%"}}
+  (let [active-panel (rf/subscribe [::subs/active-panel])
+        sidebar-expanded (rf/subscribe [::subs/sidebar-expanded])
+        dark-theme? @(rf/subscribe [::subs/dark-theme?])]
+     [:> ThemeProvider {:theme (set-theme dark-theme?)}
+      [:> CssBaseline]
+      [:> Container {:maxWidth "xl" :style {:height "100%"}}
        [sidebar]
        [:div {:className "main-content-area"
               :style {:border "none"
                       :margin-left (if @sidebar-expanded "230px" "60px")
                       :padding-top (+ topbar-height 10)}}
         [topbar]
-        (show-panel @active-panel)]]))
+        (show-panel @active-panel)]]]))

@@ -4,13 +4,14 @@
    [breaking-point.core :as bp]
    [odmp-ui.subs :as subs]
    [odmp-ui.components.common :as tcom]
-   [semantic-ui-reagent.core :as sui]))
+   ["@material-ui/core/Button" :default Button]
+   ["@material-ui/core/Typography" :default Typography]))
 
 (defn display-re-pressed-example []
   (let [re-pressed-example (re-frame/subscribe [::subs/re-pressed-example])]
     [:div
-     [sui/Button {:primary true} "I'm a button!"]
-     [:p
+     [:> Button "I'm a button!"]
+     [:> Typography
       [:span "Re-pressed is listening for keydown events. A message will be displayed when you type "]
       [:strong [:code "hello"]]
       [:span ". So go ahead, try it out!"]]
@@ -29,7 +30,7 @@
 (defn home-panel []
   (let [name (re-frame/subscribe [::subs/name])]
     (tcom/full-content-ui {:title "HOME"}
-     [sui/Header
+     [:div
       [:h1 (str "Hello from " @name ". This is the Home Page.")]]
      [:div
       [:a {:href "#/about"}

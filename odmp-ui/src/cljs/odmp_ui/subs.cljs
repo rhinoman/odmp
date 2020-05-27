@@ -18,6 +18,11 @@
    (:sidebar-expanded db)))
 
 (re-frame/reg-sub
+ ::dark-theme?
+ (fn [db _]
+   (:dark-theme? db)))
+
+(re-frame/reg-sub
  ::re-pressed-example
  (fn [db _]
    (:re-pressed-example db)))

@@ -13,9 +13,6 @@
                  [ns-tracker "0.4.0"]
                  [re-pressed "0.3.1"]
                  [breaking-point "0.1.2"]
-                 ;[cljsjs/semantic-ui-react "0.88.1-0"]
-                 ;[malesch/semantic-reagent "1.1.0"]
-                 [toyokumo/semantic-ui-reagent "0.1.0"]
                  [cider/cider-nrepl "0.24.0"]]
 
   :plugins [[lein-shadow "0.1.7"]

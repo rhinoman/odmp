@@ -2,43 +2,44 @@
   (:require
    [re-frame.core :as rf]
    [odmp-ui.subs :as subs]
-   ["semantic-ui-react" :as sur]
    [odmp-ui.config :refer [topbar-height]]
    [odmp-ui.subs :as subs]
-   [semantic-ui-reagent.core :as sui]))
+   ["@material-ui/core/Drawer" :default Drawer]
+   ["@material-ui/core/Divider" :default Divider]
+   ["@material-ui/core/List" :default List]
+   ["@material-ui/core/ListItem" :default ListItem]
+   ["@material-ui/core/ListItemIcon" :default ListItemIcon]
+   ["@material-ui/core/ListItemText" :default ListItemText]
+   ["@material-ui/icons/Search" :default SearchIcon]
+   ["@material-ui/icons/CollectionsBookmarkTwoTone" :default BrowseCollectionsIcon]
+))
 
 (defn adj-label [txt]
   (if @(rf/subscribe [::subs/sidebar-expanded])
-    [:label txt]
+    [:> ListItemText txt]
     nil))
 
 (defn sidebar []
   (let [sidebar-expanded (rf/subscribe [::subs/sidebar-expanded])]
-    [sui/Menu {:inverted true
-               :vertical true
-                                        ;:color "blue"
-               :compact (not @sidebar-expanded)
-               :icon (not @sidebar-expanded)
-               :borderless true
-               :className "main-sidebar"
-               :style {:width (if @sidebar-expanded "230px" "50px")}}
-     [sui/Header {:class "sidebar-brand"}   
-      [:h1 [sui/Icon {:name "glass martini"}] (if @sidebar-expanded "TDMP")]]
-     [sui/MenuItem {:as "a" :title "Home"}
-      [sui/Icon {:name "home"}]
-      (adj-label "Home")]
-     [sui/MenuItem {:as "a" :title "Search"}
-      [sui/Icon {:name "search"}]
-      (adj-label "Search")]
-     [sui/MenuItem {:as "a" :title "Browse Collections"}
-      [sui/Icon {:name "browser"}]
-      (adj-label "Browse Collections")]
-     [sui/MenuItem {:as "a" :title "My Collections"}
-      [sui/Icon {:name "favorite"}]
-      (adj-label "My Collections")]
-     [sui/MenuItem {:as "a" :title "My Tasks"}
-      [sui/Icon {:name "tasks"}]
-      (adj-label "My Tasks")]
-     [sui/MenuItem {:as "a" :title "Configuration"}
-      [sui/Icon {:name "wrench"}]
-      (adj-label "Configuration")]]))
+    [:> Drawer {:variant "permanent"
+                :className "main-sidebar"
+                :style {:width (if @sidebar-expanded "230px" "50px")}}
+     [:div {:class "sidebar-brand"}   
+      [:h1 [:i {:name "glass martini"}] (if @sidebar-expanded "ODMP")]]
+     [:> Divider]
+     [:> List
+      [:> ListItem {:as "a" :title "Search"}
+       [:> ListItemIcon [:> SearchIcon]]
+       (adj-label "Search")]
+      [:> ListItem {:as "a" :title "Browse Collections"}
+       [:> ListItemIcon [:> BrowseCollectionsIcon]]
+       (adj-label "Browse Collections")]
+      [:> ListItem {:as "a" :title "My Collections"}
+       [:i {:name "favorite"}]
+       (adj-label "My Collections")]
+      [:> ListItem {:as "a" :title "My Tasks"}
+       [:i {:name "tasks"}]
+       (adj-label "My Tasks")]
+      [:> ListItem {:as "a" :title "Configuration"}
+       [:i {:name "wrench"}]
+       (adj-label "Configuration")]]]))

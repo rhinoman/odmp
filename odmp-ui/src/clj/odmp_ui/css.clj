@@ -45,7 +45,7 @@
                         :transition "width 1s ease"}])
 
 (defstyles screen
-  (at-import "fomantic/semantic.min.css")
+  (at-import "roboto.css")
   [:body {:height "100%"}
    [:#app {:height "100vh"}
     semantic-overrides
