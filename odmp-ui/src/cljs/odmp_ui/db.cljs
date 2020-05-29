@@ -2,4 +2,5 @@
 
 (def default-db
   {:name "re-frame"
-   :dark-theme? true})
+   :dark-theme? true
+   :sidebar-expanded true})

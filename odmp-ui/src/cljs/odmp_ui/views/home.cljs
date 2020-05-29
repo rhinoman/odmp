@@ -24,19 +24,20 @@
                  :border-radius    "4px"
                  :margin-top       "16px"
                  }}
-        rpe])]))
+        rpe])
+     ]))
 
 
 (defn home-panel []
   (let [name (re-frame/subscribe [::subs/name])]
-    (tcom/full-content-ui {:title "HOME"}
+    (tcom/full-content-ui {:title "Dashboard"}
      [:div
-      [:h1 (str "Hello from " @name ". This is the Home Page.")]]
+      [:> Typography {:variant "h3"} "Open Data Management Platform"]]
      [:div
       [:a {:href "#/about"}
        "go to About Page"]]
 
-     [display-re-pressed-example]
+     ;[display-re-pressed-example]
      [:div
       [:h3 (str "screen-width: " @(re-frame/subscribe [::bp/screen-width]))]
       [:h3 (str "screen: " @(re-frame/subscribe [::bp/screen]))]]

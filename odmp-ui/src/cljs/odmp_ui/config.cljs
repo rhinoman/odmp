@@ -4,3 +4,4 @@
   ^boolean goog.DEBUG)
 
 (def topbar-height 50)
+(def drawer-width 230)

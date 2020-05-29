@@ -47,9 +47,11 @@
                                :asset-path "/js/compiled"
                                :modules {:app {:init-fn odmp-ui.core/init
                                                :preloads [devtools.preload
-                                                          day8.re-frame-10x.preload]}}
+                                                          ;day8.re-frame-10x.preload
+                                                          ]}}
                                :dev {:compiler-options {:closure-defines {re-frame.trace.trace-enabled? true
-                                                                          day8.re-frame.tracing.trace-enabled? true}}}
+                                                                          day8.re-frame.tracing.trace-enabled? true
+                                                                          }}}
                                :release {:build-options
                                          {:ns-aliases
                                           {day8.re-frame.tracing day8.re-frame.tracing-stubs}}}
