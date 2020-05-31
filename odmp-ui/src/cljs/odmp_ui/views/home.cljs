@@ -22,8 +22,7 @@
                  :background-color "lightgrey"
                  :border           "solid 1px grey"
                  :border-radius    "4px"
-                 :margin-top       "16px"
-                 }}
+                 :margin-top       "16px"}}
         rpe])
      ]))
 

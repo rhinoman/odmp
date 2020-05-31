@@ -9,15 +9,13 @@
                  [re-frame "0.12.0"]
                  [day8.re-frame/tracing "0.5.5"]
                  [secretary "1.2.3"]
-                 [garden "1.3.9"]
+                 [cljs-http "0.1.46"]
                  [ns-tracker "0.4.0"]
                  [re-pressed "0.3.1"]
                  [breaking-point "0.1.2"]
                  [cider/cider-nrepl "0.24.0"]]
 
   :plugins [[lein-shadow "0.1.7"]
-            [lein-garden "0.3.0"]
-            [lein-less "1.7.5"]
             [lein-shell "0.5.0"]]
 
   :min-lein-version "2.5.3"
@@ -28,13 +26,6 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"
                                     "resources/public/css"]
-
-
-  :garden {:builds [{:id           "screen"
-                     :source-paths ["src/clj"]
-                     :stylesheet   odmp-ui.css/screen
-                     :compiler     {:output-to     "resources/public/css/screen.css"
-                                    :pretty-print? true}}]}
 
   :shell {:commands {"open" {:windows ["cmd" "/c" "start"]
                              :macosx  "open"
@@ -81,4 +72,4 @@
    
 }
 
-  :prep-tasks [["garden" "once"]])
+  :prep-tasks [])

@@ -43,6 +43,9 @@
   (defroute "/about" []
     (re-frame/dispatch [::events/set-active-panel :about-panel]))
 
+  (defroute "/dataflows" []
+    (re-frame/dispatch [::events/set-active-panel :dataflow-index-panel]))
+
 
   ;; --------------------
   (hook-browser-navigation!))
