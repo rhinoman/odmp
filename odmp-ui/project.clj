@@ -17,12 +17,14 @@
 
   :plugins [[lein-shadow "0.1.7"]
             [lein-shell "0.5.0"]]
+  :license {:name "Apache License 2.0"
+            :url "http://www.apache.org/licenses/LICENSE-2.0" }
 
   :min-lein-version "2.5.3"
 
   :jvm-opts ["-Xmx1G"]
 
-  :source-paths ["src/clj" "src/cljs"]
+  :source-paths ["src/cljs"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"
                                     "resources/public/css"]

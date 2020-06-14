@@ -1,0 +1,27 @@
+{:duct.profile/base
+ {:duct.core/project-ns odmp-dataflow
+
+  :duct.router/cascading
+  [#ig/ref [:odmp-dataflow.handler/api]]
+
+
+  :odmp-dataflow.handler/api {:db #ig/ref :odmp-dataflow.db/mongo
+                              :log #ig/ref :duct.logger/timbre}
+  :odmp-dataflow.db/mongo
+  {:host "localhost"
+   :port 27027,
+   :db "odmp_dataflow"
+   :username "dataflow_user"
+   :password "secret"
+   }
+  }
+
+ :duct.profile/dev   #duct/include "dev"
+ :duct.profile/local #duct/include "local"
+ :duct.profile/prod  {}
+
+ :duct.module/logging {}
+
+
+ :duct.module.web/api
+ {}}

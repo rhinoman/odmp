@@ -1,3 +1,17 @@
+;; Copyright 2020 James Adam and the Open Data Management Platform contributors.
+
+;; Licensed under the Apache License, Version 2.0 (the "License");
+;; you may not use this file except in compliance with the License.
+;; You may obtain a copy of the License at
+
+;; http://www.apache.org/licenses/LICENSE-2.0
+
+;; Unless required by applicable law or agreed to in writing, software
+;; distributed under the License is distributed on an "AS IS" BASIS,
+;; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+;; See the License for the specific language governing permissions and
+;; limitations under the License.
+
 (ns odmp-ui.views.sidebar
   (:require
    [re-frame.core :as rf]
@@ -21,31 +35,34 @@
    ["@material-ui/icons/LocalCafeTwoTone" :default LocalCafeIcon]))
 
 (defn sidebar-styles [^js/Mui.Theme theme]
-  {:sidebarBrand {:text-align "center"
-                  :padding 10
-                  :margin-top 15
-                  :margin-bottom 40
-                  }
-   :sidebarList {:overflowX "hidden"}
-   :sidebarListItem {:marginTop 10 :marginBottom 10}
-   :sidebarListItemLabel {:margin 0}
-   :sidebarBrandHeader {:font-size "24pt"}
-   :sideDrawer {:width drawer-width
-                :flexShrink 0
-                :whiteSpace "nowrap"}
-   :sideDrawerOpen {:width drawer-width
-                    :transition (.. theme -transitions
-                                    (create "width"
-                                            #js{:easing (.. theme -transitions -easing -sharp)
-                                                :duration (.. theme -transitions -duration -enteringScreen)}))}
-   :sideDrawerClose {:transition (.. theme -transitions
-                                     (create "width" 
-                                             #js{:easing (.. theme -transitions -easing -sharp)
-                                                 :duration (.. theme -transitions -duration -leavingScreen)}))
-                     :overflowX "hidden"
-                     :width (+ (.spacing theme 7) 1)
-                     (.breakpoints.up theme "sm") {:width (+(.spacing theme 7) 1)}}
-   })
+  (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
+        p-type (keyword (:type palette))]
+    {:sidebarBrand {:text-align "center"
+                   :padding 10
+                   :margin-top 15
+                   :margin-bottom 40
+                   }
+     :sidebarList {:overflowX "hidden"}
+     :sidebarListItem {:marginTop 10 :marginBottom 10 :margin-left 5}
+     :activeItem {:padding-left 11  :borderLeft 5 :borderStyle "solid" :borderColor (get-in palette [:success p-type])}
+     :sidebarListItemLabel {:margin 0}
+     :sidebarBrandHeader {:font-size "24pt"}
+     :sideDrawer {:width drawer-width
+                  :flexShrink 0
+                  :whiteSpace "nowrap"}
+     :sideDrawerOpen {:width drawer-width
+                      :transition (.. theme -transitions
+                                      (create "width"
+                                              #js{:easing (.. theme -transitions -easing -sharp)
+                                                  :duration (.. theme -transitions -duration -enteringScreen)}))}
+     :sideDrawerClose {:transition (.. theme -transitions
+                                       (create "width" 
+                                               #js{:easing (.. theme -transitions -easing -sharp)
+                                                   :duration (.. theme -transitions -duration -leavingScreen)}))
+                       :overflowX "hidden"
+                       :width (+ (.spacing theme 7) 1)
+                       (.breakpoints.up theme "sm") {:width (+(.spacing theme 7) 1)}}
+     }))
 
 
 (defn adj-label [txt]
@@ -55,7 +72,8 @@
     nil))
 
 (defn sidebar []
-  (let [sidebar-expanded (rf/subscribe [::subs/sidebar-expanded])]  
+  (let [sidebar-expanded (rf/subscribe [::subs/sidebar-expanded])
+        active-link (rf/subscribe [::subs/active-sidebar-link])]
     (style/let [classes sidebar-styles]
      [:> Drawer {:variant "permanent"
                  :class [(:sideDrawer classes)
@@ -78,7 +96,8 @@
                      :component "a"
                      :href "/#"
                      :title "Home"
-                     :class (:sidebarListItem classes)}
+                     :class [(:sidebarListItem classes)
+                             (if (= @active-link :home) (:activeItem classes) "")]}
         [:> ListItemIcon [:> HomeIcon]]
         (adj-label "Home")]
        [:> ListItem {:button true
@@ -104,7 +123,8 @@
                      :href "#/dataflows"
                      :key "dataflows"
                      :title "Data Flows"
-                     :class (:sidebarListItem classes)}
+                     :class [(:sidebarListItem classes)
+                             (if (= @active-link :dataflows) (:activeItem classes) "")]}
         [:> ListItemIcon [:> DoubleArrowIcon]]
         (adj-label "Data Flows")]
        ;; [:> ListItem {:as "a" :title "Configuration"}
