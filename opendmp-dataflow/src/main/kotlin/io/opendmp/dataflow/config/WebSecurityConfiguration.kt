@@ -16,6 +16,7 @@ class WebSecurityConfiguration{
                 .pathMatchers("/**")
                 .permitAll()
                 .and()
+                .csrf().disable()
                 .build()
     }
 }

@@ -3,7 +3,7 @@ package io.opendmp.dataflow.model
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import java.util.*
+import java.time.LocalDateTime
 
 @Document(collection = "dataflows")
 class DataflowModel(@Id val id : String = ObjectId.get().toHexString(),
@@ -12,7 +12,7 @@ class DataflowModel(@Id val id : String = ObjectId.get().toHexString(),
                     val group : String?,
                     val creator : String?,
                     val status : DataFlowStatus = DataFlowStatus.IDLE,
-                    val health : HealthModel = HealthModel(),
-                    val createdOn: Date = Date(),
-                    val updatedOn: Date = Date()) {
+                    var health : HealthModel = HealthModel(),
+                    val createdOn: LocalDateTime = LocalDateTime.now(),
+                    var updatedOn: LocalDateTime = LocalDateTime.now()) {
 }
