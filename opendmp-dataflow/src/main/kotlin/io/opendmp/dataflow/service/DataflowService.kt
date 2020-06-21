@@ -3,6 +3,8 @@ package io.opendmp.dataflow.service
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.repository.DataflowRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.asFlow
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -24,8 +26,8 @@ class DataflowService (private val dataflowRepository: DataflowRepository) {
         return dataflowRepository.findById(id)
     }
 
-    fun getList() : Flux<DataflowModel> {
-        return dataflowRepository.findAll()
+    suspend fun getList() : Flow<DataflowModel> {
+        return dataflowRepository.findAll().asFlow()
     }
 
     fun delete(id: String) : Mono<Void> {

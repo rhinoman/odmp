@@ -1,0 +1,6 @@
+spring:
+  data:
+    mongodb:
+      database: odmp_dataflow
+      host: localhost
+

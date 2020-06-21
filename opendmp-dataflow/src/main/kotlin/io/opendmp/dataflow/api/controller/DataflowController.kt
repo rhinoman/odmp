@@ -5,6 +5,8 @@ import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.repository.DataflowRepository
 import io.opendmp.dataflow.service.DataflowService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.take
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -16,13 +18,13 @@ import javax.validation.Valid
 class DataflowController(private val dataflowService: DataflowService) {
 
     @GetMapping
-    fun findAll() : Flux<DataflowModel> {
+    suspend fun findAll() : Flow<DataflowModel> {
         return dataflowService.getList()
     }
 
     @GetMapping("/{id}")
     fun findOne(@PathVariable("id") id: String) : Mono<DataflowModel> {
-        return dataflowService.get(id).switchIfEmpty { throw NotFoundException() }
+        return dataflowService.get(id)
     }
 
     @PostMapping
