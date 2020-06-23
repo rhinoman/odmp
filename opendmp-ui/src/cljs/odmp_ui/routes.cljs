@@ -45,6 +45,7 @@
 
   (defroute "/dataflows" []
     (re-frame/dispatch [::events/set-active-panel :dataflow-index-panel])
+    (re-frame/dispatch [::events/fetch-dataflow-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
 

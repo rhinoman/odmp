@@ -17,8 +17,7 @@
    [re-frame.core :as re-frame]
    [odmp-ui.db :as db]
    [ajax.core :as ajax]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   ))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]))
 
 (re-frame/reg-event-db
  ::initialize-db
@@ -49,10 +48,27 @@
 
 ;;; Fetch Dataflow list
 (re-frame/reg-event-fx
-  :handler-with-http
+  ::fetch-dataflow-list
   (fn [{:keys [db]} _]
-    {:db (assoc db :loading-dataflow-list true)
+    {:db (-> db
+             (assoc-in [:loading :dataflows] true))
      :http-xhrio {:method            :get
-                  :uri               "/dataflow"
+                  :uri               "/dataflow_api/dataflow"
                   :timeout           5000
-                  :response-format   (ajax/json-response-format {:keywords? true})}}))
+                  :response-format   (ajax/json-response-format {:keywords? true})
+                  :on-success [::fetch-dataflow-list-success]
+                  :on-failure [::fetch-dataflow-list-failure]}}))
+
+(re-frame/reg-event-db
+  ::fetch-dataflow-list-success
+  (fn [db [_ result]]
+    (-> db
+        (assoc-in [:loading :dataflows] false)
+        (assoc :dataflows result))))
+
+(re-frame/reg-event-db
+  ::bad-dataflow-list-result
+  (fn [db [_ result]]
+    (-> db
+        (assoc-in [:loading :dataflows] false)
+        (assoc :dataflows-error result))))

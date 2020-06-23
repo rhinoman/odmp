@@ -17,6 +17,7 @@
             [reagent.core :as r]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.util.styles :as style]
+            [odmp-ui.subs :as subs]
             ["@material-ui/core/Table" :default Table]
             ["@material-ui/core/TableBody" :default TableBody]
             ["@material-ui/core/TableCell" :default TableCell]
@@ -33,7 +34,7 @@
 (defn dataflow-styles [^js/Mui.Theme theme] {})
 
 (defn dataflow-index []
-  (let []
+  (let [dataflows (rf/subscribe [::subs/dataflows])]
     (style/let [classes dataflow-styles]
       (tcom/full-content-ui {:title "Data Flows"}
         [:> Paper

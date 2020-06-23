@@ -45,3 +45,13 @@
  ::re-pressed-example
  (fn [db _]
    (:re-pressed-example db)))
+
+(re-frame/reg-sub
+ ::dataflows
+ (fn [db _]
+   (:dataflows db)))
+
+(re-frame/reg-sub
+ ::errors
+ (fn [db _]
+   (:errors db)))
