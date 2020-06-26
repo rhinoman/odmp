@@ -15,14 +15,36 @@
 (ns odmp-ui.events
   (:require
    [re-frame.core :as re-frame]
+   [reagent.core :as r]
    [odmp-ui.db :as db]
    [ajax.core :as ajax]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [promesa.core :as p]
+   [secretary.core :as secretary]
+   ["keycloak-js" :as Keycloak ]))
 
 (re-frame/reg-event-db
  ::initialize-db
  (fn-traced [_ _]
    db/default-db))
+
+
+(re-frame/reg-event-db
+ ::login-finished
+ (fn [db [_ result]]
+   (secretary/dispatch! (-> js/window .-location .-hash))
+   (assoc-in db [:auth-state :authenticated] result)))
+
+(re-frame/reg-event-db
+ ::initialize-keycloak
+  (fn [db [_ _]]
+    (let [keycloak (Keycloak "/assets/keycloak.json")]
+      (-> keycloak
+          (.init #js{:onLoad "login-required"})
+          (.then #(re-frame/dispatch [::login-finished %])))
+      (js/console.log keycloak)
+      (assoc db :auth-state {:keycloak keycloak :authenticated false}))))
+
 
 (re-frame/reg-event-db
  ::set-active-panel

@@ -13,6 +13,7 @@
                  [cljs-http "0.1.46"]
                  [ns-tracker "0.4.0"]
                  [re-pressed "0.3.1"]
+                 [funcool/promesa "4.0.0"]
                  [breaking-point "0.1.2"]
                  [cider/cider-nrepl "0.24.0"]]
 

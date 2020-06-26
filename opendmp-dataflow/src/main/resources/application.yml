@@ -15,14 +15,15 @@ spring:
           keycloak:
             client-id: opendmp-dataflow
             client-secret: 1c44cb7e-c232-4a01-b13c-2f36a390a4e6
+            scope: open-id
 
         provider:
           keycloak:
             issuer-uri: http://localhost:8083/auth/realms/odmp
-            #authorization-uri: http://localhost:9001/auth/realms/odmp/protocol/openid-connect/auth
-            #token-uri: http://localhost:9001/auth/realms/odmp/protocol/openid-connect/token
-            #user-info-uri: http://localhost:9001/auth/realms/odmp/protocol/openid-connect/userinfo
-            #jwk-set-uri: http://localhost:9001/auth/realms/odmp/protocol/openid-connect/certs
+            authorization-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/auth
+            token-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/token
+            user-info-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/userinfo
+            jwk-set-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/certs
             #user-name-attribute: preferred_username
 
       resourceserver:

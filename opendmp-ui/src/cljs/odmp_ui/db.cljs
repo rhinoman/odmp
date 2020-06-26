@@ -17,4 +17,5 @@
 (def default-db
   {:name "re-frame"
    :dark-theme? true
-   :sidebar-expanded true})
+   :sidebar-expanded true
+   :auth-state {:keycloak nil :authenticated false}})

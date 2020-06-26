@@ -22,15 +22,30 @@
    [re-frame.core :as re-frame]
    [re-pressed.core :as rp]
    [odmp-ui.events :as events]
-   ))
+   [goog.history.EventType :as EventType]))
+
+
+(defn location []
+  (.-location js/window))
 
 (defn hook-browser-navigation! []
-  (doto (History.)
-    (gevents/listen
-     EventType/NAVIGATE
-     (fn [event]
-       (secretary/dispatch! (.-token event))))
-    (.setEnabled true)))
+
+  ;; (doto (History.)
+  ;;   (gevents/listen
+  ;;    EventType/NAVIGATE
+  ;;    (fn [event]
+  ;;      (secretary/dispatch! (.-token event))))
+  ;;   (.setEnabled true))
+
+;; Quick and dirty history configuration.
+(let [h (History.)]
+  (gevents/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+  (doto h (.setEnabled true))
+  ;; location will have to be implemented using (.-location js/window)
+  (when (empty? (.-hash (location)))
+      (set! (.-hash (location)) "#/")))
+)
+
 
 (defn app-routes []
   (secretary/set-config! :prefix "#")
@@ -45,7 +60,7 @@
 
   (defroute "/dataflows" []
     (re-frame/dispatch [::events/set-active-panel :dataflow-index-panel])
-    (re-frame/dispatch [::events/fetch-dataflow-list])
+    ;(re-frame/dispatch [::events/fetch-dataflow-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
 

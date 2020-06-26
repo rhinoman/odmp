@@ -47,6 +47,11 @@
    (:re-pressed-example db)))
 
 (re-frame/reg-sub
+ ::login-finished
+  (fn [db _]
+    (:auth-state db)))
+
+(re-frame/reg-sub
  ::dataflows
  (fn [db _]
    (:dataflows db)))
