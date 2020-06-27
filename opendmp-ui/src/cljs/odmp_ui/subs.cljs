@@ -47,7 +47,7 @@
    (:re-pressed-example db)))
 
 (re-frame/reg-sub
- ::login-finished
+ ::authentication
   (fn [db _]
     (:auth-state db)))
 

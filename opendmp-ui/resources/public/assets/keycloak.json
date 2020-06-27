@@ -1,6 +1,6 @@
 {
   "realm": "odmp",
-  "auth-server-url": "http://localhost:8002/auth/",
+  "auth-server-url": "/auth/",
   "ssl-required": "external",
   "resource": "opendmp-ui",
   "public-client": true,

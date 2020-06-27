@@ -78,7 +78,7 @@
 
 (defn main-panel []
   (let [dark-theme? @(rf/subscribe [::subs/dark-theme?])
-        auth (rf/subscribe [::subs/login-finished])
+        auth (rf/subscribe [::subs/authentication])
         theme (set-theme dark-theme?)]
     (if (:authenticated @auth)
       [:> ThemeProvider {:theme theme}

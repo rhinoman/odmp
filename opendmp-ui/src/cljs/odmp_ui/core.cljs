@@ -21,6 +21,7 @@
    [breaking-point.core :as bp]
    [day8.re-frame.http-fx] ;; Yes, needed
    [odmp-ui.events :as events]
+   [odmp-ui.subs :as subs]
    [odmp-ui.routes :as routes]
    [odmp-ui.views.main :as views]
    [odmp-ui.config :as config]))
@@ -38,10 +39,10 @@
     (rdom/render [views/main-panel] root-el)))
 
 (defn init []
-
-  (routes/app-routes)
+  (re-frame/dispatch-sync [::events/initialize-keycloak])
+  
   (re-frame/dispatch-sync [::events/initialize-db])
-  (re-frame/dispatch-sync [::events/initialize-keycloak])  
+  
   (re-frame/dispatch-sync [::rp/add-keyboard-event-listener "keydown"])
   (re-frame/dispatch-sync [::bp/set-breakpoints
                            {:breakpoints [:mobile
@@ -53,4 +54,5 @@
                                           :large-monitor]
                             :debounce-ms 166}])
   (dev-setup)
+  (routes/app-routes)
   (mount-root))

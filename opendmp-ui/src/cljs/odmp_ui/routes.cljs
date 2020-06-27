@@ -22,6 +22,7 @@
    [re-frame.core :as re-frame]
    [re-pressed.core :as rp]
    [odmp-ui.events :as events]
+   [odmp-ui.util.network :as net]
    [goog.history.EventType :as EventType]))
 
 
@@ -60,7 +61,7 @@
 
   (defroute "/dataflows" []
     (re-frame/dispatch [::events/set-active-panel :dataflow-index-panel])
-    ;(re-frame/dispatch [::events/fetch-dataflow-list])
+    (net/auth-dispatch [::events/fetch-dataflow-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
 

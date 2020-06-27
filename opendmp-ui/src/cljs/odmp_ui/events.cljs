@@ -19,9 +19,8 @@
    [odmp-ui.db :as db]
    [ajax.core :as ajax]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [promesa.core :as p]
    [secretary.core :as secretary]
-   ["keycloak-js" :as Keycloak ]))
+   ["keycloak-js" :as Keycloak]))
 
 (re-frame/reg-event-db
  ::initialize-db
@@ -30,20 +29,36 @@
 
 
 (re-frame/reg-event-db
- ::login-finished
- (fn [db [_ result]]
-   (secretary/dispatch! (-> js/window .-location .-hash))
-   (assoc-in db [:auth-state :authenticated] result)))
+ ::keycloak-initialized
+ (fn [db [_ keycloak result]]
+   (if (false? result)
+     (-> keycloak
+         (.login keycloak)
+         (.then #(re-frame/dispatch [::keycloak-initialized keycloak %])))
+     (secretary/dispatch! (-> js/window .-location .-hash)))
+     (assoc db :auth-state {:keycloak keycloak :authenticated result})))
 
 (re-frame/reg-event-db
+ ::refresh-keycloak
+ (fn [db [_ _]]
+   (let [keycloak (get-in db [:auth-state :keycloak])]
+     (println "Refreshing token")
+     (-> keycloak
+         (.updateToken 30)
+         (.success #(println "got a token"))))))
+
+(re-frame/reg-event-fx
  ::initialize-keycloak
   (fn [db [_ _]]
     (let [keycloak (Keycloak "/assets/keycloak.json")]
+      ;(set! (.-onTokenExpired keycloak) #(re-frame/dispatch [::refresh-keycloak]))
       (-> keycloak
-          (.init #js{:onLoad "login-required"})
-          (.then #(re-frame/dispatch [::login-finished %])))
-      (js/console.log keycloak)
-      (assoc db :auth-state {:keycloak keycloak :authenticated false}))))
+          (.init #js{:onLoad "check-sso"
+                     :checkLoginIframe false
+                     :silentCheckSsoRedirectUri (str (-> js/window .-location .-origin) "/silent-check-sso.html")})
+          (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))
+          (.catch #(js/console.error %)))
+      {:db (assoc db :auth-state {:keycloak keycloak :authenticated false})})))
 
 
 (re-frame/reg-event-db
@@ -68,6 +83,13 @@
 
 ;; Network events, eh.
 
+(defn get-token [db]
+  (let [keycloak (get-in db [:auth-state :keycloak])]
+    (.-token keycloak)))
+
+(defn basic-headers [db]
+  {:Authorization (str "Bearer " (get-token db))})
+
 ;;; Fetch Dataflow list
 (re-frame/reg-event-fx
   ::fetch-dataflow-list
@@ -78,8 +100,9 @@
                   :uri               "/dataflow_api/dataflow"
                   :timeout           5000
                   :response-format   (ajax/json-response-format {:keywords? true})
+                  :headers (basic-headers db)
                   :on-success [::fetch-dataflow-list-success]
-                  :on-failure [::fetch-dataflow-list-failure]}}))
+                  :on-failure [::http-request-failure :dataflows]}}))
 
 (re-frame/reg-event-db
   ::fetch-dataflow-list-success
@@ -89,8 +112,12 @@
         (assoc :dataflows result))))
 
 (re-frame/reg-event-db
-  ::bad-dataflow-list-result
-  (fn [db [_ result]]
-    (-> db
-        (assoc-in [:loading :dataflows] false)
-        (assoc :dataflows-error result))))
+  ::http-request-failure
+  (fn [db [_ loc result]]
+    (let [error-status (get-in result [:parse-error :status])]
+      (case error-status
+        ;; on 401, try to login again
+        401 (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
+        :else (-> db
+                  (assoc-in [:loading loc] false)
+                  (assoc-in [:errors loc] result))))))
