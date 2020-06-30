@@ -43,7 +43,7 @@
                    :margin-bottom 40
                    }
      :sidebarList {:overflowX "hidden"}
-     :sidebarListItem {:marginTop 10 :marginBottom 10 :margin-left 5}
+     :sidebarListItem {:marginTop 10 :marginBottom 10 :margin-left 1}
      :activeItem {:padding-left 11  :borderLeft 5 :borderStyle "solid" :borderColor (get-in palette [:success p-type])}
      :sidebarListItemLabel {:margin 0}
      :sidebarBrandHeader {:font-size "24pt"}

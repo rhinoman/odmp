@@ -47,6 +47,7 @@ class WebSecurityConfiguration {
     }
 
     internal class GrantedAuthoritiesExtractor : JwtAuthenticationConverter() {
+        @Suppress("UNCHECKED_CAST")
         override fun extractAuthorities(jwt: Jwt): Collection<GrantedAuthority> {
             var roles: List<String?>? = emptyList()
             val resource = jwt.getClaimAsMap("resource_access")

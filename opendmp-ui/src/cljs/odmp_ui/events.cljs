@@ -19,6 +19,7 @@
    [odmp-ui.db :as db]
    [ajax.core :as ajax]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [day8.re-frame.forward-events-fx]
    [secretary.core :as secretary]
    ["keycloak-js" :as Keycloak]))
 
@@ -28,15 +29,21 @@
    db/default-db))
 
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
+ ::auth-complete
+ (fn [{:keys [db]} event]
+   (secretary/dispatch! (-> js/window .-location .-hash))
+   {:db db
+    :forward-events {:unregister :auth-complete-listener}}))
+
+(re-frame/reg-event-fx
  ::keycloak-initialized
- (fn [db [_ keycloak result]]
+ (fn [{:keys [db]} [_ keycloak result]]
    (if (false? result)
      (-> keycloak
          (.login keycloak)
-         (.then #(re-frame/dispatch [::keycloak-initialized keycloak %])))
-     (secretary/dispatch! (-> js/window .-location .-hash)))
-     (assoc db :auth-state {:keycloak keycloak :authenticated result})))
+         (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))))
+     {:db (assoc db :auth-state {:keycloak keycloak :authenticated result})}))
 
 (re-frame/reg-event-db
  ::refresh-keycloak
@@ -49,7 +56,7 @@
 
 (re-frame/reg-event-fx
  ::initialize-keycloak
-  (fn [db [_ _]]
+  (fn [{:keys [db]} [_ _]]
     (let [keycloak (Keycloak "/assets/keycloak.json")]
       ;(set! (.-onTokenExpired keycloak) #(re-frame/dispatch [::refresh-keycloak]))
       (-> keycloak
@@ -58,7 +65,10 @@
                      :silentCheckSsoRedirectUri (str (-> js/window .-location .-origin) "/silent-check-sso.html")})
           (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))
           (.catch #(js/console.error %)))
-      {:db (assoc db :auth-state {:keycloak keycloak :authenticated false})})))
+      {:db (assoc db :auth-state {:keycloak keycloak :authenticated false})
+       :forward-events {:register :auth-complete-listener
+                        :events #{::keycloak-initialized}
+                        :dispatch-to [::auth-complete]}})))
 
 
 (re-frame/reg-event-db
@@ -119,5 +129,6 @@
         ;; on 401, try to login again
         401 (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
         :else (-> db
+                  (js/console.error result)
                   (assoc-in [:loading loc] false)
                   (assoc-in [:errors loc] result))))))
