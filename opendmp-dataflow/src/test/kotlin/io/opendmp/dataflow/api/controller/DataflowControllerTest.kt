@@ -1,32 +1,31 @@
 package io.opendmp.dataflow.api.controller
 
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.whenever
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
+import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.service.DataflowService
+import kotlinx.coroutines.reactive.awaitLast
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.mongo.MongoProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.findAll
-import org.springframework.data.mongodb.core.findById
 import org.springframework.http.MediaType
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf
+import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 @ExtendWith(SpringExtension::class)
 @WebFluxTest(DataflowController::class)
@@ -34,9 +33,13 @@ import reactor.core.publisher.Mono
     "io.opendmp.dataflow.service",
     "import com.c4_soft.springaddons.security.oauth2.test.webflux"
 ])
+@ContextConfiguration(classes = [MongoConfig::class, DataflowController::class])
+@EnableConfigurationProperties(MongoProperties::class)
 class DataflowControllerTest(
         @Autowired val dataflowService: DataflowService,
-        @Autowired val client: WebTestClient) {
+        @Autowired val client: WebTestClient,
+        @Autowired val mongoTemplate: ReactiveMongoTemplate
+) {
 
     private val testUtils = TestUtils()
     private val baseUri : String = "/dataflow_api/dataflow"
@@ -44,14 +47,14 @@ class DataflowControllerTest(
     @MockBean
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
 
-    @MockBean
-    lateinit var mongoTemplate: ReactiveMongoTemplate
+//    @MockBean
+//    lateinit var mongoTemplate: ReactiveMongoTemplate
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should create a new basic dataflow`() {
         val dataflow = DataflowModel(name = "FOOBAR", description = "THE FOOBAR", creator = "", group = "")
-        whenever(mongoTemplate.save<DataflowModel>(any())).thenReturn(Mono.just(dataflow))
+//        whenever(mongoTemplate.save<DataflowModel>(any()).thenReturn(Mono.just(dataflow)))
 
         val response = client.mutateWith(csrf())
                 .post().uri(baseUri)
@@ -74,8 +77,8 @@ class DataflowControllerTest(
                         creator = "",
                         description = "THE FOOBAR",
                         group = ""))
-        whenever(mongoTemplate.findAll<DataflowModel>()).thenReturn(Flux.fromIterable(dataflows))
-
+//        whenever(mongoTemplate.findAll<DataflowModel>()).thenReturn(Flux.fromIterable(dataflows))
+        mongoTemplate.insertAll<DataflowModel>(dataflows).blockLast()
         val response = client.get().uri(baseUri)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -95,7 +98,8 @@ class DataflowControllerTest(
                 creator = "",
                 description = "THE FOOBAR",
                 group = "")
-        whenever(mongoTemplate.findById<DataflowModel>(any())).thenReturn(Mono.just(dataflow))
+//        whenever(mongoTemplate.findById<DataflowModel>(any())).thenReturn(Mono.just(dataflow))
+        mongoTemplate.insert<DataflowModel>(dataflow).block()
         val response = client.get().uri(baseUri + "/" + dataflow.id)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()

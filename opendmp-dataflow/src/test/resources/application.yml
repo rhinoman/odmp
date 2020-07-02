@@ -1,6 +1,9 @@
 spring:
   data:
     mongodb:
-      database: odmp_dataflow
-      host: localhost
+      database: ${embedded.mongodb.database}
+      username:
+      password:
+      host: ${embedded.mongodb.host}
+      port: ${embedded.mongodb.port}
 

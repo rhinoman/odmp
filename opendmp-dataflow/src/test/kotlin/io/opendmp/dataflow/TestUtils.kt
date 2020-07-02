@@ -1,10 +1,12 @@
 package io.opendmp.dataflow
 
 import org.springframework.context.annotation.PropertySource
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 
 class TestUtils {
 
@@ -15,7 +17,8 @@ class TestUtils {
         return headers
     }
 
-    fun <T> dataEntity(headers: HttpHeaders, data: T) : HttpEntity<T> {
-        return HttpEntity(data, headers)
+    fun<T> syncSave(template: ReactiveMongoTemplate, data: T) : Mono<T> {
+        return template.save(data)
     }
+
 }
