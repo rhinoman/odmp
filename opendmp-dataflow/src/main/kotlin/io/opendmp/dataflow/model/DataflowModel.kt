@@ -9,11 +9,11 @@ import java.time.Instant
 
 @Document(collection = "dataflows")
 class DataflowModel(@Id val id : String = ObjectId.get().toHexString(),
-                    val name : String,
-                    val description : String?,
-                    val group : String?,
+                    var name : String,
+                    var description : String?,
+                    var group : String?,
                     val creator : String?,
-                    val status : DataFlowStatus = DataFlowStatus.IDLE,
+                    var status : DataFlowStatus = DataFlowStatus.IDLE,
                     var health : HealthModel = HealthModel(),
                     @CreatedDate
                     val createdOn: Instant = Instant.now(),

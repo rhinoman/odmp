@@ -1,16 +1,19 @@
 package io.opendmp.dataflow.service
 
+import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.repository.DataflowRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import org.springframework.data.mongodb.core.*
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
-class DataflowService (private val dataflowRepository: DataflowRepository) {
+class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
 
     fun createDataflow(data : CreateDataflowRequest) : Mono<DataflowModel> {
 
@@ -19,19 +22,20 @@ class DataflowService (private val dataflowRepository: DataflowRepository) {
                 description = data.description,
                 group = data.group,
                 creator = "")
-        return dataflowRepository.save(dataflow)
+        return mongoTemplate.save<DataflowModel>(dataflow)
     }
 
     fun get(id: String) : Mono<DataflowModel> {
-        return dataflowRepository.findById(id)
+        return mongoTemplate.findById<DataflowModel>(id)
     }
 
     suspend fun getList() : Flow<DataflowModel> {
-        return dataflowRepository.findAll().asFlow()
+        return mongoTemplate.findAll<DataflowModel>().asFlow()
     }
 
-    fun delete(id: String) : Mono<Void> {
-        return dataflowRepository.deleteById(id)
+    fun delete(id: String) : Mono<DeleteResult> {
+        val query = Query(Criteria.where("id").isEqualTo(id))
+        return mongoTemplate.remove<DataflowModel>(query)
     }
 
 }

@@ -6,7 +6,6 @@ import com.nhaarman.mockitokotlin2.whenever
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.repository.DataflowRepository
 import io.opendmp.dataflow.service.DataflowService
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.findAll
+import org.springframework.data.mongodb.core.findById
 import org.springframework.http.MediaType
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf
@@ -43,13 +45,13 @@ class DataflowControllerTest(
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
 
     @MockBean
-    lateinit var dataflowRepository: DataflowRepository
+    lateinit var mongoTemplate: ReactiveMongoTemplate
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should create a new basic dataflow`() {
         val dataflow = DataflowModel(name = "FOOBAR", description = "THE FOOBAR", creator = "", group = "")
-        whenever(dataflowRepository.save<DataflowModel>(any())).thenReturn(Mono.just(dataflow))
+        whenever(mongoTemplate.save<DataflowModel>(any())).thenReturn(Mono.just(dataflow))
 
         val response = client.mutateWith(csrf())
                 .post().uri(baseUri)
@@ -72,7 +74,7 @@ class DataflowControllerTest(
                         creator = "",
                         description = "THE FOOBAR",
                         group = ""))
-        whenever(dataflowRepository.findAll()).thenReturn(Flux.fromIterable(dataflows))
+        whenever(mongoTemplate.findAll<DataflowModel>()).thenReturn(Flux.fromIterable(dataflows))
 
         val response = client.get().uri(baseUri)
                 .accept(MediaType.APPLICATION_JSON)
@@ -93,7 +95,7 @@ class DataflowControllerTest(
                 creator = "",
                 description = "THE FOOBAR",
                 group = "")
-        whenever(dataflowRepository.findById(Mockito.anyString())).thenReturn(Mono.just(dataflow))
+        whenever(mongoTemplate.findById<DataflowModel>(any())).thenReturn(Mono.just(dataflow))
         val response = client.get().uri(baseUri + "/" + dataflow.id)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()

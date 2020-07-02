@@ -38,11 +38,13 @@
 
 
 (defn dataflow-index-styles [^js/Mui.Theme theme]
-  {:right {:float :right}})
+  {:right {:float :right}
+   :dataflow-item-cell {:cursor :pointer}})
 
-(defn dataflow-row [dataflow]
- ^{:key (:id dataflow)} [:> TableRow  {:hover true :tabIndex -1}
-   [:> TableCell 
+(defn dataflow-row [dataflow classes]
+^{:key (:id dataflow)}
+  [:> TableRow  {:hover true :tabIndex -1}
+   [:> TableCell {:class (:dataflow-item-cell classes)}
     [:> Tooltip {:title (:description dataflow) :placement "bottom-start"}
      [:p (:name dataflow)]]]
    [:> TableCell (chips/status-chip (:status dataflow))]
@@ -55,20 +57,24 @@
     [:> TableCell "Status"]
     [:> TableCell "Health"]]])
 
+(defn toolbar [classes]
+  [:> Toolbar {:disableGutters true}
+   [:> Grid {:container true :spacing 2}
+    [:> Grid {:item true :xs 9}]
+    [:> Grid {:item true :xs 3}
+     [:> Button {:color :primary :variant :contained :disableElevation true :class (:right classes)}
+      [:> AddIcon] "Create"]]]])
+
+
 (defn dataflow-index []
   (let [dataflows (rf/subscribe [::subs/dataflows])]
     (style/let [classes dataflow-index-styles]
       (tcom/full-content-ui {:title "Data Flows"}
         [:div 
-         [:> Toolbar {:disableGutters true}
-          [:> Grid {:container true :spacing 2}
-           [:> Grid {:item true :xs 9}]
-           [:> Grid {:item true :xs 3}
-            [:> Button {:color :primary :variant :contained :disableElevation true :class (:right classes)}
-             [:> AddIcon] "Create"]]]]
+         (toolbar classes)
          [:> Paper
           [:> TableContainer
            [:> Table
             (table-header)
             [:> TableBody
-             (map dataflow-row @dataflows)]]]]]))))
+             (map #(dataflow-row % classes) @dataflows)]]]]]))))

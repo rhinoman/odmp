@@ -1,16 +1,12 @@
 package io.opendmp.dataflow.api.controller
 
-import io.opendmp.dataflow.api.exception.NotFoundException
+import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.repository.DataflowRepository
 import io.opendmp.dataflow.service.DataflowService
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.take
 import org.springframework.web.bind.annotation.*
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
 import javax.validation.Valid
 
 @RestController
@@ -33,7 +29,7 @@ class DataflowController(private val dataflowService: DataflowService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteOne(@PathVariable("id") id: String) : Mono<Void> {
+    fun deleteOne(@PathVariable("id") id: String) : Mono<DeleteResult> {
         return dataflowService.delete(id)
     }
 }
