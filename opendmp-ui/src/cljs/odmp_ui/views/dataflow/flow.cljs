@@ -11,4 +11,5 @@
 
 (defn flow []
   (style/let [classes flow-styles]
-    (tcom/full-content-ui {:title ""})))
+    (tcom/full-content-ui {:title ""}
+      [:div])))

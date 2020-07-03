@@ -64,6 +64,11 @@
     (net/auth-dispatch [::events/fetch-dataflow-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
+  (defroute "/dataflows/:id" [id]
+    (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel])
+    (re-frame/dispatch [::events/fetch-dataflow id])
+    (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
+
 
   ;; --------------------
   (hook-browser-navigation!))

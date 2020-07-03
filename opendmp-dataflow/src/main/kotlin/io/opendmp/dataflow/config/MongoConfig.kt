@@ -1,4 +1,7 @@
 package io.opendmp.dataflow.config
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
+import com.mongodb.MongoCredential
 import com.mongodb.reactivestreams.client.MongoClient
 import com.mongodb.reactivestreams.client.MongoClients
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,15 +18,20 @@ class MongoConfig @Autowired constructor(private val mongoProperties: MongoPrope
 
     @Bean
     fun mongoClient() : MongoClient {
-        val connectionString = if(mongoProperties.username.isNotBlank() && mongoProperties.password.isNotEmpty()) {
-            val credentials: String = mongoProperties.username + ":" + mongoProperties.password.joinToString("")
-            "mongodb://$credentials" +
-                    "@${mongoProperties.host}:${mongoProperties.port}/" +
-                    "?authSource=${mongoProperties.authenticationDatabase}"
-        } else {
-            "mongodb://${mongoProperties.host}:${mongoProperties.port}"
+        val connectionString = ConnectionString(
+                "mongodb://${mongoProperties.host}:${mongoProperties.port}"
+        )
+        val setBuilder = MongoClientSettings.builder()
+        setBuilder.applyConnectionString(connectionString)
+        if(mongoProperties.username.isNotBlank()){
+            val credential = MongoCredential.createCredential(
+                    mongoProperties.username,
+                    mongoProperties.authenticationDatabase,
+                    mongoProperties.password
+            )
+            setBuilder.credential(credential)
         }
-        return MongoClients.create(connectionString)
+        return MongoClients.create(setBuilder.build())
     }
 
     override fun getDatabaseName(): String {

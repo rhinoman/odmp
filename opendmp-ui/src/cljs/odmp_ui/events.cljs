@@ -114,6 +114,18 @@
                   :on-success [::fetch-dataflow-list-success]
                   :on-failure [::http-request-failure :dataflows]}}))
 
+;;; Fetch individual dataflow
+(re-frame/reg-event-fx
+ ::fetch-dataflow
+ (fn [{:keys [db]} [_ id]]
+   {:db (-> db
+            (assoc-in [:loading :dataflows] true))
+    :http-xhrio {:method           :get
+                 :uri              (str "/dataflow_api/dataflow/" id)
+                 :timeout          5000
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :headers (basic-headers db)}}))
+
 (re-frame/reg-event-db
   ::fetch-dataflow-list-success
   (fn [db [_ result]]
