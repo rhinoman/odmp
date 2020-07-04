@@ -5,10 +5,12 @@ import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.model.DataflowModel
+import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.DataflowService
 import kotlinx.coroutines.reactive.awaitLast
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -40,21 +42,15 @@ class DataflowControllerTest(
         @Autowired val client: WebTestClient,
         @Autowired val mongoTemplate: ReactiveMongoTemplate
 ) {
-
-    private val testUtils = TestUtils()
     private val baseUri : String = "/dataflow_api/dataflow"
 
     @MockBean
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
 
-//    @MockBean
-//    lateinit var mongoTemplate: ReactiveMongoTemplate
-
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should create a new basic dataflow`() {
         val dataflow = DataflowModel(name = "FOOBAR", description = "THE FOOBAR", creator = "", group = "")
-//        whenever(mongoTemplate.save<DataflowModel>(any()).thenReturn(Mono.just(dataflow)))
 
         val response = client.mutateWith(csrf())
                 .post().uri(baseUri)
@@ -77,7 +73,6 @@ class DataflowControllerTest(
                         creator = "",
                         description = "THE FOOBAR",
                         group = ""))
-//        whenever(mongoTemplate.findAll<DataflowModel>()).thenReturn(Flux.fromIterable(dataflows))
         mongoTemplate.insertAll<DataflowModel>(dataflows).blockLast()
         val response = client.get().uri(baseUri)
                 .accept(MediaType.APPLICATION_JSON)
@@ -98,7 +93,6 @@ class DataflowControllerTest(
                 creator = "",
                 description = "THE FOOBAR",
                 group = "")
-//        whenever(mongoTemplate.findById<DataflowModel>(any())).thenReturn(Mono.just(dataflow))
         mongoTemplate.insert<DataflowModel>(dataflow).block()
         val response = client.get().uri(baseUri + "/" + dataflow.id)
                 .accept(MediaType.APPLICATION_JSON)
@@ -108,6 +102,27 @@ class DataflowControllerTest(
                 .returnResult()
         val df = response.responseBody
         assertEquals("FOOBAR", df!!.name)
+    }
+
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should return a list of processors`() {
+        val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
+        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,mongoTemplate)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1, mongoTemplate)
+        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,mongoTemplate)
+
+        val response = client.get().uri(baseUri + "/" + dataflow.id + "/processors")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<List<ProcessorModel>>()
+                .returnResult()
+
+        val pl = response.responseBody
+        assertNotNull(pl)
+        assertEquals(3, pl?.size)
+
     }
 
 }

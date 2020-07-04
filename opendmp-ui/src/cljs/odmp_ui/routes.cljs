@@ -50,6 +50,7 @@
 
 (defn app-routes []
   (secretary/set-config! :prefix "#")
+  
   ;; --------------------
   ;; define routes here
   (defroute "/" []
@@ -66,7 +67,7 @@
 
   (defroute "/dataflows/:id" [id]
     (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel])
-    (re-frame/dispatch [::events/fetch-dataflow id])
+    (net/auth-dispatch [::events/fetch-dataflow id])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
 

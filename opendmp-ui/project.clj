@@ -10,7 +10,7 @@
                  [day8.re-frame/http-fx "v0.2.0"]
                  [day8.re-frame/tracing "0.5.5"]
                  [day8.re-frame/forward-events-fx "0.0.6"]
-                 [secretary "1.2.3"]
+                 [clj-commons/secretary "1.2.4"]
                  [cljs-http "0.1.46"]
                  [ns-tracker "0.4.0"]
                  [re-pressed "0.3.1"]

@@ -17,6 +17,7 @@
    [re-frame.core :as re-frame]
    [reagent.core :as r]
    [odmp-ui.db :as db]
+   [odmp-ui.util.data :as dutil]
    [ajax.core :as ajax]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [day8.re-frame.forward-events-fx]
@@ -36,13 +37,21 @@
    {:db db
     :forward-events {:unregister :auth-complete-listener}}))
 
+;; (re-frame/reg-event-fx
+;;  ::keycloak-refresh
+;;  (fn [{:keys [db]} [_ keycloak]]
+;;    {:db db
+;;     :http-xhrio {:method :post
+;;                  :uri ""}}))
+
 (re-frame/reg-event-fx
  ::keycloak-initialized
  (fn [{:keys [db]} [_ keycloak result]]
    (if (false? result)
      (-> keycloak
          (.login keycloak)
-         (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))))
+         (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))
+         (.onTokenExpired #(.updateToken keycloak))))
      {:db (assoc db :auth-state {:keycloak keycloak :authenticated result})}))
 
 (re-frame/reg-event-db
@@ -119,12 +128,15 @@
  ::fetch-dataflow
  (fn [{:keys [db]} [_ id]]
    {:db (-> db
-            (assoc-in [:loading :dataflows] true))
+            (assoc-in [:loading :dataflow] true))
     :http-xhrio {:method           :get
                  :uri              (str "/dataflow_api/dataflow/" id)
                  :timeout          5000
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :headers (basic-headers db)}}))
+                 :headers (basic-headers db)
+                 :on-success [::fetch-dataflow-success]
+                 :on-failure [::http-request-failure :dataflow]}}))
+
 
 (re-frame/reg-event-db
   ::fetch-dataflow-list-success
@@ -132,6 +144,13 @@
     (-> db
         (assoc-in [:loading :dataflows] false)
         (assoc :dataflows result))))
+
+(re-frame/reg-event-db
+ ::fetch-dataflow-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc-in [:loading :dataflow] false)
+       (assoc :current-dataflow result))))
 
 (re-frame/reg-event-db
   ::http-request-failure

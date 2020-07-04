@@ -1,5 +1,7 @@
 package io.opendmp.dataflow
 
+import io.opendmp.dataflow.model.DataflowModel
+import io.opendmp.dataflow.model.ProcessorModel
 import org.springframework.context.annotation.PropertySource
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.http.HttpEntity
@@ -8,17 +10,30 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
-class TestUtils {
+object TestUtils {
 
-    fun genUserHeaders(username: String) : HttpHeaders {
-        val headers = HttpHeaders()
-        headers.accept = listOf(MediaType.APPLICATION_JSON)
-        headers.contentType = MediaType.APPLICATION_JSON
-        return headers
+    fun createBasicDataflow(name: String, mongoTemplate: ReactiveMongoTemplate) : DataflowModel {
+        val dataflow = DataflowModel(
+                name = name,
+                creator = "",
+                description = "THE $name",
+                group = "")
+
+        return mongoTemplate.insert(dataflow).block()!!
     }
 
-    fun<T> syncSave(template: ReactiveMongoTemplate, data: T) : Mono<T> {
-        return template.save(data)
+    fun createBasicProcessor(name: String,
+                             flowId: String,
+                             phase: Int,
+                             order: Int,
+                             mongoTemplate: ReactiveMongoTemplate) : ProcessorModel {
+        val proc = ProcessorModel(
+                name = name,
+                flowId = flowId,
+                phase = phase,
+                order = order
+        )
+        return mongoTemplate.insert(proc).block()!!
     }
 
 }

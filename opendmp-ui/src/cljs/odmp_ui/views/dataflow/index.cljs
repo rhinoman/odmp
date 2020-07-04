@@ -19,6 +19,7 @@
             [odmp-ui.components.chips :as chips]
             [odmp-ui.util.styles :as style]
             [odmp-ui.subs :as subs]
+            ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/Tooltip" :default Tooltip]
             ["@material-ui/core/Table" :default Table]
@@ -38,15 +39,20 @@
 
 
 (defn dataflow-index-styles [^js/Mui.Theme theme]
-  {:right {:float :right}
-   :dataflow-item-cell {:cursor :pointer}})
+  (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
+        p-type (keyword (:type palette))]
+    {:right {:float :right}
+     :dataflow-item-cell {:cursor :pointer}
+     :link {:color (get-in palette [:info :light])}}))
 
 (defn dataflow-row [dataflow classes]
 ^{:key (:id dataflow)}
   [:> TableRow  {:hover true :tabIndex -1}
    [:> TableCell {:class (:dataflow-item-cell classes)}
     [:> Tooltip {:title (:description dataflow) :placement "bottom-start"}
-     [:p (:name dataflow)]]]
+     [:> Link {:class (:link classes)
+               :href (str "#/dataflows/" (:id dataflow))}
+      (:name dataflow)]]]
    [:> TableCell (chips/status-chip (:status dataflow))]
    [:> TableCell (chips/health-chip (get-in dataflow [:health :state]))]])
 

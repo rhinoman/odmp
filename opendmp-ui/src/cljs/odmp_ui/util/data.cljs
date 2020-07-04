@@ -12,12 +12,14 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns odmp-ui.db)
+(ns odmp-ui.util.data)
 
-(def default-db
-  {:name "re-frame"
-   :dark-theme? true
-   :sidebar-expanded true
-   :dataflows []
-   :current-dataflow {}
-   :auth-state {:keycloak nil :authenticated false}})
+(defn extract-by-id
+  "Extracts the first record from a collection with a matching id field"
+  [id coll]
+  (first (filter #(= (:id %) id) coll)))
+
+(defn update-by-id
+  "Replaces an item with a matching id in a collection"
+  [rec coll]
+  (map (fn [b] (if (= (:id rec) (:id b)) rec b)) coll))

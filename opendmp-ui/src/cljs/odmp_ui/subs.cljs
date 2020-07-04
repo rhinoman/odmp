@@ -51,10 +51,17 @@
   (fn [db _]
     (:auth-state db)))
 
+;; The list of all dataflows
 (re-frame/reg-sub
  ::dataflows
  (fn [db _]
    (:dataflows db)))
+
+;; The currently loaded/displayed dataflow
+(re-frame/reg-sub
+ ::current-dataflow
+ (fn [db _]
+   (:current-dataflow db)))
 
 (re-frame/reg-sub
  ::errors

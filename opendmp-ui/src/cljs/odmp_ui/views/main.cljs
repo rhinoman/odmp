@@ -25,6 +25,7 @@
    [odmp-ui.components.common :as tcom]
    [odmp-ui.views.home :refer [home-panel]]
    [odmp-ui.views.dataflow.index :refer [dataflow-index]]
+   [odmp-ui.views.dataflow.flow :refer [flow]]
    [odmp-ui.util.styles :as style]
    ["@material-ui/core" :refer [createMuiTheme
                                 useTheme
@@ -54,6 +55,7 @@
     :home-panel [home-panel]
     :about-panel [about-panel]
     :dataflow-index-panel [dataflow-index]
+    :dataflow-item-panel [flow]
     [:div]))
 
 (defn show-panel [panel-name]

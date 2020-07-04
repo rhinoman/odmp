@@ -10,6 +10,8 @@ import java.time.Instant
 @Document(collection = "processors")
 data class ProcessorModel(@Id val id : String = ObjectId.get().toHexString(),
                           val flowId : String,
+                          val name: String,
+                          val description: String? = null,
                           var status : DataFlowStatus = DataFlowStatus.IDLE,
                           var health : HealthModel = HealthModel(),
                           var phase: Int,
