@@ -20,15 +20,36 @@
             [odmp-ui.util.data :as dutil]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.subs :as subs]
-            ["@material-ui/core/Typography" :default Typography]))
+            ["@material-ui/core/Typography" :default Typography]
+            ["@material-ui/core/Grid" :default Grid]
+            ["@material-ui/core/Button" :default Button]
+            ["@material-ui/core/Toolbar" :default Toolbar]
+            ["@material-ui/core/Paper" :default Paper]
+            ["@material-ui/icons/AddTwoTone" :default AddIcon]))
 
 
 (defn flow-styles [^js/Mui.Theme theme]
-  {})
+  (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
+        p-type (keyword (:type palette))]
+    {:right {:float :right}
+     :proc-wrapper {:min-height 400
+                    :padding 10}}))
+
+(defn toolbar [classes]
+  [:> Toolbar {:disableGutters true}
+   [:> Grid {:container true :spacing 2}
+    [:> Grid {:item true :xs 9}]
+    [:> Grid {:item true :xs 3}
+     [:> Button {:color :primary :variant :contained :disableElevation true :class (:right classes)}
+      [:> AddIcon] "Create"]]]])
 
 (defn flow []
-  (let [dataflow (rf/subscribe [::subs/current-dataflow])]
+  (let [dataflow (rf/subscribe [::subs/current-dataflow])
+        processors (rf/subscribe [::subs/current-dataflow-processors])
+        num-phases (dutil/num-phases @processors)]
+    (println num-phases)
     (style/let [classes flow-styles]
       (tcom/full-content-ui {:title (:name @dataflow)}
        [:> Typography {:variant :subtitle1} (:description @dataflow)]
-       [:div]))))
+       (toolbar classes)
+       [:> Paper {:class (:proc-wrapper classes)} "HI"]))))

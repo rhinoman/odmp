@@ -6,6 +6,7 @@ import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
+import io.opendmp.dataflow.model.ProcessorType
 import io.opendmp.dataflow.service.DataflowService
 import kotlinx.coroutines.reactive.awaitLast
 import org.bson.types.ObjectId
@@ -50,7 +51,6 @@ class DataflowControllerTest(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should create a new basic dataflow`() {
-        val dataflow = DataflowModel(name = "FOOBAR", description = "THE FOOBAR", creator = "", group = "")
 
         val response = client.mutateWith(csrf())
                 .post().uri(baseUri)
@@ -108,9 +108,9 @@ class DataflowControllerTest(
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should return a list of processors`() {
         val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
-        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1, mongoTemplate)
-        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,mongoTemplate)
+        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,ProcessorType.INGEST,mongoTemplate)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.TRANSFORM,mongoTemplate)
+        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.EXPORT,mongoTemplate)
 
         val response = client.get().uri(baseUri + "/" + dataflow.id + "/processors")
                 .accept(MediaType.APPLICATION_JSON)

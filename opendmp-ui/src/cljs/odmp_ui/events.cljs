@@ -138,6 +138,20 @@
                  :on-failure [::http-request-failure :dataflow]}}))
 
 
+;;; Fetch processors for a dataflow
+(re-frame/reg-event-fx
+ ::fetch-dataflow-processors
+ (fn [{:keys [db]} [_ id]]
+   {:db (-> db
+            (assoc-in [:loading :dataflow] true))
+    :http-xhrio {:method          :get
+                 :uri             (str "/dataflow_api/dataflow/" id "/processors")
+                 :timeout         5000
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :headers         (basic-headers db)
+                 :on-success      [::fetch-dataflow-processors-success]
+                 :on-failure      [::http-request-failure :dataflow-processors]}}))
+
 (re-frame/reg-event-db
   ::fetch-dataflow-list-success
   (fn [db [_ result]]
@@ -151,6 +165,13 @@
    (-> db
        (assoc-in [:loading :dataflow] false)
        (assoc :current-dataflow result))))
+
+(re-frame/reg-event-db
+ ::fetch-dataflow-processors-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc-in [:loading :dataflow] false)
+       (assoc :current-dataflow-processors result))))
 
 (re-frame/reg-event-db
   ::http-request-failure

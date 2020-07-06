@@ -23,3 +23,9 @@
   "Replaces an item with a matching id in a collection"
   [rec coll]
   (map (fn [b] (if (= (:id rec) (:id b)) rec b)) coll))
+
+(defn num-phases
+  [processors]
+  (if (empty? processors) 0
+      (max (map (fn [p] (:phase p)) (reverse processors)))))
+

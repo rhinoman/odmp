@@ -63,6 +63,12 @@
  (fn [db _]
    (:current-dataflow db)))
 
+;; List of processors currently being examined
+(re-frame/reg-sub
+ ::current-dataflow-processors
+ (fn [db _]
+   (:current-dataflow-processors db)))
+
 (re-frame/reg-sub
  ::errors
  (fn [db _]

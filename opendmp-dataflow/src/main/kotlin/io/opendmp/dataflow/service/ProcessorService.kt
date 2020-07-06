@@ -17,7 +17,8 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
                 name = data.name,
                 description = data.description,
                 phase = data.phase,
-                order = data.order
+                order = data.order,
+                type = data.type
         )
 
         return mongoTemplate.save<ProcessorModel>(processor)

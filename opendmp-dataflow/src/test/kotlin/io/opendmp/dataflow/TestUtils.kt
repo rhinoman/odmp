@@ -2,6 +2,7 @@ package io.opendmp.dataflow
 
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
+import io.opendmp.dataflow.model.ProcessorType
 import org.springframework.context.annotation.PropertySource
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.http.HttpEntity
@@ -26,12 +27,14 @@ object TestUtils {
                              flowId: String,
                              phase: Int,
                              order: Int,
+                             type: ProcessorType,
                              mongoTemplate: ReactiveMongoTemplate) : ProcessorModel {
         val proc = ProcessorModel(
                 name = name,
                 flowId = flowId,
                 phase = phase,
-                order = order
+                order = order,
+                type = ProcessorType.INGEST
         )
         return mongoTemplate.insert(proc).block()!!
     }

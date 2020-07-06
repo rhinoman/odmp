@@ -6,6 +6,7 @@ import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -42,7 +43,9 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
     }
 
     fun getProcessors(id: String) : Flow<ProcessorModel> {
-        val query = Query(Criteria.where("flowId").isEqualTo(id))
+        val query =
+                Query(Criteria.where("flowId").isEqualTo(id))
+                        .with(Sort.by(Sort.Direction.ASC, "phase", "order"))
         return mongoTemplate.find<ProcessorModel>(query).asFlow()
     }
 

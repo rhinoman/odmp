@@ -40,8 +40,7 @@
     {:sidebarBrand {:text-align "center"
                    :padding 10
                    :margin-top 15
-                   :margin-bottom 40
-                   }
+                   :margin-bottom 40}
      :sidebarList {:overflowX "hidden"}
      :sidebarListItem {:marginTop 10 :marginBottom 10 :margin-left 1}
      :activeItem {:padding-left 11  :borderLeft 5 :borderStyle "solid" :borderColor (get-in palette [:success p-type])}
@@ -61,8 +60,7 @@
                                                    :duration (.. theme -transitions -duration -leavingScreen)}))
                        :overflowX "hidden"
                        :width (+ (.spacing theme 7) 1)
-                       (.breakpoints.up theme "sm") {:width (+(.spacing theme 7) 1)}}
-     }))
+                       (.breakpoints.up theme "sm") {:width (+(.spacing theme 7) 1)}}}))
 
 
 (defn adj-label [txt]

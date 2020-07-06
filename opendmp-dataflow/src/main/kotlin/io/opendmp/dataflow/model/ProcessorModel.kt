@@ -16,7 +16,7 @@ data class ProcessorModel(@Id val id : String = ObjectId.get().toHexString(),
                           var health : HealthModel = HealthModel(),
                           var phase: Int,
                           var order: Int = 1,
-
+                          val type: ProcessorType,
                           @CreatedDate
                           val createdOn: Instant = Instant.now(),
                           @LastModifiedDate

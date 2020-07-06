@@ -68,6 +68,7 @@
   (defroute "/dataflows/:id" [id]
     (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel])
     (net/auth-dispatch [::events/fetch-dataflow id])
+    (net/auth-dispatch [::events/fetch-dataflow-processors id])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
 
