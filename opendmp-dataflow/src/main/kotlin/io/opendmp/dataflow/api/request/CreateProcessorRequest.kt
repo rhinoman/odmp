@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull
 
 data class CreateProcessorRequest(
         @field:NotBlank(message = "Parent flow id is required")
-        @Indexed
         val flowId: String,
         @field:NotBlank(message = "Name is required")
         val name: String,

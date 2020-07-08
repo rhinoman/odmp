@@ -27,5 +27,5 @@
 (defn num-phases
   [processors]
   (if (empty? processors) 0
-      (max (map (fn [p] (:phase p)) (reverse processors)))))
+      (apply max (map (fn [p] (:phase p)) (reverse processors)))))
 
