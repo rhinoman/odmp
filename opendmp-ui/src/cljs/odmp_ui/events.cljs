@@ -29,7 +29,6 @@
  (fn-traced [_ _]
    db/default-db))
 
-
 (re-frame/reg-event-fx
  ::auth-complete
  (fn [{:keys [db]} event]

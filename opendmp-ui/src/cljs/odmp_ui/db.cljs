@@ -20,4 +20,5 @@
    :sidebar-expanded true
    :dataflows []
    :current-dataflow {}
+   :create-dataflow-dialog-open false
    :auth-state {:keycloak nil :authenticated false}})

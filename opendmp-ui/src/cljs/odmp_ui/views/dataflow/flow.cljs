@@ -26,6 +26,7 @@
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/Toolbar" :default Toolbar]
             ["@material-ui/core/Paper" :default Paper]
+            ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Card" :default Card]
             ["@material-ui/core/CardHeader" :default CardHeader]
             ["@material-ui/icons/AddTwoTone" :default AddIcon]))
@@ -64,8 +65,8 @@
    [:> Grid {:container true :spacing 2}
     [:> Grid {:item true :xs 9}]
     [:> Grid {:item true :xs 3}
-     [:> Button {:color :primary :variant :contained :disableElevation true :class (:right classes)}
-      [:> AddIcon] "Create"]]]])
+     [:> Button {:color :primary :variant :contained :disableElevation true :size :small :class (:right classes)}
+      [:> AddIcon] "Add Phase"]]]])
 
 (defn empty-flow-text []
   [:div
@@ -77,7 +78,8 @@
   [:div {:class (:phase-col classes)}
    [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
     (str "Phase " phase-num)]
-   (map #(processor-card %) processors)])
+   (map #(processor-card %) processors)
+   [:> Button {:color :primary :size :small} [:> AddIcon] "Add Processor"]])
 
 (defn flow []
   (let [dataflow (rf/subscribe [::subs/current-dataflow])

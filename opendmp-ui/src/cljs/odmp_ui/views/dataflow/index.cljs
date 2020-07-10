@@ -19,6 +19,7 @@
             [odmp-ui.components.chips :as chips]
             [odmp-ui.util.styles :as style]
             [odmp-ui.subs :as subs]
+            [odmp-ui.views.dataflow.modals :as modals]
             ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/Tooltip" :default Tooltip]
@@ -43,7 +44,8 @@
         p-type (keyword (:type palette))]
     {:right {:float :right}
      :dataflow-item-cell {:cursor :pointer}
-     :link {:color (get-in palette [:info :light])}}))
+     ;:link {:color (get-in palette [:info :light])}
+     }))
 
 (defn dataflow-row [dataflow classes]
 ^{:key (:id dataflow)}
@@ -68,14 +70,20 @@
    [:> Grid {:container true :spacing 2}
     [:> Grid {:item true :xs 9}]
     [:> Grid {:item true :xs 3}
-     [:> Button {:color :primary :variant :contained :disableElevation true :class (:right classes)}
+     [:> Button {:color :primary
+                 :variant :contained
+                 :disableElevation true
+                 :onClick #(rf/dispatch [::modals/toggle-create-dataflow-dialog])
+                 :class (:right classes)}
       [:> AddIcon] "Create"]]]])
 
 
 (defn dataflow-index []
-  (let [dataflows (rf/subscribe [::subs/dataflows])]
+  (let [dataflows (rf/subscribe [::subs/dataflows])
+        create-dialog-state (rf/subscribe [::modals/create-dataflow-dialog-open])]
     (style/let [classes dataflow-index-styles]
       (tcom/full-content-ui {:title "Data Flows"}
+        (if @create-dialog-state (modals/create-dataflow-dialog))
         [:div 
          (toolbar classes)
          [:> Paper

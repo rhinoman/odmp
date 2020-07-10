@@ -62,7 +62,9 @@
   [panels panel-name])
 
 (defn set-theme [dark-theme?]
-  (createMuiTheme (clj->js {:palette {:type (if dark-theme? "dark" "light")}
+  (createMuiTheme (clj->js {:palette {:type (if dark-theme? "dark" "light")
+                                      :primary { :main "#56A3A6" }
+                                      :secondary { :main "#607d8b" }}
                             :status {:danger "red"}})))
 
 (defn main-panel* []
