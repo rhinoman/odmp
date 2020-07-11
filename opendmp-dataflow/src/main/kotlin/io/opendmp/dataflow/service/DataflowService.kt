@@ -22,7 +22,7 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
                        authentication: Authentication) : Mono<DataflowModel> {
 
         val dataflow = DataflowModel(
-                name = data.name,
+                name = data.name!!,
                 description = data.description,
                 group = data.group,
                 creator = "")

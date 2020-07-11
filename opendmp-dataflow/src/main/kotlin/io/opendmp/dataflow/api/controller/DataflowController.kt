@@ -7,6 +7,8 @@ import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.DataflowService
 import kotlinx.coroutines.flow.Flow
 import org.springframework.security.core.Authentication
+import org.springframework.validation.BindingResult
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 import javax.validation.Valid
