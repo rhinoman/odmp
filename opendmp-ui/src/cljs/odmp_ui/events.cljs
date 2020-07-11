@@ -156,7 +156,7 @@
  ::post-dataflow
  (fn [{:keys [db]} [_ data]]
    {:db (-> db
-            (assoc-in [:posting :dataflow] true))
+            (assoc-in [:loading :post-dataflow] true))
     :http-xhrio {:method          :post
                  :uri             "/dataflow_api/dataflow"
                  :params          data
@@ -165,7 +165,7 @@
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [::success-post-dataflow]
-                 :on-failure      [::failure-post-result :post-dataflow]}}))
+                 :on-failure      [::http-request-failure :post-dataflow]}}))
 
 (re-frame/reg-event-db
   ::fetch-dataflow-list-success
@@ -194,32 +194,26 @@
    (re-frame/dispatch [::fetch-dataflow-list])
    (re-frame/dispatch [::toggle-create-dataflow-dialog])
    (-> db
-       (assoc-in [:posting :post-dataflow] false))))
-
-(re-frame/reg-event-db
- ::failure-post-result
- (fn [db [_ loc result]]
-   (let [error-status (get-in result [:parse-error :status])]
-     ;(js/console.error result)
-     (case error-status
-       401 (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
-       ;; else
-       (-> db
-           (assoc-in [:posting loc] false)
-           (assoc-in [:errors loc] result))))))
+       (assoc-in [:loading :post-dataflow] false)
+       (assoc-in [:request-errors :post-dataflow] nil))))
 
 (re-frame/reg-event-db
   ::http-request-failure
   (fn [db [_ loc result]]
     (let [error-status (get-in result [:parse-error :status])]
-      (js/console.error result)
       (case error-status
         ;; on 401, try to login again
-        401 (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
+        401 (do
+              (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
+              (assoc-in db [:loading loc] false))
+        ;; on 400, store the errors
+        400 (-> db
+                (assoc-in [:loading loc] false)
+                (assoc-in [:request-errors loc] result))
         ;; else
         (-> db
             (assoc-in [:loading loc] false)
-            (assoc-in [:errors loc] result))))))
+            (assoc-in [:request-errors loc] result))))))
 
 ;; Modal events
 (re-frame/reg-event-db
@@ -227,4 +221,5 @@
  (fn-traced [db [_ _]]
             (-> db
                 (assoc :create-dataflow-dialog-fields {})
+                (assoc-in [:request-errors :post-dataflow] nil)
                 (assoc :create-dataflow-dialog-open (not (:create-dataflow-dialog-open db))))))

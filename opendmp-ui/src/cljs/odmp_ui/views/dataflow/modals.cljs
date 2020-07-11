@@ -19,6 +19,7 @@
             [day8.re-frame.tracing :refer-macros [fn-traced]]
             [odmp-ui.events :as events]
             [odmp-ui.subs :as subs]
+            [odmp-ui.components.common :refer [error-alert]]
             ["@material-ui/core/Dialog" :default Dialog]
             ["@material-ui/core/DialogTitle" :default DialogTitle]
             ["@material-ui/core/DialogContent" :default DialogContent]
@@ -51,7 +52,12 @@
 (rf/reg-sub
  ::posting-dataflow
  (fn [db _]
-   (get-in db [:posting :post-dataflow])))
+   (get-in db [:loading :post-dataflow])))
+
+(rf/reg-sub
+ ::posting-dataflow-errors
+ (fn [db _]
+   (get-in db [:request-errors :post-dataflow])))
 
 (defn modal-styles [^js/Mui.Theme theme]
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
@@ -69,38 +75,40 @@
   (let [open (rf/subscribe [::create-dataflow-dialog-open])
         name-field-value (rf/subscribe [::create-dataflow-name])
         description-field-value (rf/subscribe [::create-dataflow-description])
-        is-posting (rf/subscribe [::posting-dataflow])]
-   (style/let [classes modal-styles]
-     [:> Dialog {:open @open
-                 :onClose #(rf/dispatch [::events/toggle-create-dataflow-dialog])
-                 :aria-labelledby "create-dataflow-dialog"}
-      [:> DialogTitle "Create New Dataflow"]
-      [:> DialogContent
-       [:form {:onSubmit save-dataflow}
-        [:> TextField {:autoFocus true
-                       :margin :dense
-                       :variant :filled
-                       :disabled @is-posting
-                       ;:required true
-                       :class (:form-input classes)
-                       :id :dataflow_name
-                       :label "Dataflow Name"
-                       :value (or @name-field-value "")
-                       :onChange #(rf/dispatch [::set-dataflow-create-field :name (-> % .-target .-value)])
-                       :type :text
-                       :fullWidth true}]
-        [:> TextField {:margin :dense
-                       :variant :filled
-                       :required false
-                       :disabled @is-posting
-                       :class (:form-input classes)
-                       :id :dataflow_description
-                       :label "Description"
-                       :onChange #(rf/dispatch [::set-dataflow-create-field :description (-> % .-target .-value)])
-                       :value (or @description-field-value "")
-                       :type :text
-                       :fullWidth true}]
-        [:> DialogActions
-         [:> Button {:onClick #(rf/dispatch [::events/toggle-create-dataflow-dialog])} "Cancel"]
-         [:> Button {:disabled @is-posting
-                     :type :submit :color :primary} "Create"]]]]])))
+        is-posting (rf/subscribe [::posting-dataflow])
+        errors (rf/subscribe [::posting-dataflow-errors])]
+    (style/let [classes modal-styles]
+      [:> Dialog {:open @open
+                  :onClose #(rf/dispatch [::events/toggle-create-dataflow-dialog])
+                  :aria-labelledby "create-dataflow-dialog"}
+       [:> DialogTitle "Create New Dataflow"]
+       [:> DialogContent
+        (if @errors (error-alert @errors))
+        [:form {:onSubmit save-dataflow}
+         [:> TextField {:autoFocus true
+                        :margin :dense
+                        :variant :filled
+                        :disabled @is-posting
+                        :required true
+                        :class (:form-input classes)
+                        :id :dataflow_name
+                        :label "Dataflow Name"
+                        :value (or @name-field-value "")
+                        :onChange #(rf/dispatch [::set-dataflow-create-field :name (-> % .-target .-value)])
+                        :type :text
+                        :fullWidth true}]
+         [:> TextField {:margin :dense
+                        :variant :filled
+                        :required false
+                        :disabled @is-posting
+                        :class (:form-input classes)
+                        :id :dataflow_description
+                        :label "Description"
+                        :onChange #(rf/dispatch [::set-dataflow-create-field :description (-> % .-target .-value)])
+                        :value (or @description-field-value "")
+                        :type :text
+                        :fullWidth true}]
+         [:> DialogActions
+          [:> Button {:onClick #(rf/dispatch [::events/toggle-create-dataflow-dialog])} "Cancel"]
+          [:> Button {:disabled @is-posting
+                      :type :submit :color :primary} "Create"]]]]])))

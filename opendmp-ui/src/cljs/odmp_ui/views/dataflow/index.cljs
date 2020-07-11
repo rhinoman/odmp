@@ -51,7 +51,7 @@
 ^{:key (:id dataflow)}
   [:> TableRow  {:hover true :tabIndex -1}
    [:> TableCell {:class (:dataflow-item-cell classes)}
-    [:> Tooltip {:title (:description dataflow) :placement "bottom-start"}
+    [:> Tooltip {:title (or (:description dataflow) "No Description") :placement "bottom-start"}
      [:> Link {:class (:link classes)
                :href (str "#/dataflows/" (:id dataflow))}
       (:name dataflow)]]]
