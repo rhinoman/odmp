@@ -17,6 +17,8 @@
             [reagent.core :as r]
             [odmp-ui.util.styles :as style]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [odmp-ui.events :as events]
+            [odmp-ui.subs :as subs]
             ["@material-ui/core/Dialog" :default Dialog]
             ["@material-ui/core/DialogTitle" :default DialogTitle]
             ["@material-ui/core/DialogContent" :default DialogContent]
@@ -25,14 +27,6 @@
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/DialogActions" :default DialogActions]))
 
-
-;; Dialog states
-(rf/reg-event-db
- ::toggle-create-dataflow-dialog
- (fn-traced [db [_ _]]
-            (-> db
-                (assoc :create-dataflow-dialog-fields {})
-                (assoc :create-dataflow-dialog-open (not (:create-dataflow-dialog-open db))))))
 
 (rf/reg-sub
  ::create-dataflow-dialog-open
@@ -54,26 +48,40 @@
  (fn [db _]
    (get-in db [:create-dataflow-dialog-fields :description])))
 
+(rf/reg-sub
+ ::posting-dataflow
+ (fn [db _]
+   (get-in db [:posting :post-dataflow])))
+
 (defn modal-styles [^js/Mui.Theme theme]
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
         p-type (keyword (:type palette))]
     {:form-input {"> label" {:color (get-in palette [:success :light])}}}))
 
+(defn save-dataflow [e]
+  (let [name-field-value (rf/subscribe [::create-dataflow-name])
+        description-field-value (rf/subscribe [::create-dataflow-description])]
+    (.preventDefault e)
+    (rf/dispatch [::events/post-dataflow {:name @name-field-value
+                                          :description @description-field-value}])))
+
 (defn create-dataflow-dialog []
   (let [open (rf/subscribe [::create-dataflow-dialog-open])
         name-field-value (rf/subscribe [::create-dataflow-name])
-        description-field-value (rf/subscribe [::create-dataflow-description])]
+        description-field-value (rf/subscribe [::create-dataflow-description])
+        is-posting (rf/subscribe [::posting-dataflow])]
    (style/let [classes modal-styles]
      [:> Dialog {:open @open
-                 :onClose #(rf/dispatch [::toggle-create-dataflow-dialog])
+                 :onClose #(rf/dispatch [::events/toggle-create-dataflow-dialog])
                  :aria-labelledby "create-dataflow-dialog"}
       [:> DialogTitle "Create New Dataflow"]
       [:> DialogContent
-       [:form
+       [:form {:onSubmit save-dataflow}
         [:> TextField {:autoFocus true
                        :margin :dense
                        :variant :filled
-                       :required true
+                       :disabled @is-posting
+                       ;:required true
                        :class (:form-input classes)
                        :id :dataflow_name
                        :label "Dataflow Name"
@@ -84,6 +92,7 @@
         [:> TextField {:margin :dense
                        :variant :filled
                        :required false
+                       :disabled @is-posting
                        :class (:form-input classes)
                        :id :dataflow_description
                        :label "Description"
@@ -92,5 +101,6 @@
                        :type :text
                        :fullWidth true}]
         [:> DialogActions
-         [:> Button {:onClick #(rf/dispatch [::toggle-create-dataflow-dialog])} "Cancel"]
-         [:> Button {:type :submit :color :primary} "Create"]]]]])))
+         [:> Button {:onClick #(rf/dispatch [::events/toggle-create-dataflow-dialog])} "Cancel"]
+         [:> Button {:disabled @is-posting
+                     :type :submit :color :primary} "Create"]]]]])))

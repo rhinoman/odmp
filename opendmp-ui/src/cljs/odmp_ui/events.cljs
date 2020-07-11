@@ -151,6 +151,22 @@
                  :on-success      [::fetch-dataflow-processors-success]
                  :on-failure      [::http-request-failure :dataflow-processors]}}))
 
+;;; POST dataflow
+(re-frame/reg-event-fx
+ ::post-dataflow
+ (fn [{:keys [db]} [_ data]]
+   {:db (-> db
+            (assoc-in [:posting :dataflow] true))
+    :http-xhrio {:method          :post
+                 :uri             "/dataflow_api/dataflow"
+                 :params          data
+                 :timeout         5000
+                 :headers         (basic-headers db)
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::success-post-dataflow]
+                 :on-failure      [::failure-post-result :post-dataflow]}}))
+
 (re-frame/reg-event-db
   ::fetch-dataflow-list-success
   (fn [db [_ result]]
@@ -173,13 +189,42 @@
        (assoc :current-dataflow-processors result))))
 
 (re-frame/reg-event-db
+ ::success-post-dataflow
+ (fn [db [_ result]]
+   (re-frame/dispatch [::fetch-dataflow-list])
+   (re-frame/dispatch [::toggle-create-dataflow-dialog])
+   (-> db
+       (assoc-in [:posting :post-dataflow] false))))
+
+(re-frame/reg-event-db
+ ::failure-post-result
+ (fn [db [_ loc result]]
+   (let [error-status (get-in result [:parse-error :status])]
+     ;(js/console.error result)
+     (case error-status
+       401 (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
+       ;; else
+       (-> db
+           (assoc-in [:posting loc] false)
+           (assoc-in [:errors loc] result))))))
+
+(re-frame/reg-event-db
   ::http-request-failure
   (fn [db [_ loc result]]
     (let [error-status (get-in result [:parse-error :status])]
+      (js/console.error result)
       (case error-status
         ;; on 401, try to login again
         401 (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
-        :else (-> db
-                  (js/console.error result)
-                  (assoc-in [:loading loc] false)
-                  (assoc-in [:errors loc] result))))))
+        ;; else
+        (-> db
+            (assoc-in [:loading loc] false)
+            (assoc-in [:errors loc] result))))))
+
+;; Modal events
+(re-frame/reg-event-db
+ ::toggle-create-dataflow-dialog
+ (fn-traced [db [_ _]]
+            (-> db
+                (assoc :create-dataflow-dialog-fields {})
+                (assoc :create-dataflow-dialog-open (not (:create-dataflow-dialog-open db))))))

@@ -4,11 +4,10 @@ import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.ProcessorService
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+
+import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
+
 import javax.validation.Valid
 
 @RestController
@@ -18,6 +17,8 @@ class ProcessorController(private val processorService: ProcessorService) {
     @PostMapping
     fun insertOne(@Valid @RequestBody data : CreateProcessorRequest,
                   authentication: Authentication) : Mono<ProcessorModel> {
-        return processorService.createProcessor(data,authentication)
+        return processorService.createProcessor(data, authentication)
     }
+
+
 }

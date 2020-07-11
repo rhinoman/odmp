@@ -19,6 +19,7 @@
             [odmp-ui.components.chips :as chips]
             [odmp-ui.util.styles :as style]
             [odmp-ui.subs :as subs]
+            [odmp-ui.events :as events]
             [odmp-ui.views.dataflow.modals :as modals]
             ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Button" :default Button]
@@ -44,7 +45,6 @@
         p-type (keyword (:type palette))]
     {:right {:float :right}
      :dataflow-item-cell {:cursor :pointer}
-     ;:link {:color (get-in palette [:info :light])}
      }))
 
 (defn dataflow-row [dataflow classes]
@@ -73,7 +73,7 @@
      [:> Button {:color :primary
                  :variant :contained
                  :disableElevation true
-                 :onClick #(rf/dispatch [::modals/toggle-create-dataflow-dialog])
+                 :onClick #(rf/dispatch [::events/toggle-create-dataflow-dialog])
                  :class (:right classes)}
       [:> AddIcon] "Create"]]]])
 
