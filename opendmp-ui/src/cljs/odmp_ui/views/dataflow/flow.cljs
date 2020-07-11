@@ -22,6 +22,7 @@
             [odmp-ui.subs :as subs]
             [odmp-ui.views.dataflow.processor :refer [processor-card]]
             ["@material-ui/core/Typography" :default Typography]
+            ["@material-ui/core/Box" :default Box]
             ["@material-ui/core/Grid" :default Grid]
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/Toolbar" :default Toolbar]
@@ -36,6 +37,8 @@
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
         p-type (keyword (:type palette))]
     {:right {:float :right}
+     :description-wrapper {:max-width 600
+                           :overflow-wrap :break-word}
      :proc-wrapper {:min-height 400
                     :padding 10
                     :display :flex
@@ -87,7 +90,8 @@
         num-phases (dutil/num-phases processors)]
     (style/let [classes flow-styles]
       (tcom/full-content-ui {:title (:name @dataflow)}
-       [:> Typography {:variant :subtitle1} (:description @dataflow)]
+       [:> Box {:class (:description-wrapper classes)}
+        [:> Typography {:variant :subtitle1} (:description @dataflow)]]
        (toolbar classes)
        [:> Paper {:class (:proc-wrapper classes)}
         (if (= 0 num-phases)

@@ -27,6 +27,7 @@
    ["@material-ui/core/ListItemIcon" :default ListItemIcon]
    ["@material-ui/core/ListItemText" :default ListItemText]
    ["@material-ui/core/Typography" :default Typography]   
+   ["@material-ui/core/Tooltip" :default Tooltip]
    ["@material-ui/icons/HomeTwoTone" :default HomeIcon]
    ["@material-ui/icons/SearchTwoTone" :default SearchIcon]
    ["@material-ui/icons/FavoriteTwoTone" :default FavoriteIcon]
@@ -90,41 +91,41 @@
                         (if @sidebar-expanded
                           (:sideDrawerOpen classes)
                           (:sideDrawerClose classes))]}
-       [:> ListItem {:button true
-                     :component "a"
-                     :href "/#"
-                     :title "Home"
-                     :class [(:sidebarListItem classes)
-                             (if (= @active-link :home) (:activeItem classes) "")]}
-        [:> ListItemIcon [:> HomeIcon]]
-        (adj-label "Home")]
-       [:> ListItem {:button true
-                     :key "search"
-                     :title "Search"
-                     :class (:sidebarListItem classes)}
-        [:> ListItemIcon [:> SearchIcon]]
-        (adj-label "Search")]
-       [:> ListItem {:button true
-                     :key "browse"
-                     :title "Browse Collections"
-                     :class (:sidebarListItem classes)}
-        [:> ListItemIcon [:> BrowseCollectionsIcon]]
-        (adj-label "Browse Collections")]
-       [:> ListItem {:button true
-                     :key "favorites"
-                     :title "My Collections"
-                     :class (:sidebarListItem classes)}
-        [:> ListItemIcon [:> FavoriteIcon]]
-        (adj-label "My Collections")]
-       [:> ListItem {:button true
-                     :component "a"
-                     :href "#/dataflows"
-                     :key "dataflows"
-                     :title "Data Flows"
-                     :class [(:sidebarListItem classes)
-                             (if (= @active-link :dataflows) (:activeItem classes) "")]}
-        [:> ListItemIcon [:> DoubleArrowIcon]]
-        (adj-label "Data Flows")]
+       [:> Tooltip {:title "Home" :placement "right"}
+        [:> ListItem {:button true
+                      :component "a"
+                      :href "/#"
+                      :class [(:sidebarListItem classes)
+                              (if (= @active-link :home) (:activeItem classes) "")]}
+         [:> ListItemIcon [:> HomeIcon]]
+         (adj-label "Home")]]
+       [:> Tooltip {:title "Search" :placement "right"}
+        [:> ListItem {:button true
+                      :key "search"
+                      :class (:sidebarListItem classes)}
+         [:> ListItemIcon [:> SearchIcon]]
+         (adj-label "Search")]]
+       [:> Tooltip {:title "Browse" :placement "right"}
+        [:> ListItem {:button true
+                      :key "browse"
+                      :class (:sidebarListItem classes)}
+         [:> ListItemIcon [:> BrowseCollectionsIcon]]
+         (adj-label "Browse Collections")]]
+       [:> Tooltip {:title "My Collections" :placement "right"}
+        [:> ListItem {:button true
+                      :key "favorites"
+                      :class (:sidebarListItem classes)}
+         [:> ListItemIcon [:> FavoriteIcon]]
+         (adj-label "My Collections")]]
+       [:> Tooltip {:title "Data Flows" :placement "right"}
+        [:> ListItem {:button true
+                      :component "a"
+                      :href "#/dataflows"
+                      :key "dataflows"
+                      :class [(:sidebarListItem classes)
+                              (if (= @active-link :dataflows) (:activeItem classes) "")]}
+         [:> ListItemIcon [:> DoubleArrowIcon]]
+         (adj-label "Data Flows")]]
        ;; [:> ListItem {:as "a" :title "Configuration"}
        ;;  [:i {:name "wrench"}]
        ;;  (adj-label "Configuration")]
