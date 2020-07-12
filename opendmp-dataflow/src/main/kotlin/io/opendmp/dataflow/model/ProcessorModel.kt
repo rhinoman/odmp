@@ -20,7 +20,7 @@ data class ProcessorModel(@Id val id : String = ObjectId.get().toHexString(),
                           var order: Int = 1,
                           val type: ProcessorType,
                           val triggerType: TriggerType = TriggerType.AUTOMATIC,
-                          val source: SourceModel,
+                          val inputs: List<SourceModel> = mutableListOf(),
                           @CreatedDate
                           val createdOn: Instant = Instant.now(),
                           @LastModifiedDate

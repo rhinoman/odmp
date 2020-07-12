@@ -20,7 +20,6 @@
             [odmp-ui.util.data :as dutil]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.subs :as subs]
-            ;[breaking-point.core :as bp]
             [odmp-ui.util.window :as window]
             [odmp-ui.views.dataflow.processor :refer [processor-card]]
             ["@material-ui/core/Typography" :default Typography]
@@ -77,14 +76,23 @@
    [:> Typography {:variant :body1} "To start building your flow, create a processor."]
    [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]])
 
+(defn connection
+  "Draw single connection line"
+  [processor]
+  (map (fn [i]
+         (if (and (= (:sourceType i) "PROCESSOR") (some? (:sourceId i)))
+           ^{:key (str "LINK_" (:id processor) "_" (:sourceId i))}
+           [:> LineTo {:from (:sourceId i)
+                       :to (:id processor)
+                       :borderColor "gray"
+                       :delay 0
+                       :zIndex 5}]))
+       (:inputs processor)))
+
 (defn connections
   "Displays lines connecting dependent processors"
   [processors]
-  (map (fn [p]
-         (let [src-id (get-in p [:source :sourceId])]
-           ^{:key (str "LINK_" (:id p))}
-           [:> LineTo {:from src-id :to (:id p) :borderColor "gray" :delay 0 :zIndex 5}]))
-       processors))
+  (map connection processors))
 
 (defn phase
   "Displays an individual phase 'column' in the flow"
@@ -94,7 +102,7 @@
    [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
     (str "Phase " phase-num)]
    (map #(processor-card %) processors)
-   (connections (filter #(= "PROCESSOR" (get-in % [:source :sourceType])) processors))
+   (connections processors)
    [:> Button {:color :primary :size :small} [:> AddIcon] "Add Processor"]])
 
 (defn flow

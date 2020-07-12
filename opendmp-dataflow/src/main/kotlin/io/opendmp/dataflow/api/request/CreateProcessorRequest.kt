@@ -1,6 +1,7 @@
 package io.opendmp.dataflow.api.request
 
 import io.opendmp.dataflow.model.ProcessorType
+import io.opendmp.dataflow.model.SourceModel
 import io.opendmp.dataflow.model.SourceType
 import io.opendmp.dataflow.model.TriggerType
 import org.springframework.data.annotation.Reference
@@ -22,8 +23,6 @@ data class CreateProcessorRequest(
         @field:NotNull(message = "Processor Type is required")
         val type: ProcessorType?,
         val triggerType: TriggerType? = TriggerType.AUTOMATIC,
-        val sourceType: SourceType? = SourceType.PROCESSOR,
-        @field:Size(max = 36)
-        val sourceId: String? = ""
+        val inputs: List<CreateProcessorSource>? = null
 ) {
 }

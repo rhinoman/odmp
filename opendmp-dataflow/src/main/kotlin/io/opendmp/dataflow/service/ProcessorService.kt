@@ -13,6 +13,12 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
 
     fun createProcessor(data : CreateProcessorRequest,
                         authentication: Authentication) : Mono<ProcessorModel> {
+        val inputs: List<SourceModel> = data.inputs?.map {
+            SourceModel(
+                    sourceType = it.sourceType,
+                    sourceId = it.sourceId
+            )} ?: mutableListOf()
+
         val processor = ProcessorModel(
                 flowId = data.flowId!!,
                 name = data.name!!,
@@ -20,7 +26,7 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
                 phase = data.phase!!,
                 order = data.order!!,
                 type = data.type!!,
-                source = SourceModel(data.sourceType!!, data.sourceId)
+                inputs = inputs
         )
 
         return mongoTemplate.save<ProcessorModel>(processor)
