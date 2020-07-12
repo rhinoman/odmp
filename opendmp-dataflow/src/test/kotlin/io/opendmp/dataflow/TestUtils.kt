@@ -1,8 +1,6 @@
 package io.opendmp.dataflow
 
-import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.model.ProcessorModel
-import io.opendmp.dataflow.model.ProcessorType
+import io.opendmp.dataflow.model.*
 import org.springframework.context.annotation.PropertySource
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.http.HttpEntity
@@ -34,7 +32,9 @@ object TestUtils {
                 flowId = flowId,
                 phase = phase,
                 order = order,
-                type = ProcessorType.INGEST
+                type = ProcessorType.INGEST,
+                triggerType = TriggerType.AUTOMATIC,
+                source = SourceModel(sourceType = SourceType.PROCESSOR, sourceId = "")
         )
         return mongoTemplate.insert(proc).block()!!
     }

@@ -20,6 +20,7 @@
             [odmp-ui.util.data :as dutil]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.subs :as subs]
+            [breaking-point.core :as bp]
             [odmp-ui.views.dataflow.processor :refer [processor-card]]
             ["@material-ui/core/Typography" :default Typography]
             ["@material-ui/core/Box" :default Box]
@@ -30,7 +31,8 @@
             ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Card" :default Card]
             ["@material-ui/core/CardHeader" :default CardHeader]
-            ["@material-ui/icons/AddTwoTone" :default AddIcon]))
+            ["@material-ui/icons/AddTwoTone" :default AddIcon]
+            ["react-lineto" :default LineTo]))
 
 
 (defn flow-styles [^js/Mui.Theme theme]
@@ -44,10 +46,8 @@
                     :display :flex
                     :position :relative
                     :justify-content :left
-                    ;:flex-flow :column
                     :background-color "#333"}
-     :phase-col {;:border-left "1px solid #424242"
-                 :border-right "1px solid #424242"
+     :phase-col {:border-right "1px solid #424242"
                  :padding 5
                  :flex-grow 1
                  :display :flex
@@ -55,8 +55,6 @@
                  :align-items :center
                  :justify-content :center
                  :text-align :center
-                 ;:height "100%"
-                
                  "&:last-child" {:border-right :none}
                  }
       :phase-header {:position :absolute
@@ -76,25 +74,35 @@
    [:> Typography {:variant :body1} "To start building your flow, create a processor."]
    [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]])
 
+(defn connections [processors]
+  (map (fn [p]
+         (let [src-id (get-in p [:source :sourceId])]
+           ^{:key (str "LINK_" (:id p))}
+           [:> LineTo {:from src-id :to (:id p) :borderColor "gray" :delay 0 :zIndex 5}]))
+       processors))
+
 (defn phase [phase-num processors classes]
   ^{:key (str "PHASE_" phase-num)}
   [:div {:class (:phase-col classes)}
    [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
     (str "Phase " phase-num)]
    (map #(processor-card %) processors)
+   (connections (filter #(= "PROCESSOR" (get-in % [:source :sourceType])) processors))
    [:> Button {:color :primary :size :small} [:> AddIcon] "Add Processor"]])
 
 (defn flow []
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
         processors @(rf/subscribe [::subs/current-dataflow-processors])
-        num-phases (dutil/num-phases processors)]
+        num-phases (dutil/num-phases processors)
+        width (rf/subscribe [::bp/screen-width])]
     (style/let [classes flow-styles]
       (tcom/full-content-ui {:title (:name @dataflow)}
-       [:> Box {:class (:description-wrapper classes)}
+       [:> Box {:class (:description-wrapper classes) :nothing @width}
         [:> Typography {:variant :subtitle1} (:description @dataflow)]]
        (toolbar classes)
        [:> Paper {:class (:proc-wrapper classes)}
         (if (= 0 num-phases)
           (empty-flow-text)
           (map (fn [p] (phase p (filter #(= (:phase %) p) processors) classes))
-               (range 1 (inc num-phases))))]))))
+               (range 1 (inc num-phases)))
+          )]))))

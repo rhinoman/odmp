@@ -15,6 +15,7 @@
                  [ns-tracker "0.4.0"]
                  [re-pressed "0.3.1"]
                  [breaking-point "0.1.2"]
+                 [district0x/re-frame-window-fx "1.1.0"]
                  [cider/cider-nrepl "0.24.0"]]
 
   :plugins [[lein-shadow "0.1.7"]

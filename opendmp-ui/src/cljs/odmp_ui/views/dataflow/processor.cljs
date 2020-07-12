@@ -27,13 +27,14 @@
                  :max-height 250
                  :overflow-y :none
                  :margin 5
+                 :zIndex 99
                  :text-align :left}}))
 
 (defn processor-card [processor]
   ^{:key (:id processor)}
   [:<>
    (style/let [classes processor-styles]
-     [:> Card {:class (:proc-card classes)}
+     [:> Card {:class [(:proc-card classes) (:id processor)]}
       [:> CardHeader {:title (:name processor)
                       :avatar (r/as-element (processor-type-icon (:type processor)))
                       :subheader (:description processor)}]])])

@@ -2,7 +2,6 @@ package io.opendmp.dataflow.api.request
 
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
-import kotlin.math.min
 
 data class CreateDataflowRequest(
         @field:NotBlank(message = "Name is required")

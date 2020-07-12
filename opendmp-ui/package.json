@@ -6,7 +6,8 @@
     "highlight.js": "9.18.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "react-highlight.js": "1.0.7"
+    "react-highlight.js": "1.0.7",
+    "react-lineto": "3.2.0"
   },
   "devDependencies": {
     "shadow-cljs": "2.8.109"

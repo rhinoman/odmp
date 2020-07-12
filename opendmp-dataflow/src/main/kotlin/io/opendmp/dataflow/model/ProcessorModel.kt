@@ -19,6 +19,8 @@ data class ProcessorModel(@Id val id : String = ObjectId.get().toHexString(),
                           var phase: Int,
                           var order: Int = 1,
                           val type: ProcessorType,
+                          val triggerType: TriggerType = TriggerType.AUTOMATIC,
+                          val source: SourceModel,
                           @CreatedDate
                           val createdOn: Instant = Instant.now(),
                           @LastModifiedDate
