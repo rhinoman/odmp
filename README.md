@@ -27,6 +27,14 @@
 
 - Assume this all runs in Kubernetes or Docker Swarm.
 
+## (Very) Early Screenshots
+
+### Dataflow Index Screen
+![Dataflow Index](/doc/screenshots/dataflow_index.jpg)
+
+### Dataflow Screen
+![Dataflow](/doc/screenshots/single_dataflow.jpg)
+
 ## Possible monetization (if it catches):
 
 The usual open-source model:
