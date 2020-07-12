@@ -35,3 +35,31 @@
 ### Dataflow Screen
 ![Dataflow](/doc/screenshots/single_dataflow.jpg)
 
+## Developer Setup
+
+The backend services are mostly written in Kotlin.  There may be cause to mix in other languages (most likely, Python, R, and/or Clojure) in the future for individual processors, but the core services should remain Kotlin.
+
+The frontend (opendmp-ui) is a re-frame application written in Clojurescript.  it uses Material-UI for the UI elements.
+
+### Prerequisites
+
+At a minimum, you'll need Docker CE installed as well as docker-compose to spin up the required dev resources
+
+For backend development:
+
+- JDK 11
+- Apache Maven
+
+For frontend development:
+- JDK 11
+- lein
+- npm
+- shadown-cljs
+
+### Keycloak setup
+
+There is an `odmp-realm.json` file located under kc-data/ you can use to import the ODMP realm into Keycloak once it's running.  If you make changes intended to be permanent in the ODMP realm settings in Keycloak, please remember to re-export (you can use the `kc-data/export_realm.sh` script) before committing :)
+
+### Mongo setup
+
+There is a mongo-init.js script in mongo-data/ which should automatically run the first time mongo is started.  You may have to dump your docker volume if changes to the mongo schema are made.
