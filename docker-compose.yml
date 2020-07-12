@@ -30,6 +30,7 @@ services:
 
   keycloak:
     image: jboss/keycloak:10.0.2
+    container_name: odmp_keycloak
     networks:
       - keycloak-net
     ports:
@@ -37,6 +38,8 @@ services:
       - 8443:8443
     depends_on:
       - auth-postgres
+    volumes:
+      - ./kc-data:/tmp
     environment:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: secret
