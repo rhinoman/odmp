@@ -35,16 +35,3 @@
 ### Dataflow Screen
 ![Dataflow](/doc/screenshots/single_dataflow.jpg)
 
-## Possible monetization (if it catches):
-
-The usual open-source model:
-
-- Custom dev/integration (processors, adapters).
-
-- Support
-
-- Training
-
-- Consulting
-
-- Non-free plugins (see: elastic.co).
