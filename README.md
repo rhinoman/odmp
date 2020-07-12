@@ -54,7 +54,7 @@ For frontend development:
 - JDK 11
 - lein
 - npm
-- shadown-cljs
+- shadow-cljs
 
 ### Keycloak setup
 
