@@ -85,7 +85,7 @@
                        :variant "h1"
                        :component "h1"}
         [:> LocalCafeIcon {:fontSize "default"}]
-        (if @sidebar-expanded [:span "ODMP"])]]
+        (if @sidebar-expanded [:span {:style {:padding-left 5}} "OpenDMP"])]]
       
       [:> List {:class [(:sidebarList classes)
                         (if @sidebar-expanded
