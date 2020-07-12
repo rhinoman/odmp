@@ -20,7 +20,8 @@
             [odmp-ui.util.data :as dutil]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.subs :as subs]
-            [breaking-point.core :as bp]
+            ;[breaking-point.core :as bp]
+            [odmp-ui.util.window :as window]
             [odmp-ui.views.dataflow.processor :refer [processor-card]]
             ["@material-ui/core/Typography" :default Typography]
             ["@material-ui/core/Box" :default Box]
@@ -69,19 +70,25 @@
      [:> Button {:color :primary :variant :contained :disableElevation true :size :small :class (:right classes)}
       [:> AddIcon] "Add Phase"]]]])
 
-(defn empty-flow-text []
+(defn empty-flow-text
+  "What to display when a dataflow has no processors"
+  []
   [:div
    [:> Typography {:variant :body1} "To start building your flow, create a processor."]
    [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]])
 
-(defn connections [processors]
+(defn connections
+  "Displays lines connecting dependent processors"
+  [processors]
   (map (fn [p]
          (let [src-id (get-in p [:source :sourceId])]
            ^{:key (str "LINK_" (:id p))}
            [:> LineTo {:from src-id :to (:id p) :borderColor "gray" :delay 0 :zIndex 5}]))
        processors))
 
-(defn phase [phase-num processors classes]
+(defn phase
+  "Displays an individual phase 'column' in the flow"
+  [phase-num processors classes]
   ^{:key (str "PHASE_" phase-num)}
   [:div {:class (:phase-col classes)}
    [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
@@ -90,14 +97,16 @@
    (connections (filter #(= "PROCESSOR" (get-in % [:source :sourceType])) processors))
    [:> Button {:color :primary :size :small} [:> AddIcon] "Add Processor"]])
 
-(defn flow []
+(defn flow
+  "Display a dataflow"
+  []
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
         processors @(rf/subscribe [::subs/current-dataflow-processors])
         num-phases (dutil/num-phases processors)
-        width (rf/subscribe [::bp/screen-width])]
+        win-size (rf/subscribe [::window/resize])]
     (style/let [classes flow-styles]
       (tcom/full-content-ui {:title (:name @dataflow)}
-       [:> Box {:class (:description-wrapper classes) :nothing @width}
+       [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
         [:> Typography {:variant :subtitle1} (:description @dataflow)]]
        (toolbar classes)
        [:> Paper {:class (:proc-wrapper classes)}

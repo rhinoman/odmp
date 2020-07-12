@@ -22,6 +22,7 @@
    [re-frame.core :as re-frame]
    [re-pressed.core :as rp]
    [odmp-ui.events :as events]
+   [odmp-ui.util.window :as window]
    [odmp-ui.util.network :as net]
    [goog.history.EventType :as EventType]))
 
@@ -50,7 +51,7 @@
 
 (defn app-routes []
   (secretary/set-config! :prefix "#")
-  
+  (re-frame/dispatch [::window/start-on-resize])
   ;; --------------------
   ;; define routes here
   (defroute "/" []
