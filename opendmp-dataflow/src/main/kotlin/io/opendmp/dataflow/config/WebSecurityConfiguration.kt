@@ -27,8 +27,10 @@ class WebSecurityConfiguration {
         http
                 .csrf().disable()
                 .authorizeExchange()
-                .pathMatchers("/dataflow_api/**").hasAnyAuthority("user")
-                .pathMatchers("/**").permitAll()
+                .pathMatchers("/dataflow_api/dataflow/**").hasAnyAuthority("user")
+                .pathMatchers("/dataflow_api/processor/**").hasAnyAuthority("user")
+                .pathMatchers("/").permitAll()
+                .pathMatchers("/dataflow_api/doc/**").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .exceptionHandling()

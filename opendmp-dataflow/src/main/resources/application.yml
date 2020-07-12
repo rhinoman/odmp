@@ -33,7 +33,7 @@ spring:
 
 springdoc:
   api-docs:
-    path: /dataflow_api/api-docs
+    path: /dataflow_api/doc/api-docs
     enabled: true
   swagger-ui:
-    path: /dataflow_api/swagger-ui.html
+    path: /dataflow_api/doc/swagger-ui.html

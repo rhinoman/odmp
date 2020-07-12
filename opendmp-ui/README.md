@@ -1,7 +1,6 @@
-# odmp-ui
+# opendmp-ui
 
-A [re-frame](https://github.com/day8/re-frame) application designed to ... well, that part is up to
-you.
+A [re-frame](https://github.com/day8/re-frame) application for interacting with the OpenDMP system.  This is the main user interface :)
 
 ## Getting Started
 
@@ -11,7 +10,6 @@ you.
 [Single Page Application (SPA)](https://en.wikipedia.org/wiki/Single-page_application)
 * Languages
   - Front end ([re-frame](https://github.com/day8/re-frame)): [ClojureScript](https://clojurescript.org/) (CLJS)
-  - CSS compilation ([`lein-garden`](https://github.com/noprompt/lein-garden)): [Clojure](https://clojure.org/)
 * Dependencies
   - UI framework: [re-frame](https://github.com/day8/re-frame)
   ([docs](https://github.com/day8/re-frame/blob/master/docs/README.md),
@@ -19,13 +17,12 @@ you.
   [Reagent](https://github.com/reagent-project/reagent) ->
   [React](https://github.com/facebook/react)
   - Client-side routing: [Secretary](https://github.com/gf3/secretary)
-  - CSS rendering: [Garden](https://github.com/noprompt/garden)
   - Keyboard event handler: [re-pressed](https://github.com/gadfly361/re-pressed)
   - Screen breakpoints tool: [BREAKING-POINT](https://github.com/gadfly361/breaking-point)
 * Build tools
   - Project task & dependency management: [Leiningen](https://github.com/technomancy/leiningen)
   - CLJS compilation, REPL, & hot reload: [`shadow-cljs`](https://github.com/thheller/shadow-cljs)
-  - CSS compilation: [`lein-garden`](https://github.com/noprompt/lein-garden)
+
 * Development tools
   - Debugging: [CLJS DevTools](https://github.com/binaryage/cljs-devtools),
   [`re-frame-10x`](https://github.com/day8/re-frame-10x)
@@ -106,15 +103,6 @@ Unfortunately, Firefox does not yet support custom formatters in their devtools.
 the enhancement request in their bug tracker:
 [1262914 - Add support for Custom Formatters in devtools](https://bugzilla.mozilla.org/show_bug.cgi?id=1262914).
 
-## Development
-
-One-time setup:
-
-run `npm install`, at some point this will trigger an interactive setup wizard for fomantic-ui:
-
-- For location inside project, use: src/assets/fomantic
-- For output directory, use: `../../../resources/public/css/fomantic
-
 ### Running the App
 
 Start a temporary local web server, build the app with the `dev` profile, and serve the app with
@@ -181,26 +169,6 @@ For example, in Vim / Neovim with `fireplace.vim`
     The REPL prompt changes to `cljs.user=>`, indicating that this is now a ClojureScript REPL.
 3. See [`user.cljs`](dev/cljs/user.cljs) for symbols that are immediately accessible in the REPL
 without needing to `require`.
-
-### Compiling CSS with `lein-garden`
-
-Use Clojure and [Garden](https://github.com/noprompt/garden) to edit styles in `.clj` files located
-in the [`src/clj/tdmp_ui/`](src/clj/tdmp_ui/) directory. CSS files are compiled
-automatically on [`dev`](#running-the-app) or [`prod`](#production) build.
-
-Manually compile CSS files:
-```sh
-lein garden once
-```
-
-The `resources/public/css/` directory is created, containing the compiled CSS files.
-
-#### Compiling CSS with Garden on change
-
-Enable automatic compiling of CSS files when source `.clj` files are changed:
-```sh
-lein garden auto
-```
 
 ### Running `shadow-cljs` Actions
 
