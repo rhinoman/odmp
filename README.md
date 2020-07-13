@@ -43,7 +43,7 @@ The frontend (opendmp-ui) is a re-frame application written in Clojurescript.  i
 
 ### Prerequisites
 
-At a minimum, you'll need Docker CE installed as well as docker-compose to spin up the required dev resources
+At a minimum, you'll need Docker CE installed as well as docker-compose to spin up the required dev resources.  The included docker-compose.yml in the root directory is intended for development use and starts dev instances of all the required support services.
 
 For backend development:
 
