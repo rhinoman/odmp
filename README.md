@@ -37,7 +37,7 @@
 
 ## Developer Setup
 
-The backend services are mostly written in Kotlin.  There may be cause to mix in other languages (most likely, Python, R, and/or Clojure) in the future for individual processors, but the core services should remain Kotlin.
+The backend services are mostly written in Kotlin.  There may be cause to mix in other languages (most likely Python, R, and/or Clojure) in the future for individual processors, but the core services should remain Kotlin.
 
 The frontend (opendmp-ui) is a re-frame application written in Clojurescript.  it uses Material-UI for the UI elements.
 
