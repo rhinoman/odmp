@@ -13,8 +13,16 @@
 ;; limitations under the License.
 
 (ns odmp-ui.components.common
-  (:require ["@material-ui/core/Typography" :default Typography]
-            ["@material-ui/lab/Alert" :default Alert]))
+  (:require [reagent.core :as r]
+            [re-frame.core :as rf]
+            ["@material-ui/core/Typography" :default Typography]
+            ["@material-ui/lab/Alert" :default Alert]
+            ["@material-ui/core/Dialog" :default Dialog]
+            ["@material-ui/core/Button" :default Button]
+            ["@material-ui/core/DialogActions" :default DialogActions]
+            ["@material-ui/core/DialogContent" :default DialogContent]
+            ["@material-ui/core/DialogContentText" :default DialogContentText]
+            ["@material-ui/core/DialogTitle" :default DialogTitle]))
 
 (defn full-content-ui [{:keys [title]} & children]
   [:div {:style {:paddingLeft "20px"}}
@@ -29,3 +37,19 @@
      message
      [:ul
       (map (fn [[k v] m] ^{:key (str k v)} [:li v]) errors)]]))
+
+(defn confirm-dialog
+  "Dialog for confirming an action"
+  [open-state {:keys [question text confirm-action cancel-action]}]
+  [:> Dialog {:open @open-state
+              :onClose cancel-action
+              :aria-labelledby "confirm-dialog-title"
+              :aria-describedby "confirm-dialog-text"}
+   [:> DialogTitle {:id "confirm-dialog-title"} question]
+   [:> DialogContent
+    [:> DialogContentText {:id "confirm-dialog-text"} text]]
+   [:> DialogActions
+    [:> Button {:color :primary
+                :autoFocus true
+                :onClick cancel-action} "Cancel"]
+    [:> Button {:color :secondary :onClick confirm-action} "Confirm"]]])

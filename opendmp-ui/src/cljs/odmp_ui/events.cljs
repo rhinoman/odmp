@@ -24,6 +24,11 @@
    [secretary.core :as secretary]
    ["keycloak-js" :as Keycloak]))
 
+(defn navigate
+  "Programmatically navigate to a route"
+  [route]
+  (set! (.. js/window -location -hash) route))
+
 (re-frame/reg-event-db
  ::initialize-db
  (fn-traced [_ _]
@@ -167,6 +172,21 @@
                  :on-success      [::success-post-dataflow]
                  :on-failure      [::http-request-failure :post-dataflow]}}))
 
+;;; DELETE dataflow
+(re-frame/reg-event-fx
+ ::delete-dataflow
+ (fn [{:keys [db]} [_ id]]
+   {:db (-> db
+            (assoc-in [:loading :delete-dataflow] true))
+    :http-xhrio {:method          :delete
+                 :uri             (str "/dataflow_api/dataflow/" id)
+                 :timeout         5000
+                 :headers         (basic-headers db)
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::success-delete-dataflow]
+                 :on-failure      [::http-request-failure :delete-dataflow]}}))
+
 (re-frame/reg-event-db
   ::fetch-dataflow-list-success
   (fn [db [_ result]]
@@ -196,6 +216,14 @@
    (-> db
        (assoc-in [:loading :post-dataflow] false)
        (assoc-in [:request-errors :post-dataflow] nil))))
+
+(re-frame/reg-event-db
+ ::success-delete-dataflow
+ (fn [db [_ result]]
+   (navigate "/dataflows")
+   (-> db
+       (assoc-in [:loading :delete-dataflow] false)
+       (assoc-in [:request-errors :delete-dataflow] nil))))
 
 (re-frame/reg-event-db
   ::http-request-failure

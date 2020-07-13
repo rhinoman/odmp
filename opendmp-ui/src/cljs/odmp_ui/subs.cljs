@@ -69,6 +69,12 @@
  (fn [db _]
    (:current-dataflow-processors db)))
 
+;; Loading status of dataflow
+(re-frame/reg-sub
+ ::loading-dataflows
+ (fn [db _]
+   (get-in db [:loading :dataflow])))
+
 (re-frame/reg-sub
  ::errors
  (fn [db _]

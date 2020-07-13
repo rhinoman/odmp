@@ -37,6 +37,8 @@
             ["@material-ui/core/Toolbar" :default Toolbar]
             ["@material-ui/core/Typography" :default Typography]
             ["@material-ui/core/Paper" :default Paper]
+            ["@material-ui/core/Backdrop" :default Backdrop]
+            ["@material-ui/core/CircularProgress" :default CircularProgress]
             ["@material-ui/icons/Add" :default AddIcon]))
 
 
@@ -80,13 +82,16 @@
 
 (defn dataflow-index []
   (let [dataflows (rf/subscribe [::subs/dataflows])
-        create-dialog-state (rf/subscribe [::modals/create-dataflow-dialog-open])]
+        create-dialog-state (rf/subscribe [::modals/create-dataflow-dialog-open])
+        loading? (rf/subscribe [::subs/loading-dataflows])]
     (style/let [classes dataflow-index-styles]
       (tcom/full-content-ui {:title "Data Flows"}
         (if @create-dialog-state (modals/create-dataflow-dialog))
         [:div 
          (toolbar classes)
          [:> Paper
+          [:> Backdrop {:open (or @loading? false) :style {:zIndex 99}}
+           [:> CircularProgress {:color "inherit"}]]
           [:> TableContainer
            [:> Table
             (table-header)

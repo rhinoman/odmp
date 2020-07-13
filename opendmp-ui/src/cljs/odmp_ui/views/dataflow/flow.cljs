@@ -20,6 +20,7 @@
             [odmp-ui.util.data :as dutil]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.subs :as subs]
+            [odmp-ui.views.dataflow.modals :as modals]
             [odmp-ui.util.window :as window]
             [odmp-ui.views.dataflow.processor :refer [processor-card]]
             ["@material-ui/core/Typography" :default Typography]
@@ -31,7 +32,10 @@
             ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Card" :default Card]
             ["@material-ui/core/CardHeader" :default CardHeader]
+            ["@material-ui/core/IconButton" :default IconButton]
+            ["@material-ui/core/Tooltip" :default Tooltip]
             ["@material-ui/icons/AddTwoTone" :default AddIcon]
+            ["@material-ui/icons/DeleteTwoTone" :default DeleteIcon]
             ["react-lineto" :default LineTo]))
 
 
@@ -39,7 +43,10 @@
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
         p-type (keyword (:type palette))]
     {:right {:float :right}
+     :delete-dataflow-wrapper{:float :right
+                              :margin-top 25}
      :description-wrapper {:max-width 600
+                           :margin-bottom 20
                            :overflow-wrap :break-word}
      :proc-wrapper {:min-height 400
                     :padding 10
@@ -111,15 +118,26 @@
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
         processors @(rf/subscribe [::subs/current-dataflow-processors])
         num-phases (dutil/num-phases processors)
+        delete-dialog? (rf/subscribe [::modals/delete-dataflow-dialog-open])
         win-size (rf/subscribe [::window/resize])]
     (style/let [classes flow-styles]
-      (tcom/full-content-ui {:title (:name @dataflow)}
-       [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
-        [:> Typography {:variant :subtitle1} (:description @dataflow)]]
-       (toolbar classes)
-       [:> Paper {:class (:proc-wrapper classes)}
-        (if (= 0 num-phases)
-          (empty-flow-text)
-          (map (fn [p] (phase p (filter #(= (:phase %) p) processors) classes))
-               (range 1 (inc num-phases)))
-          )]))))
+      [:<>
+       (if @delete-dialog? (modals/confirm-delete-dataflow @dataflow))
+       [:div {:class (:delete-dataflow-wrapper classes)}
+        [:> Tooltip {:title "Delete this dataflow" :placement :left-end}
+         [:> IconButton {:class (:delete-dataflow-button classes)
+                         :color :secondary
+                         :onClick #(rf/dispatch [::modals/toggle-delete-dataflow-dialog])
+                         :size :small}
+          [:> DeleteIcon]]]]
+       (tcom/full-content-ui
+        {:title (:name @dataflow)}
+        ;;; :frdw is just to force a redraw when the window is resized
+        [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
+         [:> Typography {:variant :subtitle1} (:description @dataflow)]]
+        (toolbar classes)
+        [:> Paper {:class (:proc-wrapper classes)}
+         (if (= 0 num-phases)
+           (empty-flow-text)
+           (map (fn [p] (phase p (filter #(= (:phase %) p) processors) classes))
+                (range 1 (inc num-phases))))])])))
