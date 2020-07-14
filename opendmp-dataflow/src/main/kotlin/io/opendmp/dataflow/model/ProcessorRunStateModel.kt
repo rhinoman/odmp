@@ -16,9 +16,10 @@
 
 package io.opendmp.dataflow.model
 
-enum class DataFlowStatus {
-    IDLE,
-    ERROR,
-    DISABLED,
-    RUNNING
-}
+import org.springframework.data.mongodb.core.index.Indexed
+
+data class ProcessorRunStateModel(@Indexed(name = "processor_run_state_id_index", background = true)
+                                  val processorId: String,
+                                  val health: HealthModel = HealthModel(HealthState.OK),
+                                  val state: RunState = RunState.IDLE,
+                                  val cacheKey: String? = null) {}

@@ -20,6 +20,7 @@ import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthent
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
+import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
@@ -95,10 +96,10 @@ class DataflowControllerTest(
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().is2xxSuccessful
-                .expectBody<List<DataflowModel>>()
+                .expectBody<List<DataflowListItem>>()
                 .returnResult()
         val list = response.responseBody
-        assertEquals("FOOBAR", list!![0].name)
+        assertEquals("FOOBAR", list!![0].dataflow.name)
     }
 
     @Test

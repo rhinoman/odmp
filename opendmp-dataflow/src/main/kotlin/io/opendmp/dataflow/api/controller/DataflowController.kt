@@ -18,6 +18,7 @@ package io.opendmp.dataflow.api.controller
 
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
+import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.DataflowService
@@ -34,7 +35,7 @@ import javax.validation.Valid
 class DataflowController(private val dataflowService: DataflowService) {
 
     @GetMapping
-    suspend fun findAll() : Flow<DataflowModel> {
+    suspend fun findAll() : Flow<DataflowListItem> {
         return dataflowService.getList()
     }
 

@@ -49,16 +49,19 @@
      :dataflow-item-cell {:cursor :pointer}
      }))
 
-(defn dataflow-row [dataflow classes]
-^{:key (:id dataflow)}
+(defn dataflow-row [dataflow-item classes]
+(let [dataflow (:dataflow dataflow-item)
+      health (:health dataflow-item)
+      state (:state dataflow-item)]
+  ^{:key (:id dataflow)}
   [:> TableRow  {:hover true :tabIndex -1}
    [:> TableCell {:class (:dataflow-item-cell classes)}
     [:> Tooltip {:title (or (:description dataflow) "No Description") :placement "bottom-start"}
      [:> Link {:class (:link classes)
                :href (str "#/dataflows/" (:id dataflow))}
       (:name dataflow)]]]
-   [:> TableCell (chips/status-chip (:status dataflow))]
-   [:> TableCell (chips/health-chip (get-in dataflow [:health :state]))]])
+   [:> TableCell (chips/status-chip state)]
+   [:> TableCell (chips/health-chip (:state health))]]))
 
 (defn table-header []
   [:> TableHead

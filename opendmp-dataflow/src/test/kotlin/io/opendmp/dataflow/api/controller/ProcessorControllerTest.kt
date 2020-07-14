@@ -85,4 +85,37 @@ class ProcessorControllerTest(
         assertEquals("FOOBAR", model?.name)
     }
 
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should be able to get a processor`() {
+        val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.TRANSFORM, mongoTemplate)
+
+        val response = client.get()
+                .uri(baseUri + "/" + proc.id)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<ProcessorModel>()
+                .returnResult()
+        assertNotNull(response.responseBody)
+    }
+
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should be able to delete a processor`() {
+        val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.TRANSFORM, mongoTemplate)
+
+        val response = client.mutateWith(csrf())
+                .delete()
+                .uri(baseUri + "/" + proc.id)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<Any>()
+                .returnResult()
+        assertNotNull(response.responseBody)
+    }
+
 }

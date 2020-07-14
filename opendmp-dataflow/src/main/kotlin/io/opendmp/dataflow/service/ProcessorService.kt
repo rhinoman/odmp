@@ -27,6 +27,7 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.data.mongodb.core.remove
 import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
@@ -35,6 +36,11 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
 
     fun createProcessor(data : CreateProcessorRequest,
                         authentication: Authentication) : Mono<ProcessorModel> {
+
+        val username = when(val principal = authentication.principal) {
+            is OidcUser -> principal.preferredUsername
+            else -> "test_user"
+        }
         val inputs: List<SourceModel> = data.inputs?.map {
             SourceModel(
                     sourceType = it.sourceType,
@@ -48,7 +54,8 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
                 phase = data.phase!!,
                 order = data.order!!,
                 type = data.type!!,
-                inputs = inputs
+                inputs = inputs,
+                creator = username
         )
 
         return mongoTemplate.save<ProcessorModel>(processor)

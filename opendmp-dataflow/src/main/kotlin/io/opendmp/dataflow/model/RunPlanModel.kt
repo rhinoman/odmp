@@ -20,18 +20,17 @@ import org.bson.types.ObjectId
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@Document(collection = "dataflows")
-class DataflowModel(@Id val id : String = ObjectId.get().toHexString(),
-                    var enabled: Boolean = false,
-                    var name : String,
-                    var description : String?,
-                    var group : String?,
-                    val creator : String?,
-                    @CreatedDate
-                    val createdOn: Instant = Instant.now(),
-                    @LastModifiedDate
-                    var updatedOn: Instant = Instant.now()) {
-}
+@Document(collection = "run_plans")
+data class RunPlanModel(@Id val id: String = ObjectId.get().toHexString(),
+                        @Indexed(name = "run_plan_flow_id_index", background = true)
+                        val flowId: String,
+                        val phases: MutableList<PhaseModel> = mutableListOf(),
+                        @CreatedDate
+                        val createdOn: Instant = Instant.now(),
+                        @LastModifiedDate
+                        var updatedOn: Instant = Instant.now(),
+                        var finishedDate: Instant? = null) {}

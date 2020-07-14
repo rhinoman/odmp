@@ -18,9 +18,10 @@ package io.opendmp.dataflow.service
 
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
-import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.model.ProcessorModel
+import io.opendmp.dataflow.api.response.DataflowListItem
+import io.opendmp.dataflow.model.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
@@ -29,6 +30,8 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
@@ -40,11 +43,16 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
     fun createDataflow(data : CreateDataflowRequest,
                        authentication: Authentication) : Mono<DataflowModel> {
 
+        val username = when(val principal = authentication.principal) {
+            is OidcUser -> principal.preferredUsername
+            is Jwt -> principal.claims["preferred_username"] as String
+            else -> ""
+        }
         val dataflow = DataflowModel(
                 name = data.name!!,
                 description = data.description,
                 group = data.group,
-                creator = "")
+                creator = username)
         return mongoTemplate.save<DataflowModel>(dataflow)
     }
 
@@ -52,8 +60,11 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
         return mongoTemplate.findById<DataflowModel>(id)
     }
 
-    suspend fun getList() : Flow<DataflowModel> {
-        return mongoTemplate.findAll<DataflowModel>().asFlow()
+    suspend fun getList() : Flow<DataflowListItem> {
+        val dataflows = mongoTemplate.findAll<DataflowModel>().asFlow()
+        return dataflows.map {
+            DataflowListItem(it, HealthModel(HealthState.OK), RunState.IDLE)
+        }
     }
 
     fun delete(id: String) : Mono<DeleteResult> {
