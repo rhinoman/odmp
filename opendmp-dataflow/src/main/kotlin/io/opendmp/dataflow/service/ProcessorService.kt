@@ -20,12 +20,10 @@ import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.model.SourceModel
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.findById
+import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
-import org.springframework.data.mongodb.core.remove
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
@@ -34,6 +32,13 @@ import reactor.core.publisher.Mono
 @Service
 class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
 
+    private fun getNumProcessorsInPhase(flowId: String, phase: Int) : Mono<Long> {
+        val query = Query(Criteria
+                .where("flowId").isEqualTo(flowId)
+                .and("phase").isEqualTo(phase))
+        return mongoTemplate.count<ProcessorModel>(query)
+    }
+
     fun createProcessor(data : CreateProcessorRequest,
                         authentication: Authentication) : Mono<ProcessorModel> {
 
@@ -41,24 +46,20 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
             is OidcUser -> principal.preferredUsername
             else -> "test_user"
         }
-        val inputs: List<SourceModel> = data.inputs?.map {
-            SourceModel(
-                    sourceType = it.sourceType,
-                    sourceId = it.sourceId
-            )} ?: mutableListOf()
+        val numProcs = getNumProcessorsInPhase(data.flowId!!, data.phase!!)
 
-        val processor = ProcessorModel(
-                flowId = data.flowId!!,
-                name = data.name!!,
-                description = data.description,
-                phase = data.phase!!,
-                order = data.order!!,
-                type = data.type!!,
-                inputs = inputs,
-                creator = username
-        )
-
-        return mongoTemplate.save<ProcessorModel>(processor)
+        return numProcs.flatMap {
+            mongoTemplate.save(
+                    ProcessorModel(
+                            flowId = data.flowId,
+                            name = data.name!!,
+                            description = data.description,
+                            phase = data.phase,
+                            order = it.toInt() + 1,
+                            type = data.type!!,
+                            creator = username)
+            )
+        }
     }
 
     fun get(id: String) : Mono<ProcessorModel> {

@@ -34,11 +34,7 @@ data class CreateProcessorRequest(
         val description: String? = "No description",
         @field:Min(1, message = "Phase number is required")
         val phase: Int?,
-        @field:Min(1, message = "Order is required")
-        val order: Int?,
         @field:NotNull(message = "Processor Type is required")
-        val type: ProcessorType?,
-        val triggerType: TriggerType? = TriggerType.AUTOMATIC,
-        val inputs: List<CreateProcessorSource>? = null
+        val type: ProcessorType?
 ) {
 }

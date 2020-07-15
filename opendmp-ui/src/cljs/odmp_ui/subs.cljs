@@ -75,6 +75,17 @@
  (fn [db _]
    (get-in db [:loading :dataflow])))
 
+;; Lookups
+(re-frame/reg-sub
+ ::lookup-processor-types
+ (fn [db _]
+   (get-in db [:lookup :processor-types])))
+
+(re-frame/reg-sub
+ ::lookup-trigger-types
+ (fn [db _]
+   (get-in db [:lookup :trigger-types])))
+
 (re-frame/reg-sub
  ::errors
  (fn [db _]

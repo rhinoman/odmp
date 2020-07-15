@@ -32,13 +32,6 @@
 
 (defn hook-browser-navigation! []
 
-  ;; (doto (History.)
-  ;;   (gevents/listen
-  ;;    EventType/NAVIGATE
-  ;;    (fn [event]
-  ;;      (secretary/dispatch! (.-token event))))
-  ;;   (.setEnabled true))
-
 ;; Quick and dirty history configuration.
 (let [h (History.)]
   (gevents/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

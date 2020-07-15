@@ -12,7 +12,7 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns odmp-ui.views.dataflow.modals
+(ns odmp-ui.views.dataflow.dataflow-modals
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
             [odmp-ui.util.styles :as style]
@@ -90,7 +90,9 @@
     {:form-input {"> label" {:color (get-in palette [:success :light])}}}))
 
 ;; DELETE DATAFLOW
-(defn confirm-delete-dataflow [dataflow]
+(defn confirm-delete-dataflow
+  "Shows a confirmation dialog when deleting a dataflow"
+  [dataflow]
   (let [open (rf/subscribe [::delete-dataflow-dialog-open])
         is-deleting (rf/subscribe [::deleting-dataflow])
         errors (rf/subscribe [::deleting-dataflow-errors])]
@@ -110,7 +112,9 @@
     (rf/dispatch [::events/post-dataflow {:name @name-field-value
                                           :description @description-field-value}])))
 
-(defn create-dataflow-dialog []
+(defn create-dataflow-dialog
+  "This is a dialog for creating new Dataflows"
+  []
   (let [open (rf/subscribe [::create-dataflow-dialog-open])
         name-field-value (rf/subscribe [::create-dataflow-name])
         description-field-value (rf/subscribe [::create-dataflow-description])

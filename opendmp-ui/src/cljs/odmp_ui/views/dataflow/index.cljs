@@ -20,7 +20,7 @@
             [odmp-ui.util.styles :as style]
             [odmp-ui.subs :as subs]
             [odmp-ui.events :as events]
-            [odmp-ui.views.dataflow.modals :as modals]
+            [odmp-ui.views.dataflow.dataflow-modals :as modals]
             ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/Tooltip" :default Tooltip]

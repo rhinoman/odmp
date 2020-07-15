@@ -16,11 +16,13 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
             [odmp-ui.subs :as subs]
+            [odmp-ui.events :as events]
             [odmp-ui.util.styles :as style]
             [odmp-ui.util.data :as dutil]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.subs :as subs]
-            [odmp-ui.views.dataflow.modals :as modals]
+            [odmp-ui.views.dataflow.dataflow-modals :as d-modals]
+            [odmp-ui.views.dataflow.processor-modals :as p-modals]
             [odmp-ui.util.window :as window]
             [odmp-ui.views.dataflow.processor :refer [processor-card]]
             ["@material-ui/core/Typography" :default Typography]
@@ -76,12 +78,6 @@
      [:> Button {:color :primary :variant :contained :disableElevation true :size :small :class (:right classes)}
       [:> AddIcon] "Add Phase"]]]])
 
-(defn empty-flow-text
-  "What to display when a dataflow has no processors"
-  []
-  [:div
-   [:> Typography {:variant :body1} "To start building your flow, create a processor."]
-   [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]])
 
 (defn connection
   "Draw single connection line"
@@ -103,31 +99,43 @@
 
 (defn phase
   "Displays an individual phase 'column' in the flow"
-  [phase-num processors classes]
+  [phase-num processors classes & {:keys [body-text]}]
   ^{:key (str "PHASE_" phase-num)}
   [:div {:class (:phase-col classes)}
    [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
     (str "Phase " phase-num)]
    (map #(processor-card %) processors)
    (connections processors)
-   [:> Button {:color :primary :size :small} [:> AddIcon] "Add Processor"]])
+   [:> Button {:color :primary
+               :onClick #(rf/dispatch [::events/toggle-create-processor-dialog phase-num])
+               :size :small} [:> AddIcon] "Add Processor"]
+   (if (some? body-text) body-text)])
+
+(defn empty-flow
+  "What to display when a dataflow has no processors"
+  [classes]
+  (phase 1 [] classes :body-text [:> Box {:style {:margin-top 5}}
+    [:> Typography {:variant :body1} "To start building your flow, create a processor."]
+    [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]]))
 
 (defn flow
   "Display a dataflow"
   []
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
         processors @(rf/subscribe [::subs/current-dataflow-processors])
-        num-phases (dutil/num-phases processors)
-        delete-dialog? (rf/subscribe [::modals/delete-dataflow-dialog-open])
+        num-phases (or (dutil/num-phases processors) 1)
+        delete-dialog? (rf/subscribe [::d-modals/delete-dataflow-dialog-open])
+        create-processor-dialog? (rf/subscribe [::p-modals/create-processor-dialog-open])
         win-size (rf/subscribe [::window/resize])]
     (style/let [classes flow-styles]
       [:<>
-       (if @delete-dialog? (modals/confirm-delete-dataflow @dataflow))
+       (if @delete-dialog? (d-modals/confirm-delete-dataflow @dataflow))
+       (if @create-processor-dialog? (p-modals/create-processor-modal (:id @dataflow)))
        [:div {:class (:delete-dataflow-wrapper classes)}
         [:> Tooltip {:title "Delete this dataflow" :placement :left-end}
          [:> IconButton {:class (:delete-dataflow-button classes)
                          :color :secondary
-                         :onClick #(rf/dispatch [::modals/toggle-delete-dataflow-dialog])
+                         :onClick #(rf/dispatch [::d-modals/toggle-delete-dataflow-dialog])
                          :size :small}
           [:> DeleteIcon]]]]
        (tcom/full-content-ui
@@ -137,7 +145,7 @@
          [:> Typography {:variant :subtitle1} (:description @dataflow)]]
         (toolbar classes)
         [:> Paper {:class (:proc-wrapper classes)}
-         (if (= 0 num-phases)
-           (empty-flow-text)
+         (if (=(count processors) 0)
+           (empty-flow classes)
            (map (fn [p] (phase p (filter #(= (:phase %) p) processors) classes))
                 (range 1 (inc num-phases))))])])))

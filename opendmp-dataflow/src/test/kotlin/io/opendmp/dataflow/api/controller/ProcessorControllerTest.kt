@@ -69,7 +69,6 @@ class ProcessorControllerTest(
                 name = "FOOBAR",
                 flowId = flow.id,
                 phase = 1,
-                order = 1,
                 type = ProcessorType.INGEST)
 
         val response = client.mutateWith(csrf())
@@ -83,6 +82,8 @@ class ProcessorControllerTest(
         val model = response.responseBody
         assertNotNull(model)
         assertEquals("FOOBAR", model?.name)
+        assertEquals(1, model?.phase)
+        assertEquals(1, model?.order)
     }
 
     @Test
