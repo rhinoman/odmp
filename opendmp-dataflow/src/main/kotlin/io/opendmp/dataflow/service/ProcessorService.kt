@@ -18,6 +18,7 @@ package io.opendmp.dataflow.service
 
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
+import io.opendmp.dataflow.api.request.UpdateProcessorRequest
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.model.SourceModel
 import org.springframework.data.mongodb.core.*
@@ -39,7 +40,10 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
         return mongoTemplate.count<ProcessorModel>(query)
     }
 
-    fun createProcessor(data : CreateProcessorRequest,
+    /**
+     * Creates a new processor
+     */
+    fun createProcessor(data: CreateProcessorRequest,
                         authentication: Authentication) : Mono<ProcessorModel> {
 
         val username = when(val principal = authentication.principal) {
@@ -62,10 +66,34 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
         }
     }
 
+    /**
+     * Updates a Processor
+     */
+    fun updateProcessor(id: String,
+                        data: UpdateProcessorRequest,
+                        authentication: Authentication) : Mono<ProcessorModel> {
+
+        return get(id).flatMap {
+            it.name = data.name!!
+            it.description = data.description
+            it.phase = data.phase!!
+            it.order = data.order!!
+            it.triggerType = data.triggerType!!
+            it.type = data.type!!
+            it.properties = data.properties!!.toMutableMap()
+            it.inputs = data.inputs!!
+            it.enabled = data.enabled!!
+            mongoTemplate.save(it)
+        }
+    }
+
     fun get(id: String) : Mono<ProcessorModel> {
         return mongoTemplate.findById(id)
     }
 
+    /**
+     * Delete a processor
+     */
     fun deleteProcessor(id: String) : Mono<DeleteResult> {
         val query = Query(Criteria.where("id").isEqualTo(id))
         return mongoTemplate.remove<ProcessorModel>(query)

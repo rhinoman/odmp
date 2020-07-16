@@ -18,6 +18,7 @@ package io.opendmp.dataflow.api.controller
 
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
+import io.opendmp.dataflow.api.request.UpdateProcessorRequest
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.ProcessorService
 import org.springframework.security.core.Authentication
@@ -32,7 +33,7 @@ import javax.validation.Valid
 class ProcessorController(private val processorService: ProcessorService) {
 
     @PostMapping
-    fun insertOne(@Valid @RequestBody data : CreateProcessorRequest,
+    fun insertOne(@Valid @RequestBody data: CreateProcessorRequest,
                   authentication: Authentication) : Mono<ProcessorModel> {
         return processorService.createProcessor(data, authentication)
     }
@@ -40,6 +41,13 @@ class ProcessorController(private val processorService: ProcessorService) {
     @GetMapping("/{id}")
     fun findOne(@PathVariable("id") id: String) : Mono<ProcessorModel> {
         return processorService.get(id)
+    }
+
+    @PutMapping("/{id}")
+    fun updateOne(@PathVariable("id") id: String,
+                  @Valid @RequestBody data: UpdateProcessorRequest,
+                  authentication: Authentication) : Mono<ProcessorModel> {
+        return processorService.updateProcessor(id, data, authentication)
     }
 
     @DeleteMapping("/{id}")

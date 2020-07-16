@@ -17,19 +17,26 @@
 package io.opendmp.dataflow.api.request
 
 import io.opendmp.dataflow.model.ProcessorType
-import javax.validation.constraints.*
+import io.opendmp.dataflow.model.SourceModel
+import io.opendmp.dataflow.model.TriggerType
+import javax.validation.constraints.Min
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Size
 
-data class CreateProcessorRequest(
-        @field:NotBlank(message = "Parent flow id is required")
-        val flowId: String?,
-        @field:NotBlank(message = "Name is required")
+data class UpdateProcessorRequest(
         @field:Size(min = 2, max = 32, message = "Name must be between 2 and 32 characters")
         val name: String?,
-        @field:Size(max = 128, message = "Description must be no more than 128 characters")
+        @field:Size(max=128, message = "Description must be less than 128 characters")
         val description: String? = "No description",
-        @field:Min(1, message = "Phase number is required")
+        @field:Min(1, message = "Phase number is not valid")
         val phase: Int?,
+        @field:Min(1, message = "Order is required")
+        val order: Int?,
+        @field:NotNull(message = "Trigger Type is required")
+        val triggerType: TriggerType?,
         @field:NotNull(message = "Processor Type is required")
-        val type: ProcessorType?
-) {
-}
+        val type: ProcessorType?,
+        val properties: Map<String, Any>? = mutableMapOf(),
+        val inputs: List<SourceModel>? = mutableListOf(),
+        val enabled: Boolean? = false
+) {}

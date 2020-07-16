@@ -17,5 +17,5 @@
 package io.opendmp.dataflow.model
 
 enum class ProcessorType {
-    INGEST, EXPORT, TRANSFORM, EXTERNAL
+    INGEST, EXPORT, TRANSFORM, SCRIPT, EXTERNAL
 }

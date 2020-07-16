@@ -28,16 +28,16 @@ import java.time.Instant
 data class ProcessorModel(@Id val id : String = ObjectId.get().toHexString(),
                           @Indexed(name = "processor_flow_id_index", background = true)
                           val flowId : String,
-                          val name: String,
-                          val enabled: Boolean = false,
-                          val description: String? = null,
+                          var name: String,
+                          var enabled: Boolean = false,
+                          var description: String? = null,
                           val creator: String?,
                           var phase: Int,
                           var order: Int = 1,
-                          val type: ProcessorType,
-                          val triggerType: TriggerType = TriggerType.AUTOMATIC,
-                          val inputs: List<SourceModel> = mutableListOf(),
-                          val additionalProperties: MutableMap<String, Any>? = mutableMapOf(),
+                          var type: ProcessorType,
+                          var triggerType: TriggerType = TriggerType.AUTOMATIC,
+                          var inputs: List<SourceModel> = mutableListOf(),
+                          var properties: MutableMap<String, Any>? = mutableMapOf(),
                           @CreatedDate
                           val createdOn: Instant = Instant.now(),
                           @LastModifiedDate
