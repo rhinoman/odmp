@@ -37,6 +37,7 @@
             ["@material-ui/core/IconButton" :default IconButton]
             ["@material-ui/core/Tooltip" :default Tooltip]
             ["@material-ui/icons/AddTwoTone" :default AddIcon]
+            ["@material-ui/icons/RemoveTwoTone" :default RemoveIcon]
             ["@material-ui/icons/DeleteTwoTone" :default DeleteIcon]
             ["react-lineto" :default LineTo]))
 
@@ -70,12 +71,17 @@
                      :top 5
                      :margin-bottom 5}}))
 
-(defn toolbar [classes]
+(defn toolbar [num-phases classes]
   [:> Toolbar {:disableGutters true}
    [:> Grid {:container true :spacing 2}
     [:> Grid {:item true :xs 9}]
     [:> Grid {:item true :xs 3}
-     [:> Button {:color :primary :variant :contained :disableElevation true :size :small :class (:right classes)}
+     [:> Button {:color :primary
+                 :variant :contained
+                 :disableElevation true
+                 :size :small
+                 :onClick #(swap! num-phases inc)
+                 :class (:right classes)}
       [:> AddIcon] "Add Phase"]]]])
 
 
@@ -99,7 +105,7 @@
 
 (defn phase
   "Displays an individual phase 'column' in the flow"
-  [phase-num processors classes & {:keys [body-text]}]
+  [phase-num processors num-phases classes & {:keys [body-text]}]
   ^{:key (str "PHASE_" phase-num)}
   [:div {:class (:phase-col classes)}
    [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
@@ -109,6 +115,11 @@
    [:> Button {:color :primary
                :onClick #(rf/dispatch [::events/toggle-create-processor-dialog phase-num])
                :size :small} [:> AddIcon] "Add Processor"]
+   (if (= (count processors) 0)
+     [:> Button {:color :secondary
+                 :onClick #(swap! num-phases dec)
+                 :size :small} [:> RemoveIcon] "Remove Phase"]
+     )
    (if (some? body-text) body-text)])
 
 (defn empty-flow
@@ -118,12 +129,22 @@
     [:> Typography {:variant :body1} "To start building your flow, create a processor."]
     [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]]))
 
+(defn processor-pane [processors classes]
+  (let [num-phases (r/atom (or (dutil/num-phases processors) 1))]
+    (fn [processors classes]
+      [:<>
+       (toolbar num-phases classes)
+       [:> Paper {:class (:proc-wrapper classes)}
+        (if (=(count processors) 0)
+          (empty-flow classes)
+          (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases classes))
+               (range 1 (inc @num-phases))))]])))
+
 (defn flow
   "Display a dataflow"
   []
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
         processors @(rf/subscribe [::subs/current-dataflow-processors])
-        num-phases (or (dutil/num-phases processors) 1)
         delete-dialog? (rf/subscribe [::d-modals/delete-dataflow-dialog-open])
         create-processor-dialog? (rf/subscribe [::p-modals/create-processor-dialog-open])
         win-size (rf/subscribe [::window/resize])]
@@ -143,9 +164,4 @@
         ;;; :frdw is just to force a redraw when the window is resized
         [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
          [:> Typography {:variant :subtitle1} (:description @dataflow)]]
-        (toolbar classes)
-        [:> Paper {:class (:proc-wrapper classes)}
-         (if (=(count processors) 0)
-           (empty-flow classes)
-           (map (fn [p] (phase p (filter #(= (:phase %) p) processors) classes))
-                (range 1 (inc num-phases))))])])))
+        [processor-pane processors classes])])))
