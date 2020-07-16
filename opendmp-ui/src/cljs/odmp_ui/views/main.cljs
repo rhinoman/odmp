@@ -63,7 +63,7 @@
 
 (defn set-theme [dark-theme?]
   (createMuiTheme (clj->js {:palette {:type (if dark-theme? "dark" "light")
-                                      :primary { :main "#56A3A6" }
+                                      :primary { :main "#00838f" }
                                       :secondary { :main "#f48fb1" }}
                             :status {:danger "red"}})))
 

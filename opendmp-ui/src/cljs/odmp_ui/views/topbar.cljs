@@ -24,6 +24,7 @@
             ["@material-ui/core/Box" :default Box]
             ["@material-ui/core/Grid" :default Grid]
             ["@material-ui/core/Toolbar" :default Toolbar]
+            ["@material-ui/core/Tooltip" :default Tooltip]
             ["@material-ui/core/IconButton" :default IconButton]
             ["@material-ui/icons/MenuTwoTone" :default MenuTwoToneIcon]
             ["@material-ui/core/Typography" :default Typography]
@@ -46,7 +47,7 @@
                                              :duration (.. theme -transitions -duration -enteringScreen)}))}
    :expandButton {:left (- (.spacing theme 3))
                   :zIndex (+ (.. theme -zIndex -drawer) 10)}
-   :userInfo {:position :absolute :right 0}
+   :userInfo {:position :absolute :right 25}
    :username {:position :relative :top "50%" :transform "translateY(-50%)"}})
 
 (defn topbar []
@@ -61,8 +62,6 @@
                       :class [(:expandButton classes)]}
        (if @sidebar-expanded [:> MenuOpenTwoToneIcon] [:> MenuTwoToneIcon])]
       [:> Box {:class (:userInfo classes)}
-       [:> Grid {:container true :spacing 5}
-        [:> Grid {:item true :xs 3} [:> Avatar]]
-        [:> Grid {:item true :xs 9}
-         [:> Typography {:variant :subtitle2 :class (:username classes)}
-          (or (:preferred_username @user-info) (:name @user-info))]]]]]])))
+       [:> Tooltip {:title (or (:name @user-info) "Not Logged In") :placement :left}
+        ;[:> Avatar ]
+        [:> AccountCircleIcon {:fontSize :large}]]]]])))
