@@ -21,10 +21,15 @@
             [odmp-ui.subs :as subs]
             [odmp-ui.config :refer [drawer-width]]
             ["@material-ui/core/AppBar" :default AppBar]
+            ["@material-ui/core/Box" :default Box]
+            ["@material-ui/core/Grid" :default Grid]
             ["@material-ui/core/Toolbar" :default Toolbar]
             ["@material-ui/core/IconButton" :default IconButton]
             ["@material-ui/icons/MenuTwoTone" :default MenuTwoToneIcon]
-            ["@material-ui/icons/MenuOpenTwoTone" :default MenuOpenTwoToneIcon]))
+            ["@material-ui/core/Typography" :default Typography]
+            ["@material-ui/icons/MenuOpenTwoTone" :default MenuOpenTwoToneIcon]
+            ["@material-ui/core/Avatar" :default Avatar]
+            ["@material-ui/icons/AccountCircleTwoTone" :default AccountCircleIcon]))
 
 ;; Topbar styles
 (defn topbar-styles [^js/Mui.Theme theme]
@@ -40,10 +45,13 @@
                                          #js{:easing (.. theme -transitions -easing -sharp)
                                              :duration (.. theme -transitions -duration -enteringScreen)}))}
    :expandButton {:left (- (.spacing theme 3))
-                  :zIndex (+ (.. theme -zIndex -drawer) 10)}})
+                  :zIndex (+ (.. theme -zIndex -drawer) 10)}
+   :userInfo {:position :absolute :right 0}
+   :username {:position :relative :top "50%" :transform "translateY(-50%)"}})
 
 (defn topbar []
- (let [sidebar-expanded (rf/subscribe [::subs/sidebar-expanded])]
+ (let [sidebar-expanded (rf/subscribe [::subs/sidebar-expanded])
+       user-info (rf/subscribe [::subs/user-info])]
   (style/let [classes topbar-styles]
     [:> AppBar {:position "fixed"
                 :class [(:appBar classes)
@@ -52,4 +60,9 @@
       [:> IconButton {:on-click #(rf/dispatch [::events/set-sidebar-expanded nil])
                       :class [(:expandButton classes)]}
        (if @sidebar-expanded [:> MenuOpenTwoToneIcon] [:> MenuTwoToneIcon])]
-      ]])))
+      [:> Box {:class (:userInfo classes)}
+       [:> Grid {:container true :spacing 5}
+        [:> Grid {:item true :xs 3} [:> Avatar]]
+        [:> Grid {:item true :xs 9}
+         [:> Typography {:variant :subtitle2 :class (:username classes)}
+          (or (:preferred_username @user-info) (:name @user-info))]]]]]])))

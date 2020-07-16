@@ -29,6 +29,7 @@ data class ProcessorModel(@Id val id : String = ObjectId.get().toHexString(),
                           @Indexed(name = "processor_flow_id_index", background = true)
                           val flowId : String,
                           val name: String,
+                          val enabled: Boolean = false,
                           val description: String? = null,
                           val creator: String?,
                           var phase: Int,

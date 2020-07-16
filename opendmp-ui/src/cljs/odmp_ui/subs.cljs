@@ -86,6 +86,12 @@
  (fn [db _]
    (get-in db [:lookup :trigger-types])))
 
+;; User
+(re-frame/reg-sub
+ ::user-info
+ (fn [db _]
+   (get-in db [:user :info])))
+
 (re-frame/reg-sub
  ::errors
  (fn [db _]

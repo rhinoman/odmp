@@ -35,11 +35,26 @@
    db/default-db))
 
 (re-frame/reg-event-fx
+ ::fetch-user-info
+ (fn [{:keys [db]}]
+   (-> (get-in db [:auth-state :keycloak])
+       (.loadUserInfo)
+       (.then #(re-frame/dispatch [::set-user-info %])))
+   {:db db}))
+
+(re-frame/reg-event-db
+ ::set-user-info
+ (fn [db [_ info]]
+   (assoc-in db [:user :info] (js->clj info :keywordize-keys true))))
+
+
+(re-frame/reg-event-fx
  ::auth-complete
  (fn [{:keys [db]} event]
    (secretary/dispatch! (-> js/window .-location .-hash))
    (re-frame/dispatch [::lookup-processor-types])
    (re-frame/dispatch [::lookup-trigger-types])
+   (re-frame/dispatch [::fetch-user-info])
    {:db db
     :forward-events {:unregister :auth-complete-listener}}))
 
@@ -55,7 +70,7 @@
  (fn [{:keys [db]} [_ keycloak result]]
    (if (false? result)
      (-> keycloak
-         (.login keycloak)
+         (.login)
          (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))
          (.onTokenExpired #(.updateToken keycloak))))
      {:db (assoc db :auth-state {:keycloak keycloak :authenticated result})}))
