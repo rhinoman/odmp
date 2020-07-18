@@ -82,7 +82,10 @@
         p-type (keyword (:type palette))]
     {:edit-processor-wrapper {}
      :delete-processor-wrapper {:float :right
-                                :margin-top 25}}))
+                                :margin-top 25}
+     :description-wrapper {:max-width 600
+                           :margin-bottom 20
+                           :overflow-wrap :break-word}}))
 
 (defn processor-editor
   "Main Component for editing processors"
@@ -101,4 +104,6 @@
                          :onClick #(rf/dispatch [::toggle-delete-processor-dialog])
                          :size :small}
           [:> DeleteIcon]]]]
-       [tcom/full-content-ui {:title (:name @processor)}]])))
+       [tcom/full-content-ui {:title (:name @processor)}
+        [:> Box {:class {:description-wrapper classes}}
+         [:> Typography {:variant :subtitle1} (:description @processor)]]]])))

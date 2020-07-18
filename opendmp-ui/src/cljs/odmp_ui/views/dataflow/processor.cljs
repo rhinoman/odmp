@@ -43,7 +43,7 @@
   [:<>
    (style/let [classes processor-styles]
      [:> Card {:class [(:proc-card classes) (:id processor)]
-               :onClick #(events/navigate (str "/processor/" (:id processor)))}
+               :onClick #(events/navigate (str "/processors/" (:id processor)))}
       [:> CardHeader {:title (:name processor)
                       :avatar (r/as-element (processor-type-icon (:type processor)))
                       :subheader (:description processor)}]])])
