@@ -47,7 +47,7 @@
         p-type (keyword (:type palette))]
     {:right {:float :right}
      :delete-dataflow-wrapper{:float :right
-                              :margin-top 25}
+                              :margin-top 0}
      :description-wrapper {:max-width 600
                            :margin-bottom 20
                            :overflow-wrap :break-word}
@@ -153,16 +153,19 @@
       [:<>
        (if @delete-dialog? (d-modals/confirm-delete-dataflow @dataflow))
        (if @create-processor-dialog? (p-modals/create-processor-modal (:id @dataflow)))
-       [:div {:class (:delete-dataflow-wrapper classes)}
-        [:> Tooltip {:title "Delete this dataflow" :placement :left-end}
-         [:> IconButton {:class (:delete-dataflow-button classes)
-                         :color :secondary
-                         :onClick #(rf/dispatch [::d-modals/toggle-delete-dataflow-dialog])
-                         :size :small}
-          [:> DeleteIcon]]]]
+       [:> Box [tcom/breadcrumbs (list {:href "#/dataflows" :text "Dataflow Index"}
+                               {:href (str "#/dataflows/" (:id @dataflow)) :text (:name @dataflow)})]
+        [:div {:class (:delete-dataflow-wrapper classes)}
+         [:> Tooltip {:title "Delete this dataflow" :placement :left-end}
+          [:> IconButton {:class (:delete-dataflow-button classes)
+                          :color :secondary
+                          :onClick #(rf/dispatch [::d-modals/toggle-delete-dataflow-dialog])
+                          :size :small}
+           [:> DeleteIcon]]]]]
        (tcom/full-content-ui
         {:title (:name @dataflow)}
         ;;; :frdw is just to force a redraw when the window is resized
         [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
          [:> Typography {:variant :subtitle1} (:description @dataflow)]]
+        
         [processor-pane processors classes])])))

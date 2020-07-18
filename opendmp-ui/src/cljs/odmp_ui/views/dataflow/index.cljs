@@ -88,7 +88,9 @@
         create-dialog-state (rf/subscribe [::modals/create-dataflow-dialog-open])
         loading? (rf/subscribe [::subs/loading-dataflows])]
     (style/let [classes dataflow-index-styles]
-      (tcom/full-content-ui {:title "Data Flows"}
+      [:<>
+       [tcom/breadcrumbs (list {:href "#/dataflows" :text "Dataflow Index"})]
+       [tcom/full-content-ui {:title "Data Flows"}
         (if @create-dialog-state (modals/create-dataflow-dialog))
         [:div 
          (toolbar classes)
@@ -99,4 +101,4 @@
            [:> Table
             (table-header)
             [:> TableBody
-             (map #(dataflow-row % classes) @dataflows)]]]]]))))
+             (map #(dataflow-row % classes) @dataflows)]]]]]]])))

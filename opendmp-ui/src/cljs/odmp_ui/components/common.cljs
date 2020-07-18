@@ -19,10 +19,13 @@
             ["@material-ui/lab/Alert" :default Alert]
             ["@material-ui/core/Dialog" :default Dialog]
             ["@material-ui/core/Button" :default Button]
+            ["@material-ui/core/Box" :default Box]
             ["@material-ui/core/DialogActions" :default DialogActions]
             ["@material-ui/core/DialogContent" :default DialogContent]
             ["@material-ui/core/DialogContentText" :default DialogContentText]
-            ["@material-ui/core/DialogTitle" :default DialogTitle]))
+            ["@material-ui/core/DialogTitle" :default DialogTitle]
+            ["@material-ui/core/Breadcrumbs" :default Breadcrumbs]
+            ["@material-ui/core/Link" :default Link]))
 
 (defn full-content-ui [{:keys [title]} & children]
   [:div {:style {:paddingLeft "20px"}}
@@ -53,3 +56,15 @@
                 :autoFocus true
                 :onClick cancel-action} "Cancel"]
     [:> Button {:color :secondary :onClick confirm-action} "Confirm"]]])
+
+(defn breadcrumbs
+  "Displays breadcrumb links"
+  [links]
+  [:> Box {:style {:margin-top 10 :padding-left 20}}
+   [:> Breadcrumbs
+    (map (fn [link]
+           (if (and (some? (:text link)) (some? (:href link)))
+                    ^{:key (str "BREADCRUMB_" (:text link))}
+                    [:> Link {:href (:href link)
+                              :variant :body2} (:text link)]))
+             links)]])

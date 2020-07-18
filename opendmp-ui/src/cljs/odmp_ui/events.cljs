@@ -329,7 +329,8 @@
  (fn [db [_ result]]
    (-> db
        (assoc-in [:loading :processor] false)
-       (assoc :current-processor result))))
+       (assoc :current-processor (:processor result))
+       (assoc :current-dataflow (:dataflow result)))))
 
 (re-frame/reg-event-db
  ::success-delete-processor

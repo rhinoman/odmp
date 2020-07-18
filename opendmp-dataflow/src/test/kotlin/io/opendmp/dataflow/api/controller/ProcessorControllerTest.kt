@@ -20,6 +20,7 @@ import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthent
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.api.request.UpdateProcessorRequest
+import io.opendmp.dataflow.api.response.ProcessorDetail
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.model.ProcessorType
@@ -100,9 +101,11 @@ class ProcessorControllerTest(
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().is2xxSuccessful
-                .expectBody<ProcessorModel>()
+                .expectBody<ProcessorDetail>()
                 .returnResult()
         assertNotNull(response.responseBody)
+        assertEquals("FLOW1", response.responseBody?.dataflow?.name)
+        assertEquals("proc1", response.responseBody?.processor?.name)
     }
 
     @Test

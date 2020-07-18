@@ -19,6 +19,7 @@ package io.opendmp.dataflow.api.controller
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.api.request.UpdateProcessorRequest
+import io.opendmp.dataflow.api.response.ProcessorDetail
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.ProcessorService
 import org.springframework.security.core.Authentication
@@ -39,8 +40,8 @@ class ProcessorController(private val processorService: ProcessorService) {
     }
 
     @GetMapping("/{id}")
-    fun findOne(@PathVariable("id") id: String) : Mono<ProcessorModel> {
-        return processorService.get(id)
+    fun findOne(@PathVariable("id") id: String) : Mono<ProcessorDetail> {
+        return processorService.getDetail(id)
     }
 
     @PutMapping("/{id}")

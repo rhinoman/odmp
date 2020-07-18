@@ -82,28 +82,37 @@
         p-type (keyword (:type palette))]
     {:edit-processor-wrapper {}
      :delete-processor-wrapper {:float :right
-                                :margin-top 25}
+                                :margin-top 0}
      :description-wrapper {:max-width 600
                            :margin-bottom 20
-                           :overflow-wrap :break-word}}))
+                           :overflow-wrap :break-word}
+     :proc-wrapper {:min-height 400
+                    :padding 10
+                    :margin-top 10}}))
 
 (defn processor-editor
   "Main Component for editing processors"
   []
   (let [processor (rf/subscribe [::subs/current-processor])
+        dataflow  (rf/subscribe [::subs/current-dataflow])
         delete-dialog? (rf/subscribe [::delete-processor-dialog-open])
         errors    (rf/subscribe [::updating-processor-errors])
         is-updating? (rf/subscribe [::updating-processor])]
     (style/let [classes proc-styles]
       [:<>
        (if @delete-dialog? (confirm-delete-processor @processor))
-       [:div {:class (:delete-processor-wrapper classes)}
-        [:> Tooltip {:title "Delete this processor" :placement :left-end}
-         [:> IconButton {:class (:delete-processor-button classes)
-                         :color :secondary
-                         :onClick #(rf/dispatch [::toggle-delete-processor-dialog])
-                         :size :small}
-          [:> DeleteIcon]]]]
+       [:> Box
+        [tcom/breadcrumbs (list {:href "#/dataflows" :text "Dataflow Index"}
+                                {:href (str "#/dataflows/" (:id @dataflow)) :text (:name @dataflow)}
+                                {:href (str "#/processors/" (:id @processor)) :text (:name @processor)})]
+        [:div {:class (:delete-processor-wrapper classes)}
+         [:> Tooltip {:title "Delete this processor" :placement :left-end}
+          [:> IconButton {:class (:delete-processor-button classes)
+                          :color :secondary
+                          :onClick #(rf/dispatch [::toggle-delete-processor-dialog])
+                          :size :small}
+           [:> DeleteIcon]]]]]
        [tcom/full-content-ui {:title (:name @processor)}
         [:> Box {:class {:description-wrapper classes}}
-         [:> Typography {:variant :subtitle1} (:description @processor)]]]])))
+         [:> Typography {:variant :subtitle1} (:description @processor)]]
+        [:> Paper {:class (:proc-wrapper classes)}]]])))

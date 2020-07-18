@@ -19,8 +19,9 @@ package io.opendmp.dataflow.service
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.api.request.UpdateProcessorRequest
+import io.opendmp.dataflow.api.response.ProcessorDetail
+import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
-import io.opendmp.dataflow.model.SourceModel
 import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -29,6 +30,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Service
 class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
@@ -89,6 +91,14 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
 
     fun get(id: String) : Mono<ProcessorModel> {
         return mongoTemplate.findById(id)
+    }
+
+    fun getDetail(id: String) : Mono<ProcessorDetail> {
+        return get(id).flatMap { proc ->
+            mongoTemplate.findById<DataflowModel>(proc.flowId).flatMap<ProcessorDetail> { df ->
+                Mono.just(ProcessorDetail(processor = proc, dataflow = df))
+            }
+        }
     }
 
     /**
