@@ -80,6 +80,7 @@
                  :variant :contained
                  :disableElevation true
                  :size :small
+                 :disabled (= @num-phases 0)
                  :onClick #(swap! num-phases inc)
                  :class (:right classes)}
       [:> AddIcon] "Add Phase"]]]])
@@ -115,7 +116,7 @@
    [:> Button {:color :primary
                :onClick #(rf/dispatch [::events/toggle-create-processor-dialog phase-num])
                :size :small} [:> AddIcon] "Add Processor"]
-   (if (= (count processors) 0)
+   (if (and (> phase-num 1) (= (count processors) 0))
      [:> Button {:color :secondary
                  :onClick #(swap! num-phases dec)
                  :size :small} [:> RemoveIcon] "Remove Phase"]
@@ -125,7 +126,7 @@
 (defn empty-flow
   "What to display when a dataflow has no processors"
   [classes]
-  (phase 1 [] classes :body-text [:> Box {:style {:margin-top 5}}
+  (phase 1 [] 0 classes :body-text [:> Box {:style {:margin-top 5}}
     [:> Typography {:variant :body1} "To start building your flow, create a processor."]
     [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]]))
 
@@ -135,7 +136,7 @@
       [:<>
        (toolbar num-phases classes)
        [:> Paper {:class (:proc-wrapper classes)}
-        (if (=(count processors) 0)
+        (if (= (count processors) 0)
           (empty-flow classes)
           (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases classes))
                (range 1 (inc @num-phases))))]])))

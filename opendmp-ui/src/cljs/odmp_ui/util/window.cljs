@@ -40,7 +40,7 @@
 (rf/reg-fx
  ::stop-resize
  (fn [db [_ _]]
-   (println "STOPPING!")
+   (println "STOP ON RESIZE")
    (when-let [listener (get-in @*listeners* [events/EventType.RESIZE ::window-resize-listener])]
      (events/unlistenByKey listener)
      (swap! *listeners* update events/EventsType.RESIZE #(dissoc % ::window-resize-listener)))))

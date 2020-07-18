@@ -75,6 +75,12 @@
  (fn [db _]
    (get-in db [:loading :dataflow])))
 
+;; The currently loaded/displayed processor for editing
+(re-frame/reg-sub
+ ::current-processor
+ (fn [db _]
+   (:current-processor db)))
+
 ;; Lookups
 (re-frame/reg-sub
  ::lookup-processor-types

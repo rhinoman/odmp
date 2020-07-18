@@ -93,7 +93,6 @@
         description-field-value (rf/subscribe [::create-processor-description])
         proc-type-field-value (rf/subscribe [::create-processor-type])]
     (.preventDefault e)
-    (println @proc-type-field-value)
     (rf/dispatch [::events/post-processor {:name @name-field-value
                                            :description @description-field-value
                                            :phase (or @phase-override @phase-input)

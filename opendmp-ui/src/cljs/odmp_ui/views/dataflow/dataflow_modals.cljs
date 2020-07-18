@@ -123,8 +123,8 @@
     (style/let [classes modal-styles]
       [:> Dialog {:open @open
                   :onClose #(rf/dispatch [::events/toggle-create-dataflow-dialog])
-                  :aria-labelledby "create-dataflow-dialog"}
-       [:> DialogTitle "Create New Dataflow"]
+                  :aria-labelledby "create-dataflow-dialog-title"}
+       [:> DialogTitle {:id "create-dataflow-dialog-title"} "Create New Dataflow"]
        [:> DialogContent
         (if @errors (error-alert @errors))
         [:form {:onSubmit save-dataflow}

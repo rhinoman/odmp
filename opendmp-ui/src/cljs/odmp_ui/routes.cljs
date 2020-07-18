@@ -65,6 +65,11 @@
     (net/auth-dispatch [::events/fetch-dataflow-processors id])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
+  (defroute "/processor/:id" [id]
+    (re-frame/dispatch [::events/set-active-panel :processor-item-panel])
+    (net/auth-dispatch [::events/fetch-processor id])
+    (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
+
 
   ;; --------------------
   (hook-browser-navigation!))

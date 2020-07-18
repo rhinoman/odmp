@@ -220,6 +220,35 @@
                  :on-success      [::success-post-processor]
                  :on-failure      [::http-request-failure :post-processor]}}))
 
+;;; FETCH a processor
+(re-frame/reg-event-fx
+ ::fetch-processor
+ (fn [{:keys [db]} [_ id]]
+   {:db (-> db
+            (assoc-in [:loading :processor] true))
+    :http-xhrio {:method          :get
+                 :uri             (str "/dataflow_api/processor/" id)
+                 :timeout         5000
+                 :headers         (basic-headers db)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::success-fetch-processor]
+                 :on-failure      [::http-request-failure :get-processor]}}))
+
+;;; DELETE a processor
+(re-frame/reg-event-fx
+ ::delete-processor
+ (fn [{:keys [db]} [_ id parent-id]]
+   {:db (-> db
+            (assoc-in [:loading :delete-processor] true))
+    :http-xhrio {:method          :delete
+                 :uri             (str "/dataflow_api/processor/" id)
+                 :timeout         5000
+                 :headers         (basic-headers db)
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::success-delete-processor parent-id]
+                 :on-failure      [::http-request-failure :delete-processor]}}))
+
 ;; LOOKUPS
 (re-frame/reg-event-fx
  ::lookup-processor-types
@@ -294,6 +323,23 @@
    (-> db
        (assoc-in [:loading :post-processor] false)
        (assoc-in [:request-errors :post-processor] nil))))
+
+(re-frame/reg-event-db
+ ::success-fetch-processor
+ (fn [db [_ result]]
+   (-> db
+       (assoc-in [:loading :processor] false)
+       (assoc :current-processor result))))
+
+(re-frame/reg-event-db
+ ::success-delete-processor
+ (fn [db [_ parent-id result]]
+   (println parent-id)
+   (println result)
+   (navigate (str "/dataflows/" parent-id))
+   (-> db
+       (assoc-in [:loading :delete-processor] false)
+       (assoc-in [:request-errors :delete-processor] nil))))
 
 (re-frame/reg-event-db
   ::http-request-failure

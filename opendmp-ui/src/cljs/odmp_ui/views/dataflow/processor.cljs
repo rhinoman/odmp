@@ -17,6 +17,7 @@
             [reagent.core :as r]
             [odmp-ui.util.styles :as style]
             [odmp-ui.components.icons :refer [processor-type-icon]]
+            [odmp-ui.events :as events]
             ["@material-ui/core/Card" :default Card]
             ["@material-ui/core/CardHeader" :default CardHeader]))
 
@@ -28,13 +29,21 @@
                  :overflow-y :none
                  :margin 5
                  :zIndex 99
-                 :text-align :left}}))
+                 :text-align :left
+                 :border-width :thin
+                 :border-style :solid
+                 :border-color (get-in palette [:background :paper])
+                 "&:hover" {:cursor :pointer
+                            :border-color (get-in palette [:primary :contrastText])
+                            :border-width :thin
+                            :border-style :solid}}}))
 
 (defn processor-card [processor]
   ^{:key (:id processor)}
   [:<>
    (style/let [classes processor-styles]
-     [:> Card {:class [(:proc-card classes) (:id processor)]}
+     [:> Card {:class [(:proc-card classes) (:id processor)]
+               :onClick #(events/navigate (str "/processor/" (:id processor)))}
       [:> CardHeader {:title (:name processor)
                       :avatar (r/as-element (processor-type-icon (:type processor)))
                       :subheader (:description processor)}]])])
