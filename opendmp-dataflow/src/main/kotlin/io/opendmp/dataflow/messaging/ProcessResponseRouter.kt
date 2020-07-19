@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.dataflow.messaging
 
-enum class SourceType {
-    PROCESSOR, INGEST_FILE_DROP, INGEST_FTP, NONE
+import org.apache.camel.builder.RouteBuilder
+import org.springframework.stereotype.Component
+
+class ProcessResponseRouter{
+    fun configure() {
+    }
 }

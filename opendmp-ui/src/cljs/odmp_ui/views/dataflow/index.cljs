@@ -37,8 +37,6 @@
             ["@material-ui/core/Toolbar" :default Toolbar]
             ["@material-ui/core/Typography" :default Typography]
             ["@material-ui/core/Paper" :default Paper]
-            ["@material-ui/core/Backdrop" :default Backdrop]
-            ["@material-ui/core/CircularProgress" :default CircularProgress]
             ["@material-ui/icons/Add" :default AddIcon]))
 
 
@@ -95,8 +93,7 @@
         [:div 
          (toolbar classes)
          [:> Paper
-          [:> Backdrop {:open (or @loading? false) :style {:zIndex 99}}
-           [:> CircularProgress {:color "inherit"}]]
+          (if (nil? @dataflows) [tcom/loading-backdrop])
           [:> TableContainer
            [:> Table
             (table-header)

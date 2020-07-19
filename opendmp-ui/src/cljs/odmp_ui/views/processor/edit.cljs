@@ -19,14 +19,27 @@
             [odmp-ui.events :as events]
             [odmp-ui.util.styles :as style]
             [odmp-ui.components.common :as tcom]
+            [odmp-ui.components.icons :refer [processor-type-icon]]
+            [clojure.string :as str]
             ["@material-ui/core/Box" :default Box]
-            ["@material-ui/core/Paper" :default Paper]
+            ["@material-ui/core/Paper" :default Card]
+            ["@material-ui/core/CardHeader" :default CardHeader]
             ["@material-ui/core/Typography" :default Typography]
             ["@material-ui/core/Grid" :default Grid]
             ["@material-ui/core/Tooltip" :default Tooltip]
             ["@material-ui/core/Button" :default Button]
+            ["@material-ui/core/FormControl" :default FormControl]
+            ["@material-ui/core/InputLabel" :default InputLabel]
+            ["@material-ui/core/Select" :default Select]
+            ["@material-ui/core/MenuItem" :default MenuItem]
             ["@material-ui/core/IconButton" :default IconButton]
-            ["@material-ui/icons/DeleteTwoTone" :default DeleteIcon]))
+            ["@material-ui/icons/DeleteTwoTone" :default DeleteIcon]
+            ["@material-ui/icons/SaveTwoTone" :default SaveIcon]))
+
+(rf/reg-event-db
+ ::set-processor-edit-field
+ (fn [db [_ field value]]
+   (assoc-in db [:edit-processor-fields field] value)))
 
 (rf/reg-sub
  ::updating-processor-errors
@@ -52,6 +65,12 @@
  ::deleting-processor-errors
  (fn [db _]
    (get-in db [:request-errors :delete-processor])))
+
+;;Editor fields
+(rf/reg-sub
+ ::edit-processor-type
+ (fn [db _]
+   (get-in db [:edit-processor-fields :processor-type])))
 
 (rf/reg-event-db
  ::toggle-delete-processor-dialog
@@ -87,8 +106,28 @@
                            :margin-bottom 20
                            :overflow-wrap :break-word}
      :proc-wrapper {:min-height 400
-                    :padding 10
-                    :margin-top 10}}))
+                    ;:padding 10
+                    :margin-top 10
+                    }
+     :save-action-button {:margin-right 10
+                          :margin-top 5}
+     :card-detail-header {}}))
+
+(defn common-fields
+  "Displays fields common to all processors"
+  [processor]
+  (let []
+    (style/let [classes proc-styles]
+      [:> CardHeader {:avatar (r/as-element (processor-type-icon (:type @processor)))
+                      :title (str (str/capitalize (:type @processor)) " Processor")
+                      :titleTypographyProps {:variant :h6 :gutterBottom true}
+                      ;:subheader "Cool stuff"
+                      :action (r/as-element [:> Button {:size :medium
+                                                        :class (:save-action-button classes)
+                                                        :color :primary
+                                                        :disableElevation true
+                                                        :variant :contained
+                                                        :startIcon (r/as-element [:> SaveIcon])} "Save"])}])))
 
 (defn processor-editor
   "Main Component for editing processors"
@@ -113,6 +152,9 @@
                           :size :small}
            [:> DeleteIcon]]]]]
        [tcom/full-content-ui {:title (:name @processor)}
+        (if (nil? @processor) [tcom/loading-backdrop])
         [:> Box {:class {:description-wrapper classes}}
          [:> Typography {:variant :subtitle1} (:description @processor)]]
-        [:> Paper {:class (:proc-wrapper classes)}]]])))
+        [:> Card {:class (:proc-wrapper classes)}
+         (if (some? @processor)
+           [common-fields processor])]]])))

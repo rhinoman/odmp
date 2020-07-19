@@ -1,12 +1,20 @@
+odmp:
+  pulsar:
+    namespace: ${pulsar_tenant:public/default}
+    clusters: ${pulsar_clusters:standalone}
+    admin:
+      url: ${pulsar_admin_url:http://localhost:8076}
+    client:
+      url: ${pulsar_client_url:pulsar://localhost:6650}
 spring:
   data:
     mongodb:
-      authentication-database: admin
-      database: odmp_dataflow
-      username: dataflow_user
-      password: secret
-      host: localhost
-      port: 27027
+      authentication-database: ${mongo_auth_db:admin}
+      database: ${mongo_dataflow_db:odmp_dataflow}
+      username: ${mongo_username:dataflow_user}
+      password: ${mongo_password:secret}
+      host: ${mongo_host:localhost}
+      port: ${mongo_port:27027}
 
   security:
     oauth2:
@@ -14,7 +22,7 @@ spring:
         registration:
           keycloak:
             client-id: opendmp-dataflow
-            client-secret: 1c44cb7e-c232-4a01-b13c-2f36a390a4e6
+            client-secret: ${odmp_dataflow_kc_secret:1c44cb7e-c232-4a01-b13c-2f36a390a4e6}
             scope: open-id
 
         provider:
@@ -34,6 +42,14 @@ spring:
 springdoc:
   api-docs:
     path: /dataflow_api/doc/api-docs
-    enabled: true
+    enabled: ${swagger_enabled:true}
   swagger-ui:
     path: /dataflow_api/doc/swagger-ui.html
+
+#camel:
+#  threadpool:
+#    pool-size: 20
+#    max-pool-size: 50
+#    max-queue-size: -1
+#    allow-core-thread-time-out: false
+#    rejected-policy: callerruns

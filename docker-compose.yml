@@ -59,6 +59,36 @@ services:
     networks:
       - keycloak-net
 
+  pulsar:
+    image: apachepulsar/pulsar:2.6.0
+    volumes:
+      - pulsar_data:/pulsar/data
+    environment:
+      PULSAR_MEM: " -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+    ports:
+      - 8076:8080
+      - 6650:6650
+    command: bin/pulsar standalone
+
+  pulsar-manager:
+    image: apachepulsar/pulsar-manager:v0.1.0
+    ports:
+      - "9527:9527"
+    depends_on:
+      - pulsar
+    links:
+      - pulsar
+    volumes:
+      - pulsar_data:/data
+    environment:
+      REDIRECT_HOST: "http://127.0.0.1"
+      REDIRECT_PORT: "9527"
+      DRIVER_CLASS_NAME: "org.postgresql.Driver"
+      URL: "jdbc:postgresql://127.0.0.1:5432/pulsar_manager"
+      USERNAME: "pulsar"
+      PASSWORD: "pulsar"
+      LOG_LEVEL: "DEBUG"
+
   haproxy:
     image: 'haproxy:2.1-alpine'
     network_mode: host
@@ -72,6 +102,8 @@ volumes:
   auth_postgres_data:
     driver: local
   mongo_dev_data:
+    driver: local
+  pulsar_data:
     driver: local
     
 networks:

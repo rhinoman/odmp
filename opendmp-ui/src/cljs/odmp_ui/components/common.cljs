@@ -20,6 +20,8 @@
             ["@material-ui/core/Dialog" :default Dialog]
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/Box" :default Box]
+            ["@material-ui/core/Backdrop" :default Backdrop]
+            ["@material-ui/core/CircularProgress" :default CircularProgress]
             ["@material-ui/core/DialogActions" :default DialogActions]
             ["@material-ui/core/DialogContent" :default DialogContent]
             ["@material-ui/core/DialogContentText" :default DialogContentText]
@@ -68,3 +70,9 @@
                     [:> Link {:href (:href link)
                               :variant :body2} (:text link)]))
              links)]])
+
+(defn loading-backdrop
+  "Displays a spinner with a backdrop"
+  []
+  [:> Backdrop {:open true :style {:zIndex 99}}
+   [:> CircularProgress {:color :inherit}]])

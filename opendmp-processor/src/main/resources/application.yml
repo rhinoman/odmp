@@ -1,0 +1,18 @@
+odmp:
+  pulsar:
+    namespace: ${puslar_namespace:public/default}
+    clusters: ${pulsar_clusters:standalone}
+    admin:
+      url: ${pulsar_admin_url:http://localhost:8076}
+    client:
+      url: ${pulsar_client_url:pulsar://localhost:6650}
+
+camel:
+  threadpool:
+    pool-size: 20
+    max-pool-size: 50
+    max-queue-size: -1
+    allow-core-thread-time-out: true
+    rejected-policy: callerruns
+  springboot:
+    main-run-controller: true

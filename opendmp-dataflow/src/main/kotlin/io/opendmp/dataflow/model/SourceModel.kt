@@ -17,5 +17,5 @@
 package io.opendmp.dataflow.model
 
 data class SourceModel(
-        val sourceType: SourceType = SourceType.PROCESSOR,
-        val sourceId: String?) {}
+        val sourceType: SourceType? = SourceType.NONE,
+        val sourceId: String? = null) {}

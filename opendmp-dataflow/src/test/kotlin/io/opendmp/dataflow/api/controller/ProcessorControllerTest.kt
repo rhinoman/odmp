@@ -122,7 +122,7 @@ class ProcessorControllerTest(
                 triggerType = proc.triggerType,
                 type = proc.type,
                 properties = mutableMapOf(Pair("script", "println('Hello World!');")),
-                inputs = mutableListOf(SourceModel(SourceType.INGEST, "123456")),
+                inputs = mutableListOf(SourceModel(SourceType.INGEST_FILE_DROP, "123456")),
                 enabled = false
         )
 

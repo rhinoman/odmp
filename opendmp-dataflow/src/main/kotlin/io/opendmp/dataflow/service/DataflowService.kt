@@ -19,11 +19,13 @@ package io.opendmp.dataflow.service
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
+import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
@@ -36,7 +38,8 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
+class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
+                       @Autowired private val processRequester: ProcessRequester) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 

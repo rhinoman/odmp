@@ -23,7 +23,9 @@ import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 
-@SpringBootApplication(exclude = [MongoAutoConfiguration::class, MongoDataAutoConfiguration::class])
+@SpringBootApplication(exclude = [
+	MongoAutoConfiguration::class,
+	MongoDataAutoConfiguration::class])
 @EnableConfigurationProperties(MongoProperties::class)
 class DataflowApplication
 

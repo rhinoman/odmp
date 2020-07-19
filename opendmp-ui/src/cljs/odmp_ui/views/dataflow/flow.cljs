@@ -165,6 +165,7 @@
        (tcom/full-content-ui
         {:title (:name @dataflow)}
         ;;; :frdw is just to force a redraw when the window is resized
+        (if (nil? @dataflow) [tcom/loading-backdrop])
         [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
          [:> Typography {:variant :subtitle1} (:description @dataflow)]]
         
