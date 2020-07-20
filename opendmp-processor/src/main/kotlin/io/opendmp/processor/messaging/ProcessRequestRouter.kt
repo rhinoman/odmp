@@ -5,7 +5,6 @@ import org.apache.camel.BeanInject
 import org.apache.camel.CamelContext
 import org.apache.camel.ConsumerTemplate
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.component.pulsar.PulsarComponent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
