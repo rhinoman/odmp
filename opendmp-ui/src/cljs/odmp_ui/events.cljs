@@ -67,7 +67,7 @@
 
 (re-frame/reg-event-fx
  ::keycloak-initialized
- (fn [{:keys [db]} [_ keycloak result]]
+ (fn [{:keys [db]} [_ ^js keycloak result]]
    (if (false? result)
      (-> keycloak
          (.login)
@@ -78,7 +78,7 @@
 (re-frame/reg-event-db
  ::refresh-keycloak
  (fn [db [_ _]]
-   (let [keycloak (get-in db [:auth-state :keycloak])]
+   (let [^js keycloak (get-in db [:auth-state :keycloak])]
      (println "Refreshing token")
      (-> keycloak
          (.updateToken 30)
@@ -87,7 +87,7 @@
 (re-frame/reg-event-fx
  ::initialize-keycloak
   (fn [{:keys [db]} [_ _]]
-    (let [keycloak (Keycloak "/assets/keycloak.json")]
+    (let [^js keycloak (Keycloak "/assets/keycloak.json")]
       ;(set! (.-onTokenExpired keycloak) #(re-frame/dispatch [::refresh-keycloak]))
       (-> keycloak
           (.init #js{:onLoad "check-sso"

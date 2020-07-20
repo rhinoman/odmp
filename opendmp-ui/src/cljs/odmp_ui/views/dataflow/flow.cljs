@@ -92,7 +92,7 @@
   (map (fn [i]
          (if (and (= (:sourceType i) "PROCESSOR") (some? (:sourceId i)))
            ^{:key (str "LINK_" (:id processor) "_" (:sourceId i))}
-           [:> LineTo {:from (:sourceId i)
+           [:> ^js LineTo {:from (:sourceId i)
                        :to (:id processor)
                        :borderColor "gray"
                        :delay 0

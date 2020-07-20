@@ -34,7 +34,7 @@
 
 ;; Quick and dirty history configuration.
 (let [h (History.)]
-  (gevents/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+  (gevents/listen h EventType/NAVIGATE #(secretary/dispatch! ^js (.-token %)))
   (doto h (.setEnabled true))
   ;; location will have to be implemented using (.-location js/window)
   (when (empty? (.-hash (location)))
