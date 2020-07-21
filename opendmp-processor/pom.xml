@@ -47,6 +47,12 @@
 			<artifactId>kotlinx-coroutines-reactor</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>io.opendmp</groupId>
+			<artifactId>opendmp-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 		<!-- Camel adapters -->
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>

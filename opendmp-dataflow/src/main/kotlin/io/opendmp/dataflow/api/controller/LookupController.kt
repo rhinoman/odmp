@@ -16,7 +16,7 @@
 
 package io.opendmp.dataflow.api.controller
 
-import io.opendmp.dataflow.model.ProcessorType
+import io.opendmp.common.model.ProcessorType
 import io.opendmp.dataflow.model.TriggerType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow

@@ -17,15 +17,15 @@
 package io.opendmp.dataflow.api.controller
 
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
+import io.opendmp.common.model.ProcessorType
+import io.opendmp.common.model.SourceModel
+import io.opendmp.common.model.SourceType
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.api.request.UpdateProcessorRequest
 import io.opendmp.dataflow.api.response.ProcessorDetail
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.model.ProcessorModel
-import io.opendmp.dataflow.model.ProcessorType
-import io.opendmp.dataflow.model.SourceModel
-import io.opendmp.dataflow.model.SourceType
 import io.opendmp.dataflow.service.ProcessorService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -112,7 +112,7 @@ class ProcessorControllerTest(
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should be able to update a processor`() {
         val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
-        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.TRANSFORM, mongoTemplate)
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1, ProcessorType.TRANSFORM, mongoTemplate)
 
         val updateReq = UpdateProcessorRequest(
                 name = proc.name,

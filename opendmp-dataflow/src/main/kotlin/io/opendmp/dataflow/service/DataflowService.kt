@@ -17,6 +17,9 @@
 package io.opendmp.dataflow.service
 
 import com.mongodb.client.result.DeleteResult
+import io.opendmp.common.model.HealthModel
+import io.opendmp.common.model.HealthState
+import io.opendmp.common.model.RunState
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.messaging.ProcessRequester
@@ -38,8 +41,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
-                       @Autowired private val processRequester: ProcessRequester) {
+class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 

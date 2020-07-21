@@ -10,6 +10,7 @@ odmp-dataflow is a Spring Boot app written in Kotlin using WebFlux and Camel.
 - Apache Maven
 - MongoDB Server (runtime)
 - Keycloak Server (runtime)
+- Apache Pulsar (runtime)
 
 ## Build, Run, Test
 

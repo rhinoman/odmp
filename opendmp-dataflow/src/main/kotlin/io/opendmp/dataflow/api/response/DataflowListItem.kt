@@ -16,9 +16,9 @@
 
 package io.opendmp.dataflow.api.response
 
+import io.opendmp.common.model.HealthModel
+import io.opendmp.common.model.RunState
 import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.model.HealthModel
-import io.opendmp.dataflow.model.RunState
 
 data class DataflowListItem(val dataflow: DataflowModel,
                             val health: HealthModel,

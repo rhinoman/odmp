@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.common.model
 
 enum class HealthState {
     OK,

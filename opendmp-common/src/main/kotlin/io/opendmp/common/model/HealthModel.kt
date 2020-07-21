@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.common.model
 
-enum class RunState {
-    IDLE,
-    ERROR,
-    DISABLED,
-    RUNNING
+import java.time.LocalDateTime
+
+class HealthModel(val state: HealthState = HealthState.OK,
+                  val lastError: String? = null,
+                  val lastErrorTime: LocalDateTime? = null) {
 }

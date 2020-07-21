@@ -16,7 +16,7 @@
 
 package io.opendmp.dataflow.api.request
 
-import io.opendmp.dataflow.model.ProcessorType
+import io.opendmp.common.model.ProcessorType
 import javax.validation.constraints.*
 
 data class CreateProcessorRequest(

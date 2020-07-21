@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.common.model
 
-import java.time.LocalDateTime
-
-class HealthModel(val state: HealthState = HealthState.OK,
-                  val lastError: String? = null,
-                  val lastErrorTime: LocalDateTime? = null) {
+enum class ProcessorType {
+    INGEST, EXPORT, TRANSFORM, SCRIPT, EXTERNAL
 }

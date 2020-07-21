@@ -16,6 +16,8 @@
 
 package io.opendmp.dataflow.model
 
+import io.opendmp.common.model.ProcessorType
+import io.opendmp.common.model.SourceModel
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id

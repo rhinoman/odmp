@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.common.model
 
-enum class SourceType {
-    PROCESSOR, INGEST_FILE_DROP, INGEST_FTP, NONE
-}
+import io.opendmp.common.model.SourceType
+
+data class SourceModel(
+        val sourceType: SourceType? = SourceType.NONE,
+        val sourceId: String? = null) {}

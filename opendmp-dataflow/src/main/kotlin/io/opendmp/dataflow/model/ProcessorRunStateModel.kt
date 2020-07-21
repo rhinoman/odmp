@@ -17,6 +17,9 @@
 package io.opendmp.dataflow.model
 
 import org.springframework.data.mongodb.core.index.Indexed
+import io.opendmp.common.model.HealthModel
+import io.opendmp.common.model.HealthState
+import io.opendmp.common.model.RunState
 
 data class ProcessorRunStateModel(@Indexed(name = "processor_run_state_id_index", background = true)
                                   val processorId: String,

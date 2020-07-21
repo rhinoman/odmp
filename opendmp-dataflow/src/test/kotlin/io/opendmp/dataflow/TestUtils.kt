@@ -1,5 +1,8 @@
 package io.opendmp.dataflow
 
+import io.opendmp.common.model.ProcessorType
+import io.opendmp.common.model.SourceModel
+import io.opendmp.common.model.SourceType
 import io.opendmp.dataflow.model.*
 import org.springframework.context.annotation.PropertySource
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate

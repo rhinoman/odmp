@@ -16,8 +16,8 @@
 
 package io.opendmp.dataflow.api.request
 
-import io.opendmp.dataflow.model.ProcessorType
-import io.opendmp.dataflow.model.SourceModel
+import io.opendmp.common.model.ProcessorType
+import io.opendmp.common.model.SourceModel
 import io.opendmp.dataflow.model.TriggerType
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull

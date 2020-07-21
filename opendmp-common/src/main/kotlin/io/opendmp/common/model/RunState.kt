@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.common.model
 
-enum class ProcessorType {
-    INGEST, EXPORT, TRANSFORM, SCRIPT, EXTERNAL
+enum class RunState {
+    IDLE,
+    ERROR,
+    DISABLED,
+    RUNNING
 }

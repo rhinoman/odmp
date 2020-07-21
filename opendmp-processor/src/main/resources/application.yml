@@ -7,6 +7,9 @@ odmp:
     client:
       url: ${pulsar_client_url:pulsar://localhost:6650}
 
+  processor:
+    instance-type: ${odmp_processor_service_instance_type:GENERAL}
+
 camel:
   threadpool:
     pool-size: 20
