@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.dataflow.model.runplan
 
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.CreatedDate

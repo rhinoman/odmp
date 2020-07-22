@@ -5,7 +5,7 @@ services:
 
   mongodb:
     image: mongo:4.2-bionic
-    restart: always
+    restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: secret
@@ -88,6 +88,10 @@ services:
       USERNAME: "pulsar"
       PASSWORD: "pulsar"
       LOG_LEVEL: "DEBUG"
+
+  redis:
+    image: 'redis:6-alpine'
+    restart: unless-stopped
 
   haproxy:
     image: 'haproxy:2.1-alpine'

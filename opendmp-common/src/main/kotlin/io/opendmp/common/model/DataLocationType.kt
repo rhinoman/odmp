@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.common.model
 
-data class PhaseModel(val phaseNum: Int,
-                      val processors: List<ProcessorRunStateModel>,
-                      val completed: Boolean = false) {}
+enum class DataLocationType {
+    CACHE, DISK, NONE
+}

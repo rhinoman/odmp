@@ -38,7 +38,7 @@ object TestUtils {
                 type = ProcessorType.INGEST,
                 triggerType = TriggerType.AUTOMATIC,
                 creator = "test_user",
-                inputs = mutableListOf(SourceModel(sourceType = SourceType.PROCESSOR, sourceId = ""))
+                inputs = mutableListOf(SourceModel(sourceType = SourceType.PROCESSOR, sourceLocation = ""))
         )
         return mongoTemplate.insert(proc).block()!!
     }

@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.message
+package io.opendmp.dataflow.model.runplan
 
-import io.opendmp.common.model.ProcessInputModel
-import io.opendmp.common.model.ProcessorType
-import java.util.*
+import io.opendmp.common.model.*
+import org.springframework.data.mongodb.core.index.Indexed
 
-data class ProcessRequestMessage(
-    val requestId: String = UUID.randomUUID().toString(),
-    val runPlanId: String,
-    val processorId: String,
-    val processorType: ProcessorType,
-    val inputs: List<ProcessInputModel>
-) {
-}
+data class ProcessorRunStateModel(@Indexed(name = "processor_run_state_id_index", background = true)
+                                  val processorId: String,
+                                  val health: HealthModel = HealthModel(HealthState.OK),
+                                  val state: RunState = RunState.IDLE,
+                                  val dataLocation: DataLocationType,
+                                  val locationKey: String? = null) {}

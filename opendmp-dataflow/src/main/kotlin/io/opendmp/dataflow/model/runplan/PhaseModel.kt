@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.model
+package io.opendmp.dataflow.model.runplan
 
-import org.springframework.data.mongodb.core.index.Indexed
-import io.opendmp.common.model.HealthModel
-import io.opendmp.common.model.HealthState
-import io.opendmp.common.model.RunState
-
-data class ProcessorRunStateModel(@Indexed(name = "processor_run_state_id_index", background = true)
-                                  val processorId: String,
-                                  val health: HealthModel = HealthModel(HealthState.OK),
-                                  val state: RunState = RunState.IDLE,
-                                  val cacheKey: String? = null) {}
+data class PhaseModel(val phaseNum: Int,
+                      val processors: List<ProcessorRunStateModel>,
+                      val completed: Boolean = false) {}

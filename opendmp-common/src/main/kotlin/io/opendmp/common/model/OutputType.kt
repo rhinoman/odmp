@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.message
+package io.opendmp.common.model
 
-import io.opendmp.common.model.ProcessInputModel
-import io.opendmp.common.model.ProcessorType
-import java.util.*
-
-data class ProcessRequestMessage(
-    val requestId: String = UUID.randomUUID().toString(),
-    val runPlanId: String,
-    val processorId: String,
-    val processorType: ProcessorType,
-    val inputs: List<ProcessInputModel>
-) {
+enum class OutputType {
+    NONE, PROCESSOR
 }

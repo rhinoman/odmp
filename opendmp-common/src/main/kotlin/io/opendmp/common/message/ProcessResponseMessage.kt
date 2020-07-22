@@ -16,15 +16,14 @@
 
 package io.opendmp.common.message
 
-import io.opendmp.common.model.ProcessInputModel
-import io.opendmp.common.model.ProcessorType
-import java.util.*
+import io.opendmp.common.model.DataLocationType
+import io.opendmp.common.model.HealthState
+import io.opendmp.common.model.RunState
 
-data class ProcessRequestMessage(
-    val requestId: String = UUID.randomUUID().toString(),
-    val runPlanId: String,
-    val processorId: String,
-    val processorType: ProcessorType,
-    val inputs: List<ProcessInputModel>
-) {
-}
+data class ProcessResponseMessage(val requestId: String,
+                                  val runPlanId: String,
+                                  val processId: String,
+                                  val healthState: HealthState,
+                                  val runState: RunState,
+                                  val dataLocation: DataLocationType,
+                                  val locationKey: String? = null) {}

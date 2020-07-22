@@ -18,6 +18,16 @@ package io.opendmp.common.model
 
 import io.opendmp.common.model.SourceType
 
-data class SourceModel(
+/**
+ * SourceModel describes the source of a processor input
+ * sourceType - determines the type of source,
+ *   PROCESSOR for processors that take their input from another
+ *   processor.
+ * sourceLocation - a string containing the location of the input data
+ *   Will be the id of the processor in the case of PROCESSOR source type
+ *   Will be a folder path in the case of INGEST_FILE_DROP, etc.
+ *
+ */
+open class SourceModel(
         val sourceType: SourceType? = SourceType.NONE,
-        val sourceId: String? = null) {}
+        val sourceLocation: String? = null) {}

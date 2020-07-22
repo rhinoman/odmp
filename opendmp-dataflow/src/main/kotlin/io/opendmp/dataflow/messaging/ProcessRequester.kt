@@ -16,11 +16,12 @@
 
 package io.opendmp.dataflow.messaging
 
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.opendmp.common.message.ProcessRequestMessage
 import org.apache.camel.CamelContext
-import org.apache.camel.ExchangePattern
 import org.apache.camel.ProducerTemplate
-import org.apache.camel.component.pulsar.PulsarComponent
-import org.apache.pulsar.client.api.PulsarClient
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
@@ -34,12 +35,21 @@ class ProcessRequester @Autowired constructor(
     @Value("\${odmp.pulsar.namespace}")
     val pulsarNamespace: String = "public/default"
 
+    private val log = LoggerFactory.getLogger(ProcessRequester::class.java)
+
+    private val mapper = jacksonObjectMapper()
+
     fun endPointUrl() : String =
             "pulsar:persistent://$pulsarNamespace/process_request?producerName=odmpDataflow"
 
     @Async
-    fun sendProcessRequest() {
-        producerTemplate.sendBody(endPointUrl(), "ODMP DATAFLOW SAYS HI!!")
+    fun sendProcessRequest(processRequestMessage: ProcessRequestMessage) {
+        try {
+            val jsonData = mapper.writeValueAsString(processRequestMessage)
+            producerTemplate.sendBody(endPointUrl(), jsonData)
+        } catch (jpe: JsonProcessingException) {
+            log.error("Error converting request message", jpe)
+        }
     }
 
 }

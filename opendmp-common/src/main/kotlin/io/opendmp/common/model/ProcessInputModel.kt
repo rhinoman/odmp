@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.opendmp.common.model
 
 /**
- * SourceType identifies the type of a source input
- *   It will most often be PROCESSOR or an INGEST type
+ * Two additional fields needed beyond the SourceModel
+ * dataLocationType - CACHE, DISK, or NONE - depending on where the input data has been stored
+ * locationKey - either the CACHE key (e.g., in REDIS) or the file location (or S3 key)
+ *
+ * For ingest processors, dataLocationType will be NONE and locationKey will be null
  */
-enum class SourceType {
-    PROCESSOR, INGEST_FILE_DROP, INGEST_FTP, NONE
+class ProcessInputModel(sourceType: SourceType,
+                        sourceLocation: String? = null,
+                        val dataLocationType: DataLocationType = DataLocationType.NONE,
+                        val locationKey: String? = null) :
+    SourceModel(sourceType = sourceType, sourceLocation = sourceLocation) {
 }

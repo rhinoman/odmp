@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.message
+package io.opendmp.processor.ingest
 
-import io.opendmp.common.model.ProcessInputModel
-import io.opendmp.common.model.ProcessorType
-import java.util.*
+import io.opendmp.common.message.ProcessRequestMessage
 
-data class ProcessRequestMessage(
-    val requestId: String = UUID.randomUUID().toString(),
-    val runPlanId: String,
-    val processorId: String,
-    val processorType: ProcessorType,
-    val inputs: List<ProcessInputModel>
-) {
+object IngestUtils {
+
+    fun handleIngestRequest(msg: ProcessRequestMessage) {
+
+    }
+
 }
