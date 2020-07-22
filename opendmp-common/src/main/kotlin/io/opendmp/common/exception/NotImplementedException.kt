@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.ingest
+package io.opendmp.common.exception
 
-import org.apache.camel.CamelContext
-import org.apache.camel.builder.RouteBuilder
-import org.springframework.beans.factory.annotation.Autowired
-
-class IngestRouteBuilder(
-        @Autowired val camel: CamelContext
-) : RouteBuilder(camel) {
-    override fun configure() {
-
-    }
+class NotImplementedException(message: String = "Not yet implemented") : Exception(message) {
 }

@@ -19,6 +19,7 @@ package io.opendmp.processor.handler
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.opendmp.common.exception.NotImplementedException
 import io.opendmp.common.message.ProcessRequestMessage
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.processor.ingest.IngestUtils
@@ -38,7 +39,7 @@ class ProcessRequestHandler {
             val msg = mapper.readValue<ProcessRequestMessage>(data)
             when(msg.processorType) {
                 ProcessorType.INGEST -> IngestUtils.handleIngestRequest(msg)
-                else -> throw NotImplementedError("${msg.processorType} is not yet implemented")
+                else -> throw NotImplementedException("${msg.processorType} is not yet implemented")
             }
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)

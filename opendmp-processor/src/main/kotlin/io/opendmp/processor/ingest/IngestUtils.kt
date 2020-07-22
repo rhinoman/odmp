@@ -16,11 +16,26 @@
 
 package io.opendmp.processor.ingest
 
+import io.opendmp.common.exception.NotImplementedException
 import io.opendmp.common.message.ProcessRequestMessage
+import io.opendmp.common.model.SourceType
+import org.apache.camel.Endpoint
 
 object IngestUtils {
 
+    /**
+     * This function sets up an ingest camel route
+     */
     fun handleIngestRequest(msg: ProcessRequestMessage) {
+        // An Ingest node has only one input,
+        // so we just grab the first
+        val input = msg.inputs.first()
+
+        val endpoint: String = when(input.sourceType) {
+            SourceType.INGEST_FILE_DROP ->
+                "file://${input.sourceLocation!!}?readLock=changed"
+            else -> throw NotImplementedException("SourceType ${input.sourceType} not implemented")
+        }
 
     }
 
