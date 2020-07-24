@@ -26,6 +26,8 @@ import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.DataflowService
 import org.bson.types.ObjectId
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -37,6 +39,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.remove
 import org.springframework.http.MediaType
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf
@@ -59,6 +62,12 @@ class DataflowControllerTest(
         @Autowired val mongoTemplate: ReactiveMongoTemplate
 ) {
     private val baseUri : String = "/dataflow_api/dataflow"
+
+    @AfterEach
+    fun cleanUp() {
+        mongoTemplate.remove<DataflowModel>()
+        mongoTemplate.remove<ProcessorModel>()
+    }
 
     @MockBean
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder

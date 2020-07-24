@@ -21,5 +21,5 @@ package io.opendmp.common.model
  *   It will most often be PROCESSOR or an INGEST type
  */
 enum class SourceType {
-    PROCESSOR, INGEST_FILE_DROP, INGEST_FTP, NONE
+    PROCESSOR, COLLECTION, INGEST_FILE_DROP, INGEST_FTP, NONE
 }

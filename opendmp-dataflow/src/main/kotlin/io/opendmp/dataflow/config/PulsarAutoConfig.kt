@@ -49,7 +49,7 @@ class PulsarAutoConfig(
     private fun ensureNameSpace(tenant: String, namespace: String) {
         val namespaces = admin?.namespaces()?.getNamespaces(tenant)
         if (!namespaces!!.contains("$tenant/$namespace")) {
-            admin?.namespaces()?.createNamespace(namespace, clusters)
+            admin?.namespaces()?.createNamespace("$tenant/$namespace", clusters)
         }
     }
 

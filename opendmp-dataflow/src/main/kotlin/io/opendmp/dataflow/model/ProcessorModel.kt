@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.model
 
+import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import org.bson.types.ObjectId
@@ -44,4 +45,13 @@ data class ProcessorModel(@Id val id : String = ObjectId.get().toHexString(),
                           val createdOn: Instant = Instant.now(),
                           @LastModifiedDate
                           var updatedOn: Instant = Instant.now()) {
+
+    fun toRunModel() = ProcessorRunModel(
+            id = this.id,
+            flowId = this.flowId,
+            name = this.name,
+            type = this.type,
+            properties = this.properties,
+            inputs = this.inputs
+    )
 }

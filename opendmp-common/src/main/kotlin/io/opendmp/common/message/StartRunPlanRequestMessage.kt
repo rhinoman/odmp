@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.common.message
 
-enum class RunState {
-    IDLE,
-    ERROR,
-    DISABLED,
-    RUNNING,
-    PAUSED
-}
+import io.opendmp.common.model.ProcessorRunModel
+
+data class StartRunPlanRequestMessage(val requestId: String,
+                                      val flowId: String,
+                                      val startingProcessors: List<String>,
+                                      val processorDependencyMap: Map<String, List<String>>,
+                                      val processors: Map<String, ProcessorRunModel>) {}
