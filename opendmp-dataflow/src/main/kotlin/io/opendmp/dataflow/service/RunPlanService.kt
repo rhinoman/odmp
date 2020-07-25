@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.service
 
+import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.model.runplan.RunPlanModel
@@ -23,11 +24,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.collect
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -40,13 +39,14 @@ import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Service
 
 @Service
-class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate) {
+class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate,
+                     @Autowired private val dispatcher: RunPlanDispatcher) {
 
     private val log = LoggerFactory.getLogger(RunPlanService::class.java)
     private val coroutineContext = Dispatchers.IO + SupervisorJob()
 
     suspend fun generateRunPlan(dataflow: DataflowModel) : RunPlanModel {
-        log.info("Loading Dataflow ${dataflow.name}")
+        log.debug("Loading Dataflow ${dataflow.name}")
         val pQ = Query(Criteria.where("flowId").isEqualTo(dataflow.id))
         val procs = mongoTemplate.find<ProcessorModel>(pQ).asFlow()
         return RunPlanModel.createRunPlan(dataflow, procs.toList())
@@ -54,6 +54,8 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
 
     suspend fun dispatchDataflow(dataflow: DataflowModel) {
         val runPlan = generateRunPlan(dataflow)
+        log.info("Dispatching Dataflow ${dataflow.name}")
+        dispatcher.dispatchRunPlan(runPlan.createStartMessage())
     }
 
     suspend fun dispatchDataflows() {

@@ -36,6 +36,8 @@
             ["@material-ui/core/CardHeader" :default CardHeader]
             ["@material-ui/core/IconButton" :default IconButton]
             ["@material-ui/core/Tooltip" :default Tooltip]
+            ["@material-ui/core/FormControlLabel" :default FormControlLabel]
+            ["@material-ui/core/Switch" :default Switch]
             ["@material-ui/icons/AddTwoTone" :default AddIcon]
             ["@material-ui/icons/RemoveTwoTone" :default RemoveIcon]
             ["@material-ui/icons/DeleteTwoTone" :default DeleteIcon]
@@ -71,32 +73,50 @@
                      :top 5
                      :margin-bottom 5}}))
 
+(defn update-dataflow [dataflow]
+  (let [update {:name        (:name dataflow)
+                :description (:description dataflow)
+                :group       (:group dataflow)
+                :enabled     (:enabled dataflow)}]
+    (rf/dispatch [::events/update-dataflow (:id dataflow) update])))
+
 (defn toolbar [num-phases classes]
-  [:> Toolbar {:disableGutters true}
-   [:> Grid {:container true :spacing 2}
-    [:> Grid {:item true :xs 9}]
-    [:> Grid {:item true :xs 3}
-     [:> Button {:color :primary
-                 :variant :contained
-                 :disableElevation true
-                 :size :small
-                 :disabled (= @num-phases 0)
-                 :onClick #(swap! num-phases inc)
-                 :class (:right classes)}
-      [:> AddIcon] "Add Phase"]]]])
+  (let [dataflow (rf/subscribe [::subs/current-dataflow])
+        enabled-state (r/atom (or (:enabled @dataflow) false))]
+   (fn [num-phases classes]
+    [:> Toolbar {:disableGutters true}
+     [:> Grid {:container true :spacing 2}
+      [:> Grid {:item true :xs 9}
+       [:> Tooltip {:title (if @enabled-state "Disable the flow to make changes" "Flow is disabled")}
+        [:> FormControlLabel
+         {:label (str "Flow " (if @enabled-state "Enabled" "Disabled"))
+          :control (r/as-element [:> Switch {:name "enabled"
+                                             :checked @enabled-state
+                                             :onChange (fn [e] (swap! enabled-state not)
+                                                         (update-dataflow (assoc @dataflow :enabled @enabled-state)))
+                                             :color :primary}])}]]]
+      [:> Grid {:item true :xs 3}
+       [:> Button {:color :primary
+                   :variant :contained
+                   :disableElevation true
+                   :size :small
+                   :disabled (or (= @num-phases 0) (not @enabled-state))
+                   :onClick #(swap! num-phases inc)
+                   :class (:right classes)}
+        [:> AddIcon] "Add Phase"]]]])))
 
 
 (defn connection
   "Draw single connection line"
   [processor]
   (map (fn [i]
-         (if (and (= (:sourceType i) "PROCESSOR") (some? (:sourceId i)))
-           ^{:key (str "LINK_" (:id processor) "_" (:sourceId i))}
-           [:> ^js LineTo {:from (:sourceId i)
-                       :to (:id processor)
-                       :borderColor "gray"
-                       :delay 0
-                       :zIndex 5}]))
+         (if (and (= (:sourceType i) "PROCESSOR") (some? (:sourceLocation i)))
+           ^{:key (str "LINK_" (:id processor) "_" (:sourceLocation i))}
+           [:> ^js LineTo {:from (:sourceLocation i)
+                           :to (:id processor)
+                           :borderColor "gray"
+                           :delay 0
+                           :zIndex 6}]))
        (:inputs processor)))
 
 (defn connections
@@ -106,22 +126,23 @@
 
 (defn phase
   "Displays an individual phase 'column' in the flow"
-  [phase-num processors num-phases classes & {:keys [body-text]}]
+  [phase-num processors num-phases dataflow classes & {:keys [body-text]}]
   ^{:key (str "PHASE_" phase-num)}
   [:div {:class (:phase-col classes)}
-   [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
-    (str "Phase " phase-num)]
-   (map #(processor-card %) processors)
-   (connections processors)
-   [:> Button {:color :primary
-               :onClick #(rf/dispatch [::events/toggle-create-processor-dialog phase-num])
-               :size :small} [:> AddIcon] "Add Processor"]
-   (if (and (> phase-num 1) (= (count processors) 0))
-     [:> Button {:color :secondary
-                 :onClick #(swap! num-phases dec)
-                 :size :small} [:> RemoveIcon] "Remove Phase"]
-     )
-   (if (some? body-text) body-text)])
+    [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
+     (str "Phase " phase-num)]
+    (map #(processor-card %) processors)
+    (connections processors)
+    [:> Button {:color :primary
+                :onClick #(rf/dispatch [::events/toggle-create-processor-dialog phase-num]) 
+                :disabled (not (:enabled dataflow))
+                :size :small} [:> AddIcon] "Add Processor"]
+    (if (and (> phase-num 1) (= (count processors) 0))
+      [:> Button {:color :secondary
+                  :onClick #(swap! num-phases dec)
+                  :size :small} [:> RemoveIcon] "Remove Phase"]
+      )
+    (if (some? body-text) body-text)])
 
 (defn empty-flow
   "What to display when a dataflow has no processors"
@@ -133,13 +154,14 @@
 (defn processor-pane [processors classes]
   (let [num-phases (r/atom (or (dutil/num-phases processors) 1))]
     (fn [processors classes]
-      [:<>
-       (toolbar num-phases classes)
-       [:> Paper {:class (:proc-wrapper classes)}
-        (if (= (count processors) 0)
-          (empty-flow classes)
-          (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases classes))
-               (range 1 (inc @num-phases))))]])))
+      (let [dataflow @(rf/subscribe [::subs/current-dataflow])]
+        [:<>
+         [toolbar num-phases classes]
+         [:> Paper {:class (:proc-wrapper classes)}
+          (if (= (count processors) 0)
+            (empty-flow classes)
+            (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases dataflow classes))
+                 (range 1 (inc @num-phases))))]]))))
 
 (defn flow
   "Display a dataflow"
@@ -169,4 +191,4 @@
         [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
          [:> Typography {:variant :subtitle1} (:description @dataflow)]]
         
-        [processor-pane processors classes])])))
+        (if (some? @dataflow) [processor-pane processors classes]))])))

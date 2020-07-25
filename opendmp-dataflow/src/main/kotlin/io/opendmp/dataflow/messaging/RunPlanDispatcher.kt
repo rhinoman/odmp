@@ -16,12 +16,13 @@
 
 package io.opendmp.dataflow.messaging
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.opendmp.common.message.StartRunPlanRequestMessage
 import org.apache.camel.ProducerTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 
 @Component
@@ -39,8 +40,15 @@ class RunPlanDispatcher @Autowired constructor(
     fun endPointUrl() : String =
             "pulsar:non-persistent://$pulsarNamespace/runplan_request?producerName=odmpDataflow"
 
-    suspend fun dispatchRunPlan() {
-
+    fun dispatchRunPlan(msg: StartRunPlanRequestMessage) {
+        try {
+            val jsonData = mapper.writeValueAsString(msg)
+            producerTemplate.sendBody(endPointUrl(), jsonData)
+        } catch (jpe: JsonProcessingException) {
+            log.error("Error converting request message", jpe)
+        } catch (ex: Exception) {
+            log.error("Error sending message", ex)
+        }
     }
 
 }

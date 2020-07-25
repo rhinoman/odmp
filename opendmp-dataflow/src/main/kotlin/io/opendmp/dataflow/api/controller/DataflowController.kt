@@ -18,6 +18,7 @@ package io.opendmp.dataflow.api.controller
 
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
+import io.opendmp.dataflow.api.request.UpdateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
@@ -42,6 +43,13 @@ class DataflowController(private val dataflowService: DataflowService) {
     @GetMapping("/{id}")
     fun findOne(@PathVariable("id") id: String) : Mono<DataflowModel> {
         return dataflowService.get(id)
+    }
+
+    @PutMapping("/{id}")
+    fun updateDataflow(@PathVariable("id") id: String,
+                       @Valid @RequestBody data : UpdateDataflowRequest,
+                       authentication: Authentication) : Mono<DataflowModel> {
+        return dataflowService.updateDataflow(id, data, authentication)
     }
 
     @PostMapping

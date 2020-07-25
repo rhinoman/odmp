@@ -16,7 +16,7 @@
 
 package io.opendmp.processor.messaging
 
-import io.opendmp.processor.handler.ProcessRequestHandler
+import io.opendmp.processor.handler.RunPlanRequestHandler
 import org.apache.camel.CamelContext
 import org.apache.camel.ConsumerTemplate
 import org.apache.camel.builder.RouteBuilder
@@ -25,20 +25,17 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
-class ProcessRequestRouter(
-        @Autowired val processRequestHandler: ProcessRequestHandler,
-        @Autowired val camel: CamelContext,
-        @Autowired val consumer: ConsumerTemplate
-) : RouteBuilder() {
+class RunPlanRequestRouter(
+        @Autowired val runPlanRequestHandler: RunPlanRequestHandler) : RouteBuilder() {
 
     @Value("\${odmp.pulsar.namespace}")
     val pulsarNamespace: String = "public/default"
 
     fun endPointUrl() : String =
-            "pulsar:persistent://$pulsarNamespace/process_request"
+            "pulsar:non-persistent://$pulsarNamespace/runplan_request"
 
     override fun configure() {
-        from(endPointUrl()).to("bean:processRequestHandler")
+        from(endPointUrl()).to("bean:runPlanRequestHandler")
     }
 
 }

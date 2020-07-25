@@ -20,27 +20,22 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.opendmp.common.exception.NotImplementedException
-import io.opendmp.common.message.ProcessRequestMessage
-import io.opendmp.common.model.ProcessorType
-import io.opendmp.processor.ingest.IngestUtils
+import io.opendmp.common.message.StartRunPlanRequestMessage
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class ProcessRequestHandler {
+class RunPlanRequestHandler {
 
-    private val log = LoggerFactory.getLogger(ProcessRequestHandler::class.java)
+    private val log = LoggerFactory.getLogger(RunPlanRequestHandler::class.java)
 
     private val mapper = jacksonObjectMapper()
 
-    fun receiveProcessRequest(data: String) {
+    fun receiveRunPlanRequest(data: String) {
         log.debug("Received message")
         try {
-            val msg = mapper.readValue<ProcessRequestMessage>(data)
-            when(msg.processorType) {
-                ProcessorType.INGEST -> IngestUtils.handleIngestRequest(msg)
-                else -> throw NotImplementedException("${msg.processorType} is not yet implemented")
-            }
+            val msg = mapper.readValue<StartRunPlanRequestMessage>(data)
+            log.info(msg.toString())
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)
         } catch (ex: Exception) {

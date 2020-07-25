@@ -92,6 +92,11 @@
  (fn [db _]
    (get-in db [:lookup :trigger-types])))
 
+(re-frame/reg-sub
+ ::lookup-source-types
+ (fn [db _]
+   (get-in db [:lookup :source-types])))
+
 ;; User
 (re-frame/reg-sub
  ::user-info

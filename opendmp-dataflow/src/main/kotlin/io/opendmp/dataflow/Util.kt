@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.dataflow
 
-/**
- * SourceType identifies the type of a source input
- *   It will most often be PROCESSOR or an INGEST type
- */
-enum class SourceType {
-    PROCESSOR, INGEST_COLLECTION, INGEST_FILE_DROP, INGEST_FTP, NONE
+import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
+import org.springframework.security.oauth2.jwt.Jwt
+
+object Util {
+
+    fun getUsername(authentication: Authentication) : String {
+        return when(val principal = authentication.principal) {
+            is OidcUser -> principal.preferredUsername
+            is Jwt -> principal.claims["preferred_username"] as String
+            else -> ""
+        }
+    }
+
 }

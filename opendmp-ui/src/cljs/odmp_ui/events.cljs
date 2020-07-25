@@ -189,6 +189,22 @@
                  :on-success      [::success-post-dataflow]
                  :on-failure      [::http-request-failure :post-dataflow]}}))
 
+;;; UPDATE dataflow
+(re-frame/reg-event-fx
+ ::update-dataflow
+ (fn [{:keys [db]} [_ id flow]]
+   {:db (-> db
+            (assoc-in [:loading :put-dataflow] true))
+    :http-xhrio {:method          :put
+                 :uri             (str "/dataflow_api/dataflow/" id)
+                 :timeout         5000
+                 :headers         (basic-headers db)
+                 :params          flow
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::success-put-dataflow]
+                 :on-failure      [::http-request-failure :put-dataflow]}}))
+
 ;;; DELETE dataflow
 (re-frame/reg-event-fx
  ::delete-dataflow
@@ -234,6 +250,22 @@
                  :on-success      [::success-fetch-processor]
                  :on-failure      [::http-request-failure :get-processor]}}))
 
+;;; UPDATE a processor
+(re-frame/reg-event-fx
+ ::update-processor
+ (fn [{:keys [db]} [_ proc]]
+   {:db (-> db
+            (assoc-in [:loading :put-processor] true))
+    :http-xhrio {:method          :put
+                 :uri             (str "/dataflow_api/processor/" (:id proc))
+                 :timeout         5000
+                 :headers         (basic-headers db)
+                 :params          proc
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::success-put-processor]
+                 :on-failure      [::http-request-failure :put-processor]}}))
+
 ;;; DELETE a processor
 (re-frame/reg-event-fx
  ::delete-processor
@@ -272,6 +304,17 @@
                  :on-success      [::success-lookup :trigger-types]
                  :on-failure      [::http-request-failure :lookup-trigger-types]}}))
 
+(re-frame/reg-event-fx
+ ::lookup-source-types
+ (fn [{:keys [db]} [_ ptype]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/dataflow_api/lookup/source_types?processorType=" ptype)
+                 :timeout         3000
+                 :headers         (basic-headers db)
+                 :response-format (ajax/json-response-format)
+                 :on-success      [::success-lookup :lookup-source-types]
+                 :on-failure      [::http-request-failure :lookup-source-types]}}))
+
 (re-frame/reg-event-db
  ::success-lookup
  (fn [db [_ loc result]]
@@ -308,6 +351,14 @@
        (assoc-in [:request-errors :post-dataflow] nil))))
 
 (re-frame/reg-event-db
+ ::success-put-dataflow
+ (fn [db [_ result]]
+   (-> db
+       (assoc-in [:loading :put-dataflow] false)
+       (assoc-in [:request-errors :put-dataflow] nil)
+       (assoc :current-dataflow result))))
+
+(re-frame/reg-event-db
  ::success-delete-dataflow
  (fn [db [_ result]]
    (navigate "/dataflows")
@@ -331,6 +382,14 @@
        (assoc-in [:loading :processor] false)
        (assoc :current-processor (:processor result))
        (assoc :current-dataflow (:dataflow result)))))
+
+(re-frame/reg-event-db
+ ::success-put-processor
+ (fn [db [_ result]]
+   (-> db
+       (assoc-in [:loading :put-processor] false)
+       (assoc-in [:request-errors :put-processor] nil)
+       (assoc :current-processor result))))
 
 (re-frame/reg-event-db
  ::success-delete-processor

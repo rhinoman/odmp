@@ -20,7 +20,9 @@ import com.mongodb.client.result.DeleteResult
 import io.opendmp.common.model.HealthModel
 import io.opendmp.common.model.HealthState
 import io.opendmp.common.model.RunState
+import io.opendmp.dataflow.Util
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
+import io.opendmp.dataflow.api.request.UpdateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.model.*
@@ -48,11 +50,8 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
     fun createDataflow(data : CreateDataflowRequest,
                        authentication: Authentication) : Mono<DataflowModel> {
 
-        val username = when(val principal = authentication.principal) {
-            is OidcUser -> principal.preferredUsername
-            is Jwt -> principal.claims["preferred_username"] as String
-            else -> ""
-        }
+        val username = Util.getUsername(authentication)
+
         val dataflow = DataflowModel(
                 name = data.name!!,
                 description = data.description,
@@ -63,6 +62,20 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
 
     fun get(id: String) : Mono<DataflowModel> {
         return mongoTemplate.findById<DataflowModel>(id)
+    }
+
+    fun updateDataflow(id: String,
+                       data: UpdateDataflowRequest,
+                       authentication: Authentication) : Mono<DataflowModel> {
+
+        val username = Util.getUsername(authentication)
+        return mongoTemplate.findById<DataflowModel>(id).flatMap { cur ->
+            cur.name = data.name!!
+            cur.description = data.description
+            cur.group = data.group
+            cur.enabled = data.enabled!!
+            mongoTemplate.save(cur)
+        }
     }
 
     suspend fun getList() : Flow<DataflowListItem> {

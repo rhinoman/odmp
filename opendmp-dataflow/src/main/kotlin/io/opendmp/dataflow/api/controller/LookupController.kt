@@ -17,11 +17,13 @@
 package io.opendmp.dataflow.api.controller
 
 import io.opendmp.common.model.ProcessorType
+import io.opendmp.common.model.SourceType
 import io.opendmp.dataflow.model.TriggerType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -36,6 +38,16 @@ class LookupController {
     @GetMapping("/trigger_types")
     fun getTriggerTypes(): Flow<TriggerType> {
         return TriggerType.values().asFlow()
+    }
+
+    @GetMapping("/source_types")
+    fun getSourceTypes(@RequestParam(required = false) processorType: ProcessorType) : Flow<SourceType> {
+        val sourceTypes = SourceType.values()
+        return when (processorType) {
+            ProcessorType.INGEST ->
+                sourceTypes.filter { it.toString().startsWith("INGEST_") }.asFlow()
+            else -> sourceTypes.filter{ !it.toString().startsWith("INGEST") }.asFlow()
+        }
     }
 
 }
