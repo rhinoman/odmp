@@ -25,6 +25,8 @@ import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.api.request.UpdateProcessorRequest
 import io.opendmp.dataflow.api.response.ProcessorDetail
 import io.opendmp.dataflow.config.MongoConfig
+import io.opendmp.dataflow.messaging.ProcessRequester
+import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.ProcessorService
@@ -73,6 +75,12 @@ class ProcessorControllerTest(
 
     @MockBean
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
+
+    @MockBean
+    lateinit var runPlanDispatcher: RunPlanDispatcher
+
+    @MockBean
+    lateinit var processRequester: ProcessRequester
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])

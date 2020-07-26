@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class ProcessRequester @Autowired constructor(
-        private val camelContext: CamelContext,
         private val producerTemplate: ProducerTemplate
 ){
     @Value("\${odmp.pulsar.namespace}")

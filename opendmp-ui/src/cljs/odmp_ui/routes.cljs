@@ -22,6 +22,7 @@
    [re-frame.core :as re-frame]
    [re-pressed.core :as rp]
    [odmp-ui.events :as events]
+   [odmp-ui.views.processor.events :as proc-events]
    [odmp-ui.util.window :as window]
    [odmp-ui.util.network :as net]
    [goog.history.EventType :as EventType]))
@@ -67,7 +68,8 @@
 
   (defroute "/processors/:id" [id]
     (re-frame/dispatch [::events/set-active-panel :processor-item-panel])
-    (net/auth-dispatch [::events/fetch-processor id])
+    (net/auth-dispatch [::events/fetch-processor id {:load-processors? true}])
+    (re-frame/dispatch [::proc-events/clear-processor-edit-fields])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
 

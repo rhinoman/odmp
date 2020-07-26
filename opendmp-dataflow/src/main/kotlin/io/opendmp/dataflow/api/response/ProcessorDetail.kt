@@ -19,5 +19,6 @@ package io.opendmp.dataflow.api.response
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 
+
 data class ProcessorDetail(val processor: ProcessorModel,
                            val dataflow: DataflowModel) {}

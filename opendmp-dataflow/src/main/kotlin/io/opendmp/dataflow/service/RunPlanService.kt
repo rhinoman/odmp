@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -37,6 +38,7 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
 
 @Service
 class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate,
@@ -56,6 +58,14 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         val runPlan = generateRunPlan(dataflow)
         log.info("Dispatching Dataflow ${dataflow.name}")
         dispatcher.dispatchRunPlan(runPlan.createStartMessage())
+    }
+
+    fun dispatchDataflow(dataflow: Mono<DataflowModel>) {
+        dataflow.toFuture().thenAccept{
+            CoroutineScope(coroutineContext).launch {
+                dispatchDataflow(it)
+            }
+        }
     }
 
     suspend fun dispatchDataflows() {

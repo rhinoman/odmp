@@ -22,11 +22,14 @@ import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.config.MongoConfig
+import io.opendmp.dataflow.messaging.ProcessRequester
+import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.service.DataflowService
+import org.apache.camel.test.spring.junit5.CamelSpringBootTest
+import org.apache.camel.test.spring.junit5.CamelSpringTest
 import org.bson.types.ObjectId
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -52,6 +55,7 @@ import org.springframework.test.web.reactive.server.expectBody
 @WebFluxTest(DataflowController::class)
 @ComponentScan(basePackages = [
     "io.opendmp.dataflow.service",
+    "io.opendmp.dataflow.messaging",
     "import com.c4_soft.springaddons.security.oauth2.test.webflux"
 ])
 @ContextConfiguration(classes = [MongoConfig::class, DataflowController::class])
@@ -71,6 +75,12 @@ class DataflowControllerTest(
 
     @MockBean
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
+
+    @MockBean
+    lateinit var runPlanDispatcher: RunPlanDispatcher
+
+    @MockBean
+    lateinit var processRequester: ProcessRequester
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])

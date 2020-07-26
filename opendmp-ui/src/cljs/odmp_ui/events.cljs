@@ -239,7 +239,7 @@
 ;;; FETCH a processor
 (re-frame/reg-event-fx
  ::fetch-processor
- (fn [{:keys [db]} [_ id]]
+ (fn [{:keys [db]} [_ id opts]]
    {:db (-> db
             (assoc-in [:loading :processor] true))
     :http-xhrio {:method          :get
@@ -247,17 +247,17 @@
                  :timeout         5000
                  :headers         (basic-headers db)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [::success-fetch-processor]
+                 :on-success      [::success-fetch-processor opts]
                  :on-failure      [::http-request-failure :get-processor]}}))
 
 ;;; UPDATE a processor
 (re-frame/reg-event-fx
  ::update-processor
- (fn [{:keys [db]} [_ proc]]
+ (fn [{:keys [db]} [_ id proc]]
    {:db (-> db
             (assoc-in [:loading :put-processor] true))
     :http-xhrio {:method          :put
-                 :uri             (str "/dataflow_api/processor/" (:id proc))
+                 :uri             (str "/dataflow_api/processor/" id)
                  :timeout         5000
                  :headers         (basic-headers db)
                  :params          proc
@@ -312,7 +312,7 @@
                  :timeout         3000
                  :headers         (basic-headers db)
                  :response-format (ajax/json-response-format)
-                 :on-success      [::success-lookup :lookup-source-types]
+                 :on-success      [::success-lookup :source-types]
                  :on-failure      [::http-request-failure :lookup-source-types]}}))
 
 (re-frame/reg-event-db
@@ -377,7 +377,10 @@
 
 (re-frame/reg-event-db
  ::success-fetch-processor
- (fn [db [_ result]]
+ (fn [db [_ opts result]]
+   (re-frame/dispatch [::lookup-source-types (get-in result [:processor :type])])
+   (if (:load-processors? opts)
+     (re-frame/dispatch [::fetch-dataflow-processors (get-in result [:processor :flowId])]))
    (-> db
        (assoc-in [:loading :processor] false)
        (assoc :current-processor (:processor result))

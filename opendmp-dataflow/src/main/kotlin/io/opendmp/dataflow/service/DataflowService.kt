@@ -26,8 +26,11 @@ import io.opendmp.dataflow.api.request.UpdateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.model.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,9 +46,12 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
+class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
+                       private val runPlanService: RunPlanService) {
 
     private val log = LoggerFactory.getLogger(javaClass)
+
+    private val coroutineContext = Dispatchers.IO
 
     fun createDataflow(data : CreateDataflowRequest,
                        authentication: Authentication) : Mono<DataflowModel> {
@@ -70,11 +76,19 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
 
         val username = Util.getUsername(authentication)
         return mongoTemplate.findById<DataflowModel>(id).flatMap { cur ->
+            val oldEnableState = cur.enabled
             cur.name = data.name!!
             cur.description = data.description
             cur.group = data.group
             cur.enabled = data.enabled!!
-            mongoTemplate.save(cur)
+            val updatedDataflow = mongoTemplate.save(cur)
+            if(cur.enabled && !oldEnableState) {
+                runPlanService.dispatchDataflow(updatedDataflow)
+            } else if(!cur.enabled && oldEnableState) {
+                //TODO: Send a stop message for the dataflow
+                log.info("Stopping dataflow ${cur.name}")
+            }
+            updatedDataflow
         }
     }
 
@@ -98,10 +112,12 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate) {
         }
     }
 
-    fun getProcessors(id: String) : Flow<ProcessorModel> {
-        val query =
-                Query(Criteria.where("flowId").isEqualTo(id))
-                        .with(Sort.by(Sort.Direction.ASC, "phase", "order"))
+    fun getProcessors(id: String, phase: Int?) : Flow<ProcessorModel> {
+        val query = Query(Criteria.where("flowId").isEqualTo(id))
+                .with(Sort.by(Sort.Direction.ASC, "phase", "order"))
+        if(phase != null) {
+            query.addCriteria(Criteria.where("phase").isEqualTo(id))
+        }
         return mongoTemplate.find<ProcessorModel>(query).asFlow()
     }
 

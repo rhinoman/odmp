@@ -41,8 +41,8 @@ class LookupController {
     }
 
     @GetMapping("/source_types")
-    fun getSourceTypes(@RequestParam(required = false) processorType: ProcessorType) : Flow<SourceType> {
-        val sourceTypes = SourceType.values()
+    fun getSourceTypes(@RequestParam(required = false) processorType: ProcessorType?) : Flow<SourceType> {
+        val sourceTypes = SourceType.values().filter { it != SourceType.NONE }
         return when (processorType) {
             ProcessorType.INGEST ->
                 sourceTypes.filter { it.toString().startsWith("INGEST_") }.asFlow()

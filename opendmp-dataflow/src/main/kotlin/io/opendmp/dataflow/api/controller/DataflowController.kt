@@ -64,7 +64,8 @@ class DataflowController(private val dataflowService: DataflowService) {
     }
 
     @GetMapping("/{id}/processors")
-    fun getProcessors(@PathVariable("id") id: String) : Flow<ProcessorModel> {
-        return dataflowService.getProcessors(id)
+    fun getProcessors(@PathVariable("id") id: String,
+                      @RequestParam (required = false) phase: Int?) : Flow<ProcessorModel> {
+        return dataflowService.getProcessors(id, phase)
     }
 }
