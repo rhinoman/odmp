@@ -76,29 +76,26 @@
 
 
 (defn update-input [cur-inputs field-inputs]
-  (println field-inputs)
-  (println cur-inputs)
-  (if (= 0 (count cur-inputs))
-    (map-indexed (fn [idx in]
-                   {:sourceType (get-in in [idx :sourceType])
-                    :sourceLocation (get-in in [idx :sourceLocation])})
-                 field-inputs)
-    (map-indexed
-     (fn [idx itm]
-       (if-some [e-itm (get field-inputs idx)]
-         {:sourceType (or (:sourceType e-itm) (:sourceType itm))
-          :sourceLocation (or (:sourceLocation e-itm) (:sourceLocation itm))}
-         itm)) cur-inputs)))
+  (reduce-kv (fn [m k v]
+               (let [st (:sourceType v)
+                     sl (:sourceLocation v)
+                     curt (get-in cur-inputs [k :sourceType])
+                     curl (get-in cur-inputs [k :sourceLocation])]
+                 (-> m
+                     (assoc-in [k :sourceType] (or st curt))
+                     (assoc-in [k :sourceLocation] (or sl curl)))))
+             (or cur-inputs []) field-inputs))
+   
 
 (defn save-processor
   "Updates the processor"
   [evt processor]
   (.preventDefault evt)
   (let [input-fields (rf/subscribe [::proc-subs/edit-inputs])
-        ;up-inputs (update-input (:inputs processor) @input-fields)
-        ]
-    (println @input-fields)
-    ))
+        up-inputs (update-input (:inputs processor) @input-fields)
+        updated-processor (-> processor
+                              (assoc :inputs up-inputs))]
+    (rf/dispatch [::events/update-processor (:id processor) updated-processor])))
 
 (defn common-fields
   "Displays fields common to all processors"

@@ -77,7 +77,9 @@
         [:> InputLabel {:id (str "INPUT_" idx "_LABEL")} "Source Type"]
         [:> Select {:labelid (str "INPUT_" idx "_LABEL")
                     :value type-field-value
-                    :onChange #(rf/dispatch [::proc-events/set-processor-input-type-field idx (-> % .-target .-value)])}
+                    :onChange #(do 
+                                 (rf/dispatch [::proc-events/set-processor-input-type-field idx (-> % .-target .-value)])
+                                 (rf/dispatch [::proc-events/set-processor-input-location-field idx ""]))}
          [:> MenuItem {:value "NONE"} [:em "None"]]
          (map (fn [st] ^{:key (str "INPUT_" idx "_ST_" st)}
                 [:> MenuItem {:value st} st]) @source-types)]]]
@@ -91,7 +93,8 @@
 (defn input-fields [processor]
   (let [source-types (rf/subscribe [::subs/lookup-source-types])
         flow-processors (rf/subscribe [::subs/current-dataflow-processors])
-        edit-inputs (rf/subscribe [::proc-subs/edit-inputs])]
+        edit-inputs (rf/subscribe [::proc-subs/edit-inputs])
+        num-inputs (count (:inputs @processor))]
     (if (and (some? @source-types) (some? @flow-processors))
       [:> Box
        (doall (map-indexed (fn [idx itm] ^{:key (str (:id processor) "_INPUT_FIELD_" idx)}
@@ -99,4 +102,4 @@
                            (:inputs @processor)))
        ;; And one more input field for adding new inputs
        ^{:key (str (:id processor) "_INPUT_FIELD_NEW")}
-       [input-field (inc (count (:inputs processor))) @processor nil]])))
+       [input-field (if (= num-inputs 0) 0 num-inputs) @processor nil]])))
