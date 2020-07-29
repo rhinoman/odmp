@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor
+package io.opendmp.dataflow.api.exception
 
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-import org.springframework.boot.runApplication
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
+import java.lang.RuntimeException
 
-@SpringBootApplication(exclude = [
-	RedisAutoConfiguration::class, RedisRepositoriesAutoConfiguration::class])
-class OpendmpProcessorApplication
-
-fun main(args: Array<String>) {
-	runApplication<OpendmpProcessorApplication>(*args)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+class BadRequestException(msg: String) : RuntimeException(msg) {
 }

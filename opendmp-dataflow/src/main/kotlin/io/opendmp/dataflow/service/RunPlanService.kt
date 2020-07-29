@@ -55,9 +55,11 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
     }
 
     suspend fun dispatchDataflow(dataflow: DataflowModel) {
-        val runPlan = generateRunPlan(dataflow)
+        val runPlan = mongoTemplate.save(generateRunPlan(dataflow))
         log.info("Dispatching Dataflow ${dataflow.name}")
-        dispatcher.dispatchRunPlan(runPlan.createStartMessage())
+        runPlan.toFuture().thenAccept {
+            dispatcher.dispatchRunPlan(it.createStartMessage())
+        }
     }
 
     fun dispatchDataflow(dataflow: Mono<DataflowModel>) {

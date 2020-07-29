@@ -92,6 +92,8 @@ services:
   redis:
     image: 'redis:6-alpine'
     restart: unless-stopped
+    ports:
+      - 6379:6379
 
   haproxy:
     image: 'haproxy:2.1-alpine'

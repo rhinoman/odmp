@@ -50,7 +50,7 @@ data class RunPlanModel(@Id val id: String = ObjectId.get().toHexString(),
                         var finishedDate: Instant? = null) {
 
     fun createStartMessage() = StartRunPlanRequestMessage(
-            requestId = UUID.randomUUID().toString(),
+            requestId = this.id,
             flowId = this.flowId,
             startingProcessors = this.startingProcessors,
             processorDependencyMap = this.processorDependencyMap,

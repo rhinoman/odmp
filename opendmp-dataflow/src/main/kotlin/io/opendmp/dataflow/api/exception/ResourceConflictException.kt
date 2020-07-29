@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.ingest
+package io.opendmp.dataflow.api.exception
 
-import org.apache.camel.CamelContext
-import org.apache.camel.builder.RouteBuilder
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
+import java.lang.RuntimeException
 
-class IngestRouteBuilder(
-        @Autowired val camel: CamelContext
-) : RouteBuilder(camel) {
-    override fun configure() {
-
-    }
+@ResponseStatus(HttpStatus.CONFLICT)
+class ResourceConflictException(msg: String) : RuntimeException(msg) {
 }

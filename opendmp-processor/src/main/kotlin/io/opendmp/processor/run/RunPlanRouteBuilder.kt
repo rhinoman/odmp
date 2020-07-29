@@ -14,26 +14,21 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.messaging
+package io.opendmp.processor.run
 
-import io.opendmp.processor.handler.RunPlanRequestHandler
-import org.apache.camel.builder.RouteBuilder
+import io.opendmp.processor.domain.RunPlan
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
+import org.springframework.data.redis.core.RedisTemplate
 
-@Component
-class RunPlanRequestRouter(
-        @Autowired val runPlanRequestHandler: RunPlanRequestHandler) : RouteBuilder() {
+class RunPlanRouteBuilder(private val runPlan: RunPlan,
+                          @Autowired private val redisTemplate: RedisTemplate<String, RunPlan>) {
 
-    @Value("\${odmp.pulsar.namespace}")
-    val pulsarNamespace: String = "public/default"
-
-    fun endPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_request"
-
-    override fun configure() {
-        from(endPointUrl()).to("bean:runPlanRequestHandler")
+    fun buildRoutes() {
+        runPlan.startingProcessors.map { spid ->
+            val sp = runPlan.processors[spid]
+                    ?: error("Starting processor missing from processor map")
+            runPlan.processorDependencyMap[sp.id]
+        }
     }
 
 }

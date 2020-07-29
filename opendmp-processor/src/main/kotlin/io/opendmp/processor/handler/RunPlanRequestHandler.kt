@@ -19,23 +19,32 @@ package io.opendmp.processor.handler
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.opendmp.common.exception.NotImplementedException
 import io.opendmp.common.message.StartRunPlanRequestMessage
+import io.opendmp.processor.domain.RunPlan
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.redis.core.RedisTemplate
+
 import org.springframework.stereotype.Component
 
 @Component
-class RunPlanRequestHandler {
+class RunPlanRequestHandler(
+        @Autowired private val rpTemplate: RedisTemplate<String, RunPlan>) {
 
     private val log = LoggerFactory.getLogger(RunPlanRequestHandler::class.java)
 
     private val mapper = jacksonObjectMapper()
 
-    fun receiveRunPlanRequest(data: String) {
+    suspend fun receiveRunPlanRequest(data: String) {
         log.debug("Received message")
         try {
             val msg = mapper.readValue<StartRunPlanRequestMessage>(data)
-            log.info(msg.toString())
+            //stash runplan in redis
+            log.info("Recieved Run Plan: ${msg.requestId}")
+            val rp = RunPlan.fromStartRunPlanRequestMessage(msg)
+            //Store the run plan to Redis
+            rpTemplate.opsForValue().set(rp.id, rp)
+
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)
         } catch (ex: Exception) {

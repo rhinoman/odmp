@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.ingest
+package io.opendmp.processor.run
 
 import io.opendmp.common.exception.NotImplementedException
-import io.opendmp.common.message.ProcessRequestMessage
+import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
-import org.apache.camel.Endpoint
 
-object IngestUtils {
+object Utils {
 
-    /**
-     * This function sets up an ingest camel route
-     */
-    fun handleIngestRequest(msg: ProcessRequestMessage) {
-        // An Ingest node has only one input,
-        // so we just grab the first
-        val input = msg.inputs.first()
+    fun generateIngestEndpoint(source: SourceModel) : String {
 
-        val endpoint: String = when(input.sourceType) {
+        return when(source.sourceType) {
             SourceType.INGEST_FILE_DROP ->
-                "file://${input.sourceLocation!!}?readLock=changed"
-            else -> throw NotImplementedException("SourceType ${input.sourceType} not implemented")
+                "file://${source.sourceLocation!!}?readLock=changed"
+            SourceType.INGEST_FTP ->
+                "ftp://${source.sourceLocation!!}?binary=true"
+            else -> throw NotImplementedException("SourceType ${source.sourceType} not supported")
         }
 
     }

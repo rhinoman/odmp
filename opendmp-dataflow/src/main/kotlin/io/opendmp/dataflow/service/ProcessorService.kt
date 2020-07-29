@@ -17,6 +17,8 @@
 package io.opendmp.dataflow.service
 
 import com.mongodb.client.result.DeleteResult
+import io.opendmp.dataflow.api.exception.BadRequestException
+import io.opendmp.dataflow.api.exception.NotFoundException
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.api.request.UpdateProcessorRequest
 import io.opendmp.dataflow.api.response.ProcessorDetail
@@ -30,6 +32,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 
 @Service
@@ -68,25 +71,38 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
         }
     }
 
+    private fun validateProcsesorUpdate(proc: ProcessorModel,
+                                        data: UpdateProcessorRequest) : Mono<ProcessorModel> {
+        return mongoTemplate.findById<DataflowModel>(proc.flowId)
+                .switchIfEmpty { throw NotFoundException() }
+                .handle {df, sink ->
+                    if(df.enabled) {
+                        sink.error(BadRequestException("Dataflow is still enabled!"))
+                    } else {
+                        proc.name = data.name!!
+                        proc.description = data.description
+                        proc.phase = data.phase!!
+                        proc.order = data.order!!
+                        proc.triggerType = data.triggerType!!
+                        proc.type = data.type!!
+                        proc.properties = data.properties!!.toMutableMap()
+                        proc.inputs = data.inputs!!
+                        proc.enabled = data.enabled!!
+                        sink.next(proc)
+                    }
+                }
+    }
+
     /**
      * Updates a Processor
      */
     fun updateProcessor(id: String,
                         data: UpdateProcessorRequest,
                         authentication: Authentication) : Mono<ProcessorModel> {
-
-        return get(id).flatMap {
-            it.name = data.name!!
-            it.description = data.description
-            it.phase = data.phase!!
-            it.order = data.order!!
-            it.triggerType = data.triggerType!!
-            it.type = data.type!!
-            it.properties = data.properties!!.toMutableMap()
-            it.inputs = data.inputs!!
-            it.enabled = data.enabled!!
-            mongoTemplate.save(it)
-        }
+        return get(id)
+                .switchIfEmpty { throw NotFoundException() }
+                .map { validateProcsesorUpdate(it, data) }
+                .flatMap{ mongoTemplate.save(it) }
     }
 
     fun get(id: String) : Mono<ProcessorModel> {
