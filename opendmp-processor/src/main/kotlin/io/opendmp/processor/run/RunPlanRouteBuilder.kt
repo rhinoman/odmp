@@ -16,19 +16,60 @@
 
 package io.opendmp.processor.run
 
+import io.opendmp.common.exception.RunPlanLogicException
+import io.opendmp.common.exception.UnsupportedProcessorTypeException
+import io.opendmp.common.model.ProcessorRunModel
+import io.opendmp.common.model.ProcessorType
+import io.opendmp.common.model.SourceType
 import io.opendmp.processor.domain.RunPlan
+import org.apache.camel.builder.RouteBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.RedisTemplate
 
-class RunPlanRouteBuilder(private val runPlan: RunPlan,
-                          @Autowired private val redisTemplate: RedisTemplate<String, RunPlan>) {
+class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
 
-    fun buildRoutes() {
-        runPlan.startingProcessors.map { spid ->
+    override fun configure() {
+        runPlan.startingProcessors.forEach { spid ->
             val sp = runPlan.processors[spid]
                     ?: error("Starting processor missing from processor map")
-            runPlan.processorDependencyMap[sp.id]
+
+            startRoute(sp)
         }
+    }
+
+    private fun startRoute(sp: ProcessorRunModel) {
+        // Here we assume (and will enforce) that a starting processor has only one input
+        // Camel doesn't really support it and I can't imagine a use case for it.
+        val source = sp.inputs.first()
+        val sourceEp = when(sp.type) {
+            ProcessorType.INGEST ->
+                Utils.generateIngestEndpoint(source)
+            else ->
+                throw UnsupportedProcessorTypeException("The processor type ${sp.type} is not supported as a starting processor")
+        }
+
+        val deps: List<ProcessorRunModel?> =
+                runPlan.processorDependencyMap[sp.id]?.map { runPlan.processors[it] } ?: listOf()
+        when {
+            deps.size == 1 -> {
+                val dest = "seda:${deps.first()!!.id}"
+                from(sourceEp).to(dest)
+            }
+            deps.size > 1 -> {
+                val dest = deps.map { d -> "seda:${d!!.id}"}.joinToString(",")
+                from(sourceEp)
+                        .multicast()
+                        .parallelProcessing()
+                        .to(dest)
+            }
+            else -> {
+                throw RunPlanLogicException("Starting processor has no outputs")
+            }
+        }
+    }
+
+    private fun continueRoute(curProc: ProcessorRunModel) {
+
     }
 
 }
