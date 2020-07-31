@@ -143,7 +143,7 @@ class DataflowControllerTest(
     fun `should return a list of processors`() {
         val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
         val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1, ProcessorType.INGEST,mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.TRANSFORM,mongoTemplate)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT,mongoTemplate)
         val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.EXPORT,mongoTemplate)
 
         val response = client.get().uri(baseUri + "/" + dataflow.id + "/processors")
@@ -164,7 +164,7 @@ class DataflowControllerTest(
     fun `should delete a dataflow and its processors`() {
         val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
         val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,ProcessorType.INGEST,mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.TRANSFORM,mongoTemplate)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT,mongoTemplate)
         val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.EXPORT,mongoTemplate)
 
         val response = client.mutateWith(csrf())

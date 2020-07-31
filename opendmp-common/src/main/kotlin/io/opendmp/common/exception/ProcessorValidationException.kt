@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.common.exception
 
-enum class ProcessorType {
-    INGEST, EXPORT, SCRIPT, AGGREGATOR, EXTERNAL
+class ProcessorValidationException(message: String = "Processor is invalid") : Exception(message) {
 }

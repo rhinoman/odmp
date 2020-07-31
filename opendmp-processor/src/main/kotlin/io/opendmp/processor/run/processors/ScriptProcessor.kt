@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.processor.run.processors
 
-enum class ProcessorType {
-    INGEST, EXPORT, SCRIPT, AGGREGATOR, EXTERNAL
+import io.opendmp.common.model.ProcessorRunModel
+import io.opendmp.common.model.properties.ScriptLanguage
+import org.apache.camel.Exchange
+
+class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
+    override fun process(exchange: Exchange?) {
+        val props = processor.properties!!
+        val language = ScriptLanguage.valueOf(props["language"].toString())
+        val code = props["code"].toString()
+    }
 }

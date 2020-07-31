@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.processor.run.processors
 
-enum class ProcessorType {
-    INGEST, EXPORT, SCRIPT, AGGREGATOR, EXTERNAL
+import io.opendmp.common.model.ProcessorRunModel
+import org.apache.camel.Processor
+
+abstract class AbstractProcessor(val processor: ProcessorRunModel) : Processor {
 }

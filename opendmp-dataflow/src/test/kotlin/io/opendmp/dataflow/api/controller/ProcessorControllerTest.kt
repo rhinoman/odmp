@@ -111,7 +111,7 @@ class ProcessorControllerTest(
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should be able to get a processor`() {
         val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
-        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.TRANSFORM, mongoTemplate)
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.SCRIPT, mongoTemplate)
 
         val response = client.get()
                 .uri(baseUri + "/" + proc.id)
@@ -129,7 +129,7 @@ class ProcessorControllerTest(
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should be able to update a processor`() {
         val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
-        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1, ProcessorType.TRANSFORM, mongoTemplate)
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1, ProcessorType.SCRIPT, mongoTemplate)
 
         val updateReq = UpdateProcessorRequest(
                 name = proc.name,
@@ -162,7 +162,7 @@ class ProcessorControllerTest(
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should be able to delete a processor`() {
         val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
-        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.TRANSFORM, mongoTemplate)
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.SCRIPT, mongoTemplate)
 
         val response = client.mutateWith(csrf())
                 .delete()

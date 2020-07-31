@@ -22,6 +22,7 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceType
 import io.opendmp.processor.domain.RunPlan
+import io.opendmp.processor.run.processors.ScriptProcessor
 import org.apache.camel.builder.RouteBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.RedisTemplate
@@ -37,6 +38,10 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
         }
     }
 
+    /**
+     * startRoute - starts a chain of processors
+     * Starting processors are not dependent on other processors and can start running right away
+     */
     private fun startRoute(sp: ProcessorRunModel) {
         // Here we assume (and will enforce) that a starting processor has only one input
         // Camel doesn't really support it and I can't imagine a use case for it.
@@ -56,6 +61,8 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
                 from(sourceEp).to(dest)
             }
             deps.size > 1 -> {
+                // If we have more than 1 processor expecting output from this processor,
+                // do a multicast
                 val dest = deps.map { d -> "seda:${d!!.id}"}.joinToString(",")
                 from(sourceEp)
                         .multicast()
@@ -66,10 +73,31 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
                 throw RunPlanLogicException("Starting processor has no outputs")
             }
         }
+        // Continue building with the dependencies
+        deps.forEach { this.continueRoute(it!!) }
     }
 
+    /**
+     * continueRoute - for the processors from the middle of a chain to the end
+     */
     private fun continueRoute(curProc: ProcessorRunModel) {
-
+        val sourceEp = "seda:${curProc.id}"
+        val deps: List<ProcessorRunModel?> =
+                runPlan.processorDependencyMap[curProc.id]?.map { runPlan.processors[it] } ?: listOf()
+        val proc = when(curProc.type){
+            ProcessorType.SCRIPT -> ScriptProcessor(curProc)
+            else -> throw UnsupportedProcessorTypeException("The processor type ${curProc.type} is not supported")
+        }
+        when {
+            deps.size == 1 -> from(sourceEp).process(proc).to("seda:${deps.first()!!.id}")
+            deps.size > 1 -> {
+                val dest = deps.map { d -> "seda:${d!!.id}"}.joinToString(",")
+                from(sourceEp).process(proc).multicast().to(dest)
+            }
+            else -> //End of the line
+                from(sourceEp).process(proc).end()
+        }
+        deps.forEach { this.continueRoute(it!!) }
     }
 
 }
