@@ -13,12 +13,20 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>processor</name>
 	<description>Processor Management Service for the Open Data Management  Platform</description>
-
+	<packaging>clojure</packaging>
 	<properties>
 		<java.version>11</java.version>
 		<kotlin.version>1.3.72</kotlin.version>
 		<camel.version>3.4.0</camel.version>
 	</properties>
+
+	<!-- repo for clojure dependencies -->
+	<repositories>
+		<repository>
+			<id>clojars.org</id>
+			<url>https://repo.clojars.org</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -90,6 +98,20 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.clojure</groupId>
+			<artifactId>clojure</artifactId>
+			<version>1.10.1</version>
+		</dependency>
+		<!-- Common/popular CLOJURE packages we want to support in scripting -->
+		<dependency>
+			<!-- Cheshire for JSON support -->
+			<groupId>cheshire</groupId>
+			<artifactId>cheshire</artifactId>
+			<version>5.10.0</version>
+		</dependency>
+		<!-- END CLOJURE packages -->
 	</dependencies>
 
 	<build>
@@ -99,6 +121,12 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.theoryinpractise</groupId>
+				<artifactId>clojure-maven-plugin</artifactId>
+				<version>1.8.3</version>
+				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
