@@ -20,17 +20,22 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
+import io.opendmp.common.model.properties.ScriptLanguage
 import java.util.*
 
 object TestUtils {
 
-    fun createProcessor(name: String, type: ProcessorType, inputs: List<SourceModel>) : ProcessorRunModel {
+    fun createProcessor(name: String,
+                        type: ProcessorType,
+                        inputs: List<SourceModel>,
+                        properties: Map<String, Any> = mapOf()) : ProcessorRunModel {
         return ProcessorRunModel(
                 id = UUID.randomUUID().toString(),
                 flowId = UUID.randomUUID().toString(),
                 name = name,
                 inputs = inputs,
-                type = type
+                type = type,
+                properties = properties
         )
     }
 
@@ -45,7 +50,8 @@ object TestUtils {
         return createProcessor(
                 name,
                 ProcessorType.SCRIPT,
-                inputProcs.map{ SourceModel(SourceType.PROCESSOR, it)}
+                inputProcs.map{ SourceModel(SourceType.PROCESSOR, it)},
+                properties = mapOf("language" to ScriptLanguage.CLOJURE.toString(), "code" to "(+ 3 5)")
         )
     }
 }

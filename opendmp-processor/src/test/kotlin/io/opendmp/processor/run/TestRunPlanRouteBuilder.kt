@@ -22,8 +22,18 @@ import io.opendmp.processor.config.RedisConfig
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.handler.RunPlanRequestHandler
 import io.opendmp.processor.messaging.RunPlanRequestRouter
-import org.apache.camel.CamelContext
-import org.apache.camel.test.spring.junit5.CamelSpringBootTest
+import io.opendmp.processor.run.processors.CompletionProcessor
+import org.apache.camel.*
+import org.apache.camel.builder.AdviceWithRouteBuilder
+import org.apache.camel.builder.Builder.constant
+import org.apache.camel.component.mock.MockEndpoint
+import org.apache.camel.model.*
+import org.apache.camel.processor.LogProcessor
+import org.apache.camel.processor.TransformProcessor
+import org.apache.camel.reifier.RouteReifier
+import org.apache.camel.test.junit5.CamelTestSupport
+import org.apache.camel.test.spring.junit5.*
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -31,9 +41,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.BootstrapWith
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.util.*
+
 
 @SpringBootTest
 @ExtendWith(SpringExtension::class)
@@ -41,7 +53,7 @@ import java.util.*
 @ContextConfiguration
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TestRunPlanRouteBuilder @Autowired constructor(
-        private val camelContext: CamelContext) {
+        private val testCamelContext: CamelContext) {
 
     @MockBean
     lateinit var pulsarConfig: PulsarConfig
@@ -54,6 +66,17 @@ class TestRunPlanRouteBuilder @Autowired constructor(
 
     @MockBean
     lateinit var runPlanRequestRouter: RunPlanRequestRouter
+
+    @EndpointInject("mock:a")
+    protected val mockA = MockEndpoint()
+
+    @Produce("direct:start")
+    lateinit var start: ProducerTemplate
+
+    @AfterEach
+    fun cleanUp() {
+        testCamelContext.routes.forEach {testCamelContext.removeRoute(it.routeId)}
+    }
 
     fun basicRunPlan() : RunPlan {
         val iProc = TestUtils.createFileIngestProcessor("fileIn")
@@ -73,8 +96,23 @@ class TestRunPlanRouteBuilder @Autowired constructor(
     fun testSimpleRunPlan() {
         val runPlan = basicRunPlan()
         val routeBuilder = RunPlanRouteBuilder(runPlan)
-        camelContext.addRoutes(routeBuilder)
-        assertEquals(true, true)
+
+        testCamelContext.addRoutes(routeBuilder)
+        val startProc = runPlan.processors[runPlan.startingProcessors.first()]
+        val srId = "${runPlan.id}:${startProc!!.id}"
+        val route2Id = testCamelContext.routes[1].routeId
+        AdviceWithRouteBuilder.adviceWith(testCamelContext, srId) { a ->
+            a.replaceFromWith("direct:start")
+        }
+        AdviceWithRouteBuilder.adviceWith(testCamelContext, route2Id) { a ->
+            val compId = "${route2Id}:complete"
+            a.weaveById<AdviceWithDefinition>(compId).replace().to("mock:a")
+        }
+        val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
+        start.sendBody(text)
+        mockA.expectedMessageCount(1)
+        mockA.expectedBodiesReceived(text)
+        MockEndpoint.assertIsSatisfied(testCamelContext)
     }
 
 }

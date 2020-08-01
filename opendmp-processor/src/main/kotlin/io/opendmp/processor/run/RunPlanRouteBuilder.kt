@@ -22,6 +22,7 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceType
 import io.opendmp.processor.domain.RunPlan
+import io.opendmp.processor.run.processors.CompletionProcessor
 import io.opendmp.processor.run.processors.ScriptProcessor
 import org.apache.camel.builder.RouteBuilder
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,16 +56,19 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
 
         val deps: List<ProcessorRunModel?> =
                 runPlan.processorDependencyMap[sp.id]?.map { runPlan.processors[it] } ?: listOf()
+        val routeId = "${runPlan.id}:${sp.id}"
         when {
             deps.size == 1 -> {
                 val dest = "seda:${deps.first()!!.id}"
-                from(sourceEp).to(dest)
+                from(sourceEp).routeId(routeId).to(dest)
             }
             deps.size > 1 -> {
                 // If we have more than 1 processor expecting output from this processor,
                 // do a multicast
                 val dest = deps.map { d -> "seda:${d!!.id}"}.joinToString(",")
                 from(sourceEp)
+                        // Set a routeId to make finding this route in the Camel Context easier later
+                        .routeId(routeId)
                         .multicast()
                         .parallelProcessing()
                         .to(dest)
@@ -88,14 +92,24 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
             ProcessorType.SCRIPT -> ScriptProcessor(curProc)
             else -> throw UnsupportedProcessorTypeException("The processor type ${curProc.type} is not supported")
         }
+        val routeId = "${runPlan.id}:${curProc.id}"
         when {
             deps.size == 1 -> from(sourceEp).process(proc).to("seda:${deps.first()!!.id}")
             deps.size > 1 -> {
                 val dest = deps.map { d -> "seda:${d!!.id}"}.joinToString(",")
-                from(sourceEp).process(proc).multicast().to(dest)
+                from(sourceEp)
+                        .routeId(routeId)
+                        .process(proc)
+                        .multicast().to(dest)
             }
-            else -> //End of the line
-                from(sourceEp).process(proc).end()
+            else -> { //End of the line
+                val completionId = "${runPlan.id}:${curProc.id}:complete"
+                from(sourceEp)
+                        .routeId(routeId)
+                        .process(proc)
+                        .process(CompletionProcessor())
+                        .id(completionId).end()
+            }
         }
         deps.forEach { this.continueRoute(it!!) }
     }
