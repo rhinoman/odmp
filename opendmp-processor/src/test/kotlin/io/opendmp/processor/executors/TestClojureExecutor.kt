@@ -63,12 +63,11 @@ class TestClojureExecutor {
         val script = """
             (fn [xs]
               (let [input (slurp xs)]
-                (.getBytes (cheshire/generate-string {:data input}))))
+                (cheshire/generate-string {:data input})))
         """.trimIndent()
         val data = "I am me".toByteArray()
         val result = cljEx.executeScript(script, data)
         val resultStr = String(result, Charsets.UTF_8)
-        println(resultStr)
         assertEquals("""{"data":"I am me"}""", resultStr)
     }
 

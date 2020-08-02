@@ -46,12 +46,12 @@ object TestUtils {
                 listOf(SourceModel(SourceType.INGEST_FILE_DROP, "/tmp/input")))
     }
 
-    fun createScriptProcessor(name: String, inputProcs: List<String>) : ProcessorRunModel {
+    fun createScriptProcessor(name: String, inputProcs: List<String>, code: String) : ProcessorRunModel {
         return createProcessor(
                 name,
                 ProcessorType.SCRIPT,
                 inputProcs.map{ SourceModel(SourceType.PROCESSOR, it)},
-                properties = mapOf("language" to ScriptLanguage.CLOJURE.toString(), "code" to "(+ 3 5)")
+                properties = mapOf("language" to ScriptLanguage.CLOJURE.toString(), "code" to code)
         )
     }
 }

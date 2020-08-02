@@ -74,8 +74,12 @@ class TestRunPlanRouteBuilder @Autowired constructor(
     }
 
     fun basicRunPlan() : RunPlan {
+        val scriptCode = """
+            (fn [xs]
+             (clojure.string/upper-case (slurp xs)))
+        """.trimIndent()
         val iProc = TestUtils.createFileIngestProcessor("fileIn")
-        val tProc = TestUtils.createScriptProcessor("script1", listOf(iProc.id))
+        val tProc = TestUtils.createScriptProcessor("script1", listOf(iProc.id), scriptCode)
         val procs = mapOf(iProc.id to iProc, tProc.id to tProc)
         val procDeps = mapOf(iProc.id to listOf(tProc.id))
         return RunPlan(
@@ -106,7 +110,7 @@ class TestRunPlanRouteBuilder @Autowired constructor(
         val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
         start.sendBody(text)
         mockA.expectedMessageCount(1)
-        mockA.expectedBodiesReceived(text)
+        mockA.expectedBodiesReceived(text.toUpperCase().toByteArray())
         MockEndpoint.assertIsSatisfied(testCamelContext)
     }
 

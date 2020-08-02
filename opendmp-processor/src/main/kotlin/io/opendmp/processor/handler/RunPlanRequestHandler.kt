@@ -21,6 +21,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.opendmp.common.message.StartRunPlanRequestMessage
 import io.opendmp.processor.domain.RunPlan
+import io.opendmp.processor.run.RunPlanRouteBuilder
+import org.apache.camel.CamelContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.RedisTemplate
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class RunPlanRequestHandler(
+        @Autowired private val camelContext: CamelContext,
         @Autowired private val rpTemplate: RedisTemplate<String, RunPlan>) {
 
     private val log = LoggerFactory.getLogger(RunPlanRequestHandler::class.java)
@@ -44,7 +47,8 @@ class RunPlanRequestHandler(
             val rp = RunPlan.fromStartRunPlanRequestMessage(msg)
             //Store the run plan to Redis
             rpTemplate.opsForValue().set(rp.id, rp)
-
+            val routeBuilder = RunPlanRouteBuilder(rp)
+            camelContext.addRoutes(routeBuilder)
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)
         } catch (ex: Exception) {

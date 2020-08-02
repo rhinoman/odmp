@@ -15,6 +15,7 @@
 ;
 
 ; Executes a block of clojure
+; Bringing a few very common/popular data-handling libraries into the namespace
 (ns io.opendmp.processor.clj-runner
   (:require [cheshire.core :as cheshire]))
 
@@ -26,4 +27,4 @@
   "Executes a block of clojure code and returns the result as a byte array"
   #^bytes [^String code #^bytes data]
   (let [code-fn (local-eval (read-string code))]
-    (byte-array (code-fn data))))
+    (into-array Byte/TYPE (code-fn data))))
