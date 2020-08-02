@@ -20,8 +20,10 @@ import io.opendmp.processor.handler.RunPlanRequestHandler
 import org.apache.camel.builder.RouteBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
+@Profile("!test")
 @Component
 class RunPlanRequestRouter(
         @Autowired val runPlanRequestHandler: RunPlanRequestHandler) : RouteBuilder() {

@@ -1,0 +1,11 @@
+odmp:
+  redis:
+    host: ${embedded.redis.host}
+    port: ${embedded.redis.port}
+
+  processor:
+    instance-type: ${odmp_processor_service_instance_type:GENERAL}
+
+spring:
+  profiles:
+    active: test

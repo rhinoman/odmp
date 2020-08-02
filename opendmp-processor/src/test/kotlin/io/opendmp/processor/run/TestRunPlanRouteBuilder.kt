@@ -51,9 +51,6 @@ class TestRunPlanRouteBuilder @Autowired constructor(
         private val testCamelContext: CamelContext) {
 
     @MockBean
-    lateinit var pulsarConfig: PulsarConfig
-
-    @MockBean
     lateinit var  redisConfig: RedisConfig
 
     @MockBean

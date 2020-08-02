@@ -33,9 +33,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 class TestClojureExecutor {
 
     @MockBean
-    lateinit var pulsarConfig: PulsarConfig
-
-    @MockBean
     lateinit var  redisConfig: RedisConfig
 
     @MockBean
