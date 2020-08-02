@@ -48,12 +48,28 @@ class TestClojureExecutor {
     fun `Clojure executor should return result as byte array`(){
         val cljEx = ClojureExecutor()
         val script = """
-            (map (fn [x] (* x 2)) [1 2 3 4 5])
+            (fn [xs] (map #(* % 2 ) xs))
         """.trimIndent()
-        val result = cljEx.executeScript(script)
+        val data = listOf(1, 2, 3, 4, 5).map{it.toByte()}.toByteArray()
+        val result = cljEx.executeScript(script, data)
         assertNotNull(result)
         val resultInts = result.toList().map { it.toInt() }
         assertEquals(listOf(2, 4, 6, 8, 10), resultInts)
+    }
+
+    @Test
+    fun `Clojure executor should be able to use a library`() {
+        val cljEx = ClojureExecutor()
+        val script = """
+            (fn [xs]
+              (let [input (slurp xs)]
+                (.getBytes (cheshire/generate-string {:data input}))))
+        """.trimIndent()
+        val data = "I am me".toByteArray()
+        val result = cljEx.executeScript(script, data)
+        val resultStr = String(result, Charsets.UTF_8)
+        println(resultStr)
+        assertEquals("""{"data":"I am me"}""", resultStr)
     }
 
 }

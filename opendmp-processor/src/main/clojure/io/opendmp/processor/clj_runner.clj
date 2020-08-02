@@ -15,9 +15,15 @@
 ;
 
 ; Executes a block of clojure
-(ns io.opendmp.processor.clj-runner)
+(ns io.opendmp.processor.clj-runner
+  (:require [cheshire.core :as cheshire]))
+
+(defn local-eval [x]
+  (binding [*ns* (find-ns 'io.opendmp.processor.clj-runner)]
+    (eval x)))
 
 (defn execute
   "Executes a block of clojure code and returns the result as a byte array"
-  #^bytes [^String code]
-  (byte-array (eval (read-string code))))
+  #^bytes [^String code #^bytes data]
+  (let [code-fn (local-eval (read-string code))]
+    (byte-array (code-fn data))))

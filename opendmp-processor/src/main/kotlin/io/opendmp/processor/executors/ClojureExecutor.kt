@@ -29,9 +29,9 @@ class ClojureExecutor: Executor {
         require.invoke(Clojure.read(crNs))
     }
 
-    override fun executeScript(code: String): ByteArray  {
+    override fun executeScript(code: String, data: ByteArray): ByteArray  {
         val runnerFn: IFn = Clojure.`var`(crNs, "execute")
-        return runnerFn.invoke(code) as ByteArray
+        return runnerFn.invoke(code, data) as ByteArray
     }
 
 }

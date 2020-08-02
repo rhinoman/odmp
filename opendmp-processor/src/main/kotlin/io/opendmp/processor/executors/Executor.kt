@@ -17,5 +17,5 @@
 package io.opendmp.processor.executors
 
 interface Executor {
-    fun executeScript(code: String): ByteArray
+    fun executeScript(code: String, data: ByteArray): ByteArray
 }
