@@ -26,6 +26,11 @@
    (assoc-in db [:edit-processor-fields field] value)))
 
 (rf/reg-event-db
+ ::set-processor-property
+ (fn [db [_ field value]]
+   (assoc-in db [:edit-processor-fields :properties field] value)))
+
+(rf/reg-event-db
  ::set-processor-input-type-field
  (fn [db [_ idx value]]
    (assoc-in db [:edit-processor-fields :inputs idx :sourceType] value)))

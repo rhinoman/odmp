@@ -3,4 +3,6 @@
             "@material-ui/icons"        "^4.9.1"
             "@material-ui/lab"          "^4.0.0-alpha.56"
             "react-lineto"              "^3.2.0"
-            "keycloak-js"               "^10.0.2"}}
+            "keycloak-js"               "^10.0.2"
+            "react-ace"                 "^9.1.1"
+            "ace-builds"                "^1.4.12"}}

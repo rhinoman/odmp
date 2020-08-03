@@ -103,6 +103,12 @@
  (fn [db _]
    (get-in db [:user :info])))
 
+;; snackbar for status updates
+(re-frame/reg-sub
+ ::snackbar
+ (fn [db _]
+   (:snackbar db)))
+
 (re-frame/reg-sub
  ::errors
  (fn [db _]

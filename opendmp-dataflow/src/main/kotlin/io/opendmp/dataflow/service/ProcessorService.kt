@@ -78,6 +78,8 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
                 .handle {df, sink ->
                     if(df.enabled) {
                         sink.error(BadRequestException("Dataflow is still enabled!"))
+                    } else if (data.properties == null){
+                        sink.error(BadRequestException("Properties are invalid!"))
                     } else {
                         proc.name = data.name!!
                         proc.description = data.description
@@ -85,7 +87,7 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
                         proc.order = data.order!!
                         proc.triggerType = data.triggerType!!
                         proc.type = data.type!!
-                        proc.properties = data.properties!!.toMutableMap()
+                        proc.properties = data.properties.toMutableMap()
                         proc.inputs = data.inputs!!
                         proc.enabled = data.enabled!!
                         sink.next(proc)

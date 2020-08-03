@@ -15,7 +15,10 @@
 (ns odmp-ui.components.common
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
+            [odmp-ui.events :as events]
+            [odmp-ui.subs :as subs]
             ["@material-ui/core/Typography" :default Typography]
+            ["@material-ui/core/Snackbar" :default Snackbar]
             ["@material-ui/lab/Alert" :default Alert]
             ["@material-ui/core/Dialog" :default Dialog]
             ["@material-ui/core/Button" :default Button]
@@ -29,10 +32,20 @@
             ["@material-ui/core/Breadcrumbs" :default Breadcrumbs]
             ["@material-ui/core/Link" :default Link]))
 
+(defn snackbar [snackbar-data]
+  [:> Snackbar {:open (:open snackbar-data)
+                :autoHideDuration 5000
+                :onClose #(rf/dispatch [::events/clear-snackbar])
+                :anchorOrigin {:horizontal "center" :vertical "top"}}
+   [:> Alert {:severity (:severity snackbar-data)} (:text snackbar-data)]])
+
 (defn full-content-ui [{:keys [title]} & children]
-  [:div {:style {:paddingLeft "20px"}}
-   [:div [:> Typography {:variant "h2" :style {:fontSize 28 :marginTop 15 :marginBottom 10}} title]]
-   (into [:<>] children)])
+  (let [sb (rf/subscribe [::subs/snackbar])]
+    [:div {:style {:paddingLeft "20px"}}
+     [:div [:> Typography {:variant "h2" :style {:fontSize 28 :marginTop 15 :marginBottom 10}} title]]
+     (if (:open @sb)
+       [snackbar @sb])
+     (into [:<>] children)]))
 
 (defn error-alert [err-result]
   (let [response (:response err-result)

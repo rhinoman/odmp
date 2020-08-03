@@ -50,3 +50,13 @@
  ::edit-inputs
  (fn [db _]
    (get-in db [:edit-processor-fields :inputs])))
+
+(rf/reg-sub
+ ::edit-properties
+ (fn [db _]
+   (get-in db [:edit-processor-fields :properties])))
+
+(rf/reg-sub
+ ::edit-script-language
+ (fn [db _]
+   (get-in db [:edit-processor-fields :properties :language])))

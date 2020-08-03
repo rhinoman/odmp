@@ -346,6 +346,7 @@
  (fn [db [_ result]]
    (re-frame/dispatch [::fetch-dataflow-list])
    (re-frame/dispatch [::toggle-create-dataflow-dialog])
+   (re-frame/dispatch [::set-snackbar "success" "Dataflow Created"])
    (-> db
        (assoc-in [:loading :post-dataflow] false)
        (assoc-in [:request-errors :post-dataflow] nil))))
@@ -353,6 +354,7 @@
 (re-frame/reg-event-db
  ::success-put-dataflow
  (fn [db [_ result]]
+   (re-frame/dispatch [::set-snackbar "success" "Dataflow Saved"])
    (-> db
        (assoc-in [:loading :put-dataflow] false)
        (assoc-in [:request-errors :put-dataflow] nil)
@@ -362,6 +364,7 @@
  ::success-delete-dataflow
  (fn [db [_ result]]
    (navigate "/dataflows")
+   (re-frame/dispatch [::set-snackbar "success" "Dataflow Deleted"])
    (-> db
        (assoc-in [:loading :delete-dataflow] false)
        (assoc-in [:request-errors :delete-dataflow] nil))))
@@ -371,6 +374,7 @@
  (fn [db [_ result]]
    (re-frame/dispatch [::fetch-dataflow-processors (:flowId result)])
    (re-frame/dispatch [::toggle-create-processor-dialog])
+   (re-frame/dispatch [::set-snackbar "success" "Processor Created"])
    (-> db
        (assoc-in [:loading :post-processor] false)
        (assoc-in [:request-errors :post-processor] nil))))
@@ -389,6 +393,7 @@
 (re-frame/reg-event-db
  ::success-put-processor
  (fn [db [_ result]]
+   (re-frame/dispatch [::set-snackbar "success" "Processor Saved"])
    (-> db
        (assoc-in [:loading :put-processor] false)
        (assoc-in [:request-errors :put-processor] nil)
@@ -397,9 +402,8 @@
 (re-frame/reg-event-db
  ::success-delete-processor
  (fn [db [_ parent-id result]]
-   (println parent-id)
-   (println result)
    (navigate (str "/dataflows/" parent-id))
+   (re-frame/dispatch [::set-snackbar "success" "Processor Deleted"])
    (-> db
        (assoc-in [:loading :delete-processor] false)
        (assoc-in [:request-errors :delete-processor] nil))))
@@ -440,3 +444,14 @@
                   (assoc-in [:request-errors :post-processor] nil)
                   (assoc :create-processor-dialog-open (not (:create-processor-dialog-open db)))
                   (assoc :create-processor-dialog-phase pnum)))))
+
+(re-frame/reg-event-db
+ ::set-snackbar
+ (fn-traced [db [_ severity text]]
+   (assoc db :snackbar {:open true :severity severity :text text})))
+
+(re-frame/reg-event-db
+ ::clear-snackbar
+ (fn-traced [db [_ _]]
+   (assoc db :snackbar nil)))
+

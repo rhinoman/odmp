@@ -100,6 +100,7 @@
        (doall (map-indexed (fn [idx itm] ^{:key (str (:id processor) "_INPUT_FIELD_" idx)}
                              [input-field idx @processor itm])
                            (:inputs @processor)))
-       ;; And one more input field for adding new inputs
-       ^{:key (str (:id processor) "_INPUT_FIELD_NEW")}
-       [input-field (if (= num-inputs 0) 0 num-inputs) @processor nil]])))
+       ;; Only aggregators can have more than one input field
+       (if (= num-inputs 0)
+        ^{:key (str (:id processor) "_INPUT_FIELD_NEW")}
+        [input-field (if (= num-inputs 0) 0 num-inputs) @processor nil])])))

@@ -23,6 +23,8 @@
             [odmp-ui.components.common :as tcom]
             [odmp-ui.components.icons :refer [processor-type-icon]]
             [odmp-ui.views.processor.input-fields :refer [input-fields]]
+            [odmp-ui.views.processor.script-fields :refer [script-fields]]
+            [odmp-ui.views.processor.styles :refer [proc-styles]]
             [clojure.string :as str]
             ["@material-ui/core/Box" :default Box]
             ["@material-ui/core/Container" :default Container]
@@ -58,23 +60,6 @@
                                :cancel-action #(rf/dispatch [::proc-events/toggle-delete-processor-dialog])})))
 
 
-(defn proc-styles [^js/Mui.Theme theme]
-  (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
-        p-type (keyword (:type palette))]
-    {:edit-processor-wrapper {}
-     :delete-processor-wrapper {:float :right
-                                :margin-top 0}
-     :description-wrapper {:max-width 600
-                           :margin-bottom 20
-                           :overflow-wrap :break-word}
-     :proc-wrapper {:min-height 400
-                    :margin-top 10
-                    }
-     :save-action-button {:margin-right 10
-                          :margin-top 5}
-     :card-detail-header {}}))
-
-
 (defn update-input [cur-inputs field-inputs]
   (reduce-kv (fn [m k v]
                (let [st (:sourceType v)
@@ -87,14 +72,22 @@
              (or cur-inputs []) field-inputs))
    
 
+(defn update-properties [cur-props field-props]
+  (reduce-kv (fn [m k v]
+               (assoc m k v))
+             (or cur-props []) field-props))
+
 (defn save-processor
   "Updates the processor"
   [evt processor]
   (.preventDefault evt)
   (let [input-fields (rf/subscribe [::proc-subs/edit-inputs])
+        properties (rf/subscribe [::proc-subs/edit-properties])
         up-inputs (update-input (:inputs processor) @input-fields)
+        up-props (update-properties (:properties processor) @properties)
         updated-processor (-> processor
-                              (assoc :inputs up-inputs))]
+                              (assoc :inputs up-inputs)
+                              (assoc :properties up-props))]
     (rf/dispatch [::events/update-processor (:id processor) updated-processor])))
 
 (defn common-fields
@@ -147,5 +140,8 @@
            (do [:form {:onSubmit #(save-processor % @processor)}
                 [common-fields processor (:enabled @dataflow)]
                 [:> Container
-                 [input-fields processor]]
+                 [input-fields processor]
+                 (case (:type @processor)
+                   "SCRIPT" [script-fields processor]
+                   [:<>])]
                 ]))]]])))

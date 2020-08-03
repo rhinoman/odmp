@@ -20,6 +20,7 @@
             ["@material-ui/icons/CodeTwoTone" :default CodeIcon]
             ["@material-ui/icons/TransformTwoTone" :default TransformIcon]
             ["@material-ui/icons/WorkTwoTone" :default WorkIcon]
+            ["@material-ui/icons/MergeTypeTwoTone" :default MergeIcon]
             ["@material-ui/icons/HelpTwoTone" :default HelpIcon]))
 
 (defn processor-type-icon [processor-type]
@@ -28,6 +29,7 @@
     "EXPORT" [:> UploadIcon]
     "TRANSFORM" [:> TransformIcon]
     "SCRIPT" [:> CodeIcon]
+    "AGGREGATOR" [:> MergeIcon]
     "EXTERNAL" [:> WorkIcon]
     [:> HelpIcon]))
 
