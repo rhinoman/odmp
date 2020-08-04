@@ -19,6 +19,7 @@ package io.opendmp.dataflow.messaging
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.message.StartRunPlanRequestMessage
+import io.opendmp.common.message.StopRunPlanRequestMessage
 import org.apache.camel.ProducerTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,18 +38,29 @@ class RunPlanDispatcher @Autowired constructor(
 
     private val mapper = jacksonObjectMapper()
 
-    fun endPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_request?producerName=odmpDataflow"
+    fun startEndPointUrl() : String =
+            "pulsar:non-persistent://$pulsarNamespace/runplan_start_request?producerName=odmpDataflow"
 
-    fun dispatchRunPlan(msg: StartRunPlanRequestMessage) {
+    fun stopEndPointUrl() : String =
+            "pulsar:non-persistent://$pulsarNamespace/runplan_stop_request?producerName=odmpDataflow"
+
+    fun sendMessage(msg: Any, endpoint: String) {
         try {
             val jsonData = mapper.writeValueAsString(msg)
-            producerTemplate.sendBody(endPointUrl(), jsonData)
+            producerTemplate.sendBody(endpoint, jsonData)
         } catch (jpe: JsonProcessingException) {
             log.error("Error converting request message", jpe)
         } catch (ex: Exception) {
             log.error("Error sending message", ex)
         }
+    }
+
+    fun dispatchRunPlan(msg: StartRunPlanRequestMessage) {
+       sendMessage(msg, startEndPointUrl())
+    }
+
+    fun stopRunPlan(msg: StopRunPlanRequestMessage) {
+        sendMessage(msg, stopEndPointUrl())
     }
 
 }

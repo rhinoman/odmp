@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.processor.domain
 
-data class ProcessorRunModel(val id: String,
-                             val flowId: String,
-                             val name: String,
-                             val type: ProcessorType,
-                             val properties: Map<String, Any>? = mapOf(),
-                             val inputs: List<SourceModel>
-) {}
+data class RunPlanRecord(
+        val id: String,
+        val flowId: String) {
+
+    companion object Factory {
+        fun fromRunPlan(rp: RunPlan) : RunPlanRecord {
+            return RunPlanRecord(
+                    id = rp.id,
+                    flowId = rp.flowId
+            )
+        }
+    }
+
+}

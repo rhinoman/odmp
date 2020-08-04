@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.common.message
 
-data class ProcessorRunModel(val id: String,
-                             val flowId: String,
-                             val name: String,
-                             val type: ProcessorType,
-                             val properties: Map<String, Any>? = mapOf(),
-                             val inputs: List<SourceModel>
-) {}
+data class StopRunPlanRequestMessage(
+        val requestId: String,
+        val runPlanId: String) {
+}

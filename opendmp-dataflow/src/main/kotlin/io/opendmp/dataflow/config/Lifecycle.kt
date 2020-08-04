@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.messaging
+package io.opendmp.dataflow.config
 
-import io.opendmp.processor.handler.RunPlanRequestHandler
-import org.apache.camel.builder.RouteBuilder
+import io.opendmp.dataflow.model.runplan.RunPlanModel
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Profile
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.findAllAndRemove
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Component
+import javax.annotation.PreDestroy
 
-@Profile("!test")
 @Component
-class RunPlanRequestRouter(
-        @Autowired val runPlanRequestHandler: RunPlanRequestHandler) : RouteBuilder() {
+class Lifecycle @Autowired constructor(private val mongoTemplate: ReactiveMongoTemplate) {
 
-    @Value("\${odmp.pulsar.namespace}")
-    val pulsarNamespace: String = "public/default"
+    private val log = LoggerFactory.getLogger(Lifecycle::class.java)
 
-    fun endPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_start_request"
-
-    override fun configure() {
-        from(endPointUrl()).to("bean:runPlanRequestHandler?method=receiveStartRequest")
+    @PreDestroy
+    fun shutDown() {
+        log.info("Shutting down...")
+        log.info("Deleting Run Plans from Database")
+        mongoTemplate.findAllAndRemove<RunPlanModel>(Query()).blockLast()
     }
 
 }

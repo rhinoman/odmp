@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
+import javax.annotation.PreDestroy
 
 @SpringBootApplication(exclude = [
 	MongoAutoConfiguration::class,

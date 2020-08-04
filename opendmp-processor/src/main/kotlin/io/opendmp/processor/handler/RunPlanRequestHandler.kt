@@ -19,8 +19,11 @@ package io.opendmp.processor.handler
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.opendmp.common.exception.RunPlanConflictException
 import io.opendmp.common.message.StartRunPlanRequestMessage
+import io.opendmp.common.message.StopRunPlanRequestMessage
 import io.opendmp.processor.domain.RunPlan
+import io.opendmp.processor.domain.RunPlanRecord
 import io.opendmp.processor.run.RunPlanRouteBuilder
 import org.apache.camel.CamelContext
 import org.slf4j.LoggerFactory
@@ -32,21 +35,25 @@ import org.springframework.stereotype.Component
 @Component
 class RunPlanRequestHandler(
         @Autowired private val camelContext: CamelContext,
-        @Autowired private val rpTemplate: RedisTemplate<String, RunPlan>) {
+        @Autowired private val rpTemplate: RedisTemplate<String, RunPlanRecord>) {
 
     private val log = LoggerFactory.getLogger(RunPlanRequestHandler::class.java)
 
     private val mapper = jacksonObjectMapper()
 
-    suspend fun receiveRunPlanRequest(data: String) {
-        log.debug("Received message")
+    suspend fun receiveStartRequest(data: String) {
+        log.debug("Received START message")
         try {
             val msg = mapper.readValue<StartRunPlanRequestMessage>(data)
             //stash runplan in redis
             log.info("Recieved Run Plan: ${msg.requestId}")
+            //Check if Run plan is already loaded
+            if (rpTemplate.opsForValue().get(msg.requestId) != null) {
+                throw RunPlanConflictException("Run Plan is already running")
+            }
             val rp = RunPlan.fromStartRunPlanRequestMessage(msg)
             //Store the run plan to Redis
-            rpTemplate.opsForValue().set(rp.id, rp)
+            rpTemplate.opsForValue().set(rp.id, RunPlanRecord.fromRunPlan(rp))
             val routeBuilder = RunPlanRouteBuilder(rp)
             camelContext.addRoutes(routeBuilder)
         } catch (jpe: JsonProcessingException) {
@@ -55,6 +62,27 @@ class RunPlanRequestHandler(
             log.error("Error executing processor", ex)
         } finally {
                 //TODO: Send a response message here
+        }
+    }
+
+    suspend fun receiveStopRequest(data: String) {
+        log.debug("Received STOP message")
+        try {
+            val msg = mapper.readValue<StopRunPlanRequestMessage>(data)
+            log.info("Received Stop request for Run Plan: ${msg.runPlanId}")
+            val rpRec = rpTemplate.opsForValue().get(msg.runPlanId)
+                    ?: throw RunPlanConflictException("Couldn't find Run Plan in cache")
+            camelContext.routes
+                    .filter { it.id.startsWith(rpRec.id) }
+                    .forEach {
+                        camelContext.routeController.stopRoute(it.routeId)
+                        camelContext.removeRoute(it.routeId)
+                    }
+            rpTemplate.delete(rpRec.id)
+        } catch (jpe: JsonProcessingException) {
+            log.error("Error extracting message", jpe)
+        } catch (ex: Exception) {
+            log.error("Error on stop message", ex)
         }
     }
 }

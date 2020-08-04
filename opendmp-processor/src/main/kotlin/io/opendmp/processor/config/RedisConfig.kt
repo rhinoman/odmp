@@ -16,7 +16,9 @@
 
 package io.opendmp.processor.config
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.processor.domain.RunPlan
+import io.opendmp.processor.domain.RunPlanRecord
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -43,13 +45,12 @@ class RedisConfig {
     }
 
     @Bean
-    fun runPlanRedisTemplate() : RedisTemplate<String, RunPlan> {
-        val keySerializer = StringRedisSerializer()
-        val valueSerializer = Jackson2JsonRedisSerializer<RunPlan>(RunPlan::class.java)
-        val template = RedisTemplate<String, RunPlan>()
+    fun runPlanRedisTemplate() : RedisTemplate<String, RunPlanRecord> {
+        val valueSerializer = Jackson2JsonRedisSerializer(RunPlanRecord::class.java)
+        valueSerializer.setObjectMapper(jacksonObjectMapper())
+        val template = RedisTemplate<String, RunPlanRecord>()
         template.setConnectionFactory(redisConnectionFactory())
         template.setDefaultSerializer(valueSerializer)
-        template.keySerializer = keySerializer
         return template
     }
 

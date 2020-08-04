@@ -17,6 +17,7 @@
 package io.opendmp.dataflow.service
 
 import com.mongodb.client.result.DeleteResult
+import io.opendmp.common.message.StopRunPlanRequestMessage
 import io.opendmp.common.model.HealthModel
 import io.opendmp.common.model.HealthState
 import io.opendmp.common.model.RunState
@@ -25,6 +26,7 @@ import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.request.UpdateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.messaging.ProcessRequester
+import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +46,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import java.util.*
 
 @Service
 class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
@@ -85,8 +88,8 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
             if(cur.enabled && !oldEnableState) {
                 runPlanService.dispatchDataflow(updatedDataflow)
             } else if(!cur.enabled && oldEnableState) {
-                //TODO: Send a stop message for the dataflow
                 log.info("Stopping dataflow ${cur.name}")
+                runPlanService.stopDataflow(cur.id)
             }
             updatedDataflow
         }

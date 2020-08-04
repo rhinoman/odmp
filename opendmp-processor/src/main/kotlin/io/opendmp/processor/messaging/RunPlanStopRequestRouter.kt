@@ -25,17 +25,17 @@ import org.springframework.stereotype.Component
 
 @Profile("!test")
 @Component
-class RunPlanRequestRouter(
+class RunPlanStopRequestRouter(
         @Autowired val runPlanRequestHandler: RunPlanRequestHandler) : RouteBuilder() {
 
     @Value("\${odmp.pulsar.namespace}")
     val pulsarNamespace: String = "public/default"
 
-    fun endPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_start_request"
+    fun endPointUrl(): String =
+            "pulsar:non-persistent://$pulsarNamespace/runplan_stop_request"
 
     override fun configure() {
-        from(endPointUrl()).to("bean:runPlanRequestHandler?method=receiveStartRequest")
+        from(endPointUrl()).to("bean:runPlanRequestHandler?method=receiveStopRequest")
     }
 
 }

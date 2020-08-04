@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.service
 
+import io.opendmp.common.message.StopRunPlanRequestMessage
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
@@ -32,13 +33,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.find
+import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import java.util.*
 
 @Service
 class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate,
@@ -78,6 +79,15 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         }
     }
 
+    fun stopDataflow(dataflowId: String) {
+        val query = Query(Criteria.where("flowId").isEqualTo(dataflowId))
+        mongoTemplate.findOne<RunPlanModel>(query).toFuture().thenAccept {
+            dispatcher.stopRunPlan(StopRunPlanRequestMessage(UUID.randomUUID().toString(), it.id))
+            //TODO: Move this to after an ack message that the route was successfully stopped
+            mongoTemplate.findAndRemove<RunPlanModel>(Query(Criteria.where("flowId").isEqualTo(dataflowId)))
+        }
+    }
+
 
     /**
      * On application start, we want to immediately start loading and dispatching Dataflows
@@ -86,6 +96,8 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
     fun onApplicationStart(event: ApplicationReadyEvent) {
         val scope = CoroutineScope(coroutineContext)
         scope.launch {
+            //Make sure all the run models are cleared out
+            mongoTemplate.findAllAndRemove<RunPlanModel>(Query())
             dispatchDataflows()
         }
     }
