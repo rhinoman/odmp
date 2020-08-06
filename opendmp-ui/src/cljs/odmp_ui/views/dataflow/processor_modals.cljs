@@ -16,6 +16,7 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
             [odmp-ui.util.styles :as style]
+            [odmp-ui.util.ui :refer [ignore-return]]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
             [odmp-ui.events :as events]
             [odmp-ui.subs :as subs]
@@ -126,9 +127,10 @@
                         :required true
                         :class (:form-input classes)
                         :id :processor_name
+                        :onKeyDown ignore-return
                         :label "Processor Name"
-                        :value (or @name-field-value "")
-                        :onChange #(rf/dispatch [::set-processor-create-field :name (-> % .-target .-value)])
+                        :defaultValue ""
+                        :onBlur #(rf/dispatch [::set-processor-create-field :name (-> % .-target .-value)])
                         :type :text
                         :fullWidth true}]
          [:> TextField {:margin :dense
@@ -138,8 +140,9 @@
                         :class (:form-input classes)
                         :id :processor_description
                         :label "Description"
-                        :onChange #(rf/dispatch [::set-processor-create-field :description (-> % .-target .-value)])
-                        :value (or @description-field-value "")
+                        :onBlur #(rf/dispatch [::set-processor-create-field :description (-> % .-target .-value)])
+                        :onKeyDown ignore-return
+                        :defaultValue ""
                         :type :text
                         :fullWidth true}]
          [:> Grid {:container true :spacing 2}
@@ -151,6 +154,7 @@
                           :class (:form-input classes)
                           :id :processor_phase
                           :label "Phase"
+                          :onKeyDown ignore-return
                           :value (or @phase-override @phase-input)
                           :type :number
                           :onChange #(rf/dispatch [::set-processor-create-field :phase (-> % .-target .-value)])}]]

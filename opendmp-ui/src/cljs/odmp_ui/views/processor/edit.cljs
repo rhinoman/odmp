@@ -81,11 +81,17 @@
   "Updates the processor"
   [evt processor]
   (.preventDefault evt)
-  (let [input-fields (rf/subscribe [::proc-subs/edit-inputs])
+  (let [name-field (rf/subscribe [::proc-subs/edit-name])
+        description-field (rf/subscribe [::proc-subs/edit-description])
+        input-fields (rf/subscribe [::proc-subs/edit-inputs])
         properties (rf/subscribe [::proc-subs/edit-properties])
+        up-name (or @name-field (:name processor))
+        up-description (or @description-field (:description processor))
         up-inputs (update-input (:inputs processor) @input-fields)
         up-props (update-properties (:properties processor) @properties)
         updated-processor (-> processor
+                              (assoc :name up-name)
+                              (assoc :description up-description)
                               (assoc :inputs up-inputs)
                               (assoc :properties up-props))]
     (rf/dispatch [::events/update-processor (:id processor) updated-processor])))
@@ -103,6 +109,7 @@
                                                         :type :submit
                                                         :class (:save-action-button classes)
                                                         :color :primary
+                                                        
                                                         :disabled flow-enabled
                                                         :disableElevation true
                                                         :variant :contained
@@ -115,6 +122,7 @@
         dataflow  (rf/subscribe [::subs/current-dataflow])
         flow-processors (rf/subscribe [::subs/current-dataflow-processors])
         delete-dialog? (rf/subscribe [::proc-subs/delete-processor-dialog-open])
+        proc-name-edit (rf/subscribe [::proc-subs/edit-name])
         errors    (rf/subscribe [::proc-subs/updating-processor-errors])
         is-updating? (rf/subscribe [::proc-subs/updating-processor])]
     (style/let [classes proc-styles]
@@ -131,10 +139,22 @@
                           :onClick #(rf/dispatch [::proc-events/toggle-delete-processor-dialog])
                           :size :small}
            [:> DeleteIcon]]]]]
-       [tcom/full-content-ui {:title (:name @processor)}
+       [tcom/full-content-ui {:title (:name @processor)
+                              :editable-title true
+                              :edit-opts {:done-event 
+                                          (fn [e]
+                                            (rf/dispatch-sync [::proc-events/set-processor-edit-field
+                                                               :name (-> e .-target .-value)])
+                                            (save-processor e @processor))}}
+
         (if (nil? @processor) [tcom/loading-backdrop])
         [:> Box {:class {:description-wrapper classes}}
-         [:> Typography {:variant :subtitle1} (:description @processor)]]
+         [tcom/editable-text
+          :subtitle1
+          (:description @processor)
+          {:done-event (fn [e]
+                         (rf/dispatch-sync [::proc-events/set-processor-edit-field :description (-> e .-target .-value)])
+                         (save-processor e @processor))}]]
         [:> Card {:class (:proc-wrapper classes)}
          (if (some? @processor)
            (do [:form {:onSubmit #(save-processor % @processor)}

@@ -14,7 +14,8 @@
 
 (ns odmp-ui.subs
   (:require
-   [re-frame.core :as re-frame]))
+   [re-frame.core :as re-frame]
+   [re-pressed.core :as rp]))
 
 (re-frame/reg-sub
  ::name
@@ -42,9 +43,9 @@
    (:dark-theme? db)))
 
 (re-frame/reg-sub
- ::re-pressed-example
+ ::keydown-keys
  (fn [db _]
-   (:re-pressed-example db)))
+   (get-in db [:re-pressed.core/keydown :keys])))
 
 (re-frame/reg-sub
  ::authentication

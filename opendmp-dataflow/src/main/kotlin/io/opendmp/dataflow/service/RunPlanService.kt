@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,6 +40,8 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.kotlin.adapter.rxjava.toFlowable
+import reactor.kotlin.core.publisher.toFlux
 import java.util.*
 
 @Service
@@ -79,12 +82,18 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         }
     }
 
+    suspend fun stopRunPlan(runPlanModel: RunPlanModel) {
+        dispatcher.stopRunPlan(StopRunPlanRequestMessage(UUID.randomUUID().toString(), runPlanModel.id))
+        //TODO: Move this to after an ack message that the route was successfully stopped
+        mongoTemplate.findAndRemove<RunPlanModel>(Query(Criteria.where("id").isEqualTo(runPlanModel.id))).toFuture()
+    }
+
     fun stopDataflow(dataflowId: String) {
         val query = Query(Criteria.where("flowId").isEqualTo(dataflowId))
-        mongoTemplate.findOne<RunPlanModel>(query).toFuture().thenAccept {
-            dispatcher.stopRunPlan(StopRunPlanRequestMessage(UUID.randomUUID().toString(), it.id))
-            //TODO: Move this to after an ack message that the route was successfully stopped
-            mongoTemplate.findAndRemove<RunPlanModel>(Query(Criteria.where("flowId").isEqualTo(dataflowId)))
+        mongoTemplate.findOne<RunPlanModel>(query).toFuture().thenAcceptAsync {
+            CoroutineScope(coroutineContext).launch {
+                stopRunPlan(it)
+            }
         }
     }
 

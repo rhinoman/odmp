@@ -16,8 +16,11 @@
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
             [odmp-ui.events :as events]
+            [re-pressed.core :as rp]
             [odmp-ui.subs :as subs]
+            [odmp-ui.util.styles :as style]
             ["@material-ui/core/Typography" :default Typography]
+            ["@material-ui/core/TextField" :default TextField]
             ["@material-ui/core/Snackbar" :default Snackbar]
             ["@material-ui/lab/Alert" :default Alert]
             ["@material-ui/core/Dialog" :default Dialog]
@@ -32,6 +35,23 @@
             ["@material-ui/core/Breadcrumbs" :default Breadcrumbs]
             ["@material-ui/core/Link" :default Link]))
 
+(rf/reg-event-db
+ ::toggle-title-edit
+ (fn [db [_ _]]
+   (assoc db :title-text-being-edited (not (:title-text-being-edited db)))))
+
+(rf/reg-sub
+ ::title-edit-state
+ (fn [db _]
+   (:title-text-being-edited db)))
+
+(defn common-styles [^js/Mui.Theme theme]
+  (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
+        p-type (keyword (:type palette))]
+    {:title-edit-field {:padding 0}
+     :title-edit-field-input {:fontSize 28 :paddingTop 7 :fontWeight 300 :letterSpacing "-0.00833em"}
+     :title-header {:fontSize 28 :marginTop 15 :marginBottom 10}}))
+
 (defn snackbar [snackbar-data]
   [:> Snackbar {:open (:open snackbar-data)
                 :autoHideDuration 5000
@@ -39,10 +59,45 @@
                 :anchorOrigin {:horizontal "center" :vertical "top"}}
    [:> Alert {:severity (:severity snackbar-data)} (:text snackbar-data)]])
 
-(defn full-content-ui [{:keys [title]} & children]
+(defn title-header [title]
+  (style/let [classes common-styles]
+    [:div
+     [:> Typography {:variant "h2" :class (:title-header classes)} title]]))
+
+(defn edit-text-keypress [e state done-event]
+  (case (.-keyCode e)
+    27 (swap! state not)
+    13 (do (done-event e) (swap! state not))
+    nil))
+
+(defn editable-title-header [title {:keys [done-event]}]
+  (let [edit-state (r/atom false)]
+    (fn [title {:keys [done-event]}]   
+      (style/let [classes common-styles]
+        [:div
+         (if @edit-state
+           (let [k (rf/subscribe [::subs/keydown-keys])]
+             [:> TextField {:variant :standard
+                            :margin :dense
+                            :autoFocus true
+                            :onBlur #(swap! edit-state not)
+                            :onKeyDown #(edit-text-keypress % edit-state done-event)
+                            :defaultValue title
+                            :className (:title-edit-field classes)
+                            :InputProps {:classes {:input (str "MuiTypography-root MuiTypography-h2 "
+                                                               (:title-edit-field-input classes))}}
+                            }])
+           [:> Typography {:variant "h2"
+                           :class (:title-header classes)
+                           :onDoubleClick #(swap! edit-state not)} title])]))))
+
+(defn full-content-ui [{:keys [title editable-title edit-opts]} & children]
   (let [sb (rf/subscribe [::subs/snackbar])]
     [:div {:style {:paddingLeft "20px"}}
-     [:div [:> Typography {:variant "h2" :style {:fontSize 28 :marginTop 15 :marginBottom 10}} title]]
+     [:div 
+      (if editable-title
+        [editable-title-header title edit-opts]
+        [title-header title])]
      (if (:open @sb)
        [snackbar @sb])
      (into [:<>] children)]))
@@ -89,3 +144,19 @@
   []
   [:> Backdrop {:open true :style {:zIndex 99}}
    [:> CircularProgress {:color :inherit}]])
+
+
+(defn editable-text [typography-variant text {:keys [done-event]}]
+  (let [edit-state (r/atom false)]
+    (fn [tv text {:keys [done-event]}]
+      (if @edit-state
+        [:> TextField {:variant :standard
+                       :style {:padding 0 :margin 0}
+                       :margin :dense
+                       :autoFocus true
+                       :onBlur #(swap! edit-state not)
+                       :onKeyDown #(edit-text-keypress % edit-state done-event)
+                       :defaultValue text
+                       :InputProps {:className (str "MuiTypography-root MuiTypography-" (name tv))
+                                    :style {:padding-top 0}}}]
+        [:> Typography {:variant tv :onDoubleClick #(swap! edit-state not)} text]))))

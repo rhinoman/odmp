@@ -44,6 +44,7 @@
             ["react-lineto" :default LineTo]))
 
 
+
 (defn flow-styles [^js/Mui.Theme theme]
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
         p-type (keyword (:type palette))]
@@ -184,11 +185,15 @@
                           :onClick #(rf/dispatch [::d-modals/toggle-delete-dataflow-dialog])
                           :size :small}
            [:> DeleteIcon]]]]]
-       (tcom/full-content-ui
-        {:title (:name @dataflow)}
+       [tcom/full-content-ui
+        {:title (:name @dataflow)
+         :editable-title true
+         :edit-opts {:done-event
+                     (fn [e]
+                       (update-dataflow (assoc @dataflow :name (-> e .-target .-value))))}}
         ;;; :frdw is just to force a redraw when the window is resized
         (if (nil? @dataflow) [tcom/loading-backdrop])
         [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
          [:> Typography {:variant :subtitle1} (:description @dataflow)]]
         
-        (if (some? @dataflow) [processor-pane processors classes]))])))
+        (if (some? @dataflow) [processor-pane processors classes])]])))

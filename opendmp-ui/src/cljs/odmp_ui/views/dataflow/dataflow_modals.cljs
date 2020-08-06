@@ -19,6 +19,7 @@
             [day8.re-frame.tracing :refer-macros [fn-traced]]
             [odmp-ui.events :as events]
             [odmp-ui.subs :as subs]
+            [odmp-ui.util.ui :refer [ignore-return]]
             [odmp-ui.components.common :refer [error-alert confirm-dialog]]
             ["@material-ui/core/Dialog" :default Dialog]
             ["@material-ui/core/DialogTitle" :default DialogTitle]
@@ -136,8 +137,9 @@
                         :class (:form-input classes)
                         :id :dataflow_name
                         :label "Dataflow Name"
-                        :value (or @name-field-value "")
-                        :onChange #(rf/dispatch [::set-dataflow-create-field :name (-> % .-target .-value)])
+                        :defaultValue ""
+                        :onKeyDown ignore-return
+                        :onBlur #(rf/dispatch [::set-dataflow-create-field :name (-> % .-target .-value)])
                         :type :text
                         :fullWidth true}]
          [:> TextField {:margin :dense
@@ -147,8 +149,9 @@
                         :class (:form-input classes)
                         :id :dataflow_description
                         :label "Description"
-                        :onChange #(rf/dispatch [::set-dataflow-create-field :description (-> % .-target .-value)])
-                        :value (or @description-field-value "")
+                        :onBlur #(rf/dispatch [::set-dataflow-create-field :description (-> % .-target .-value)])
+                        :defaultValue ""
+                        :onKeyDown ignore-return
                         :type :text
                         :fullWidth true}]
          [:> DialogActions

@@ -17,6 +17,7 @@
             [reagent.core :as r]
             [odmp-ui.subs :as subs]
             [odmp-ui.events :as events]
+            [odmp-ui.util.ui :refer [ignore-return]]
             [odmp-ui.views.processor.events :as proc-events]
             [odmp-ui.views.processor.subs :as proc-subs]
             ["@material-ui/core/Box" :default Box]
@@ -32,17 +33,19 @@
 
 (defn text-input-location [idx field]
   (let [edit-inputs (rf/subscribe [::proc-subs/edit-inputs])
-        loc-field-value (or (get-in @edit-inputs [idx :sourceLocation])
-                                    (:sourceLocation field)
-                                    "")]
+        loc-field-value (or 
+                         ;(get-in @edit-inputs [idx :sourceLocation])
+                         (:sourceLocation field)
+                         "")]
     [:> TextField {:margin :dense
                    :variant :filled
                    :required true
                    :fullWidth true
                    :label "Location"
+                   :onKeyDown ignore-return
                    :type :text
-                   :value loc-field-value
-                   :onChange #(rf/dispatch [::proc-events/set-processor-input-location-field idx (-> % .-target .-value)])}]))
+                   :defaultValue loc-field-value
+                   :onBlur #(rf/dispatch [::proc-events/set-processor-input-location-field idx (-> % .-target .-value)])}]))
 
 (defn processor-input-location
   "Location select for a processor input"

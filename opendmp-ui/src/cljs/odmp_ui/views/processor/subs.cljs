@@ -57,6 +57,16 @@
    (get-in db [:edit-processor-fields :properties])))
 
 (rf/reg-sub
+ ::edit-name
+ (fn [db _]
+   (get-in db [:edit-processor-fields :name])))
+
+(rf/reg-sub
+ ::edit-description
+ (fn [db _]
+   (get-in db [:edit-processor-fields :description])))
+
+(rf/reg-sub
  ::edit-script-language
  (fn [db _]
    (get-in db [:edit-processor-fields :properties :language])))
