@@ -57,7 +57,7 @@ class LookupControllerTest(
         val list = response.responseBody
         assertNotNull(list)
         assertTrue(list!!.contains("INGEST"))
-        assertTrue(list.contains("EXPORT"))
+        assertTrue(list.contains("COLLECT"))
     }
 
     @Test

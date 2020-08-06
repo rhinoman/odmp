@@ -66,7 +66,7 @@ class RunPlanServiceTest @Autowired constructor(
     fun `should generate a runplan`() = runBlocking<Unit> {
         val dataflow = createDataflow()
         val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id, 1, 1, ProcessorType.INGEST, mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1, ProcessorType.EXPORT, mongoTemplate)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1, ProcessorType.COLLECT, mongoTemplate)
         proc1.inputs = listOf(SourceModel(SourceType.INGEST_FILE_DROP, "/tmp"))
         proc2.inputs = listOf(SourceModel(SourceType.PROCESSOR, proc1.id))
         mongoTemplate.save(proc1).block()

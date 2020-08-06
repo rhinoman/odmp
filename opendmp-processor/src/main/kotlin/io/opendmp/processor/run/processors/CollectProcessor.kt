@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.processor.run.processors
 
-enum class ProcessorType {
-    INGEST, COLLECT, SCRIPT, AGGREGATE, EXTERNAL
+import io.opendmp.common.model.ProcessorRunModel
+import org.apache.camel.Exchange
+
+class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
+
+    override fun process(exchange: Exchange?) {
+        TODO("Not yet implemented")
+    }
 }

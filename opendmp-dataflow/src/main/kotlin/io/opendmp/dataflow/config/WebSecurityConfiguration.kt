@@ -44,6 +44,7 @@ class WebSecurityConfiguration {
                 .authorizeExchange()
                 .pathMatchers("/dataflow_api/dataflow/**").hasAnyAuthority("user")
                 .pathMatchers("/dataflow_api/processor/**").hasAnyAuthority("user")
+                .pathMatchers("/dataflow_api/collection/**").hasAnyAuthority("user")
                 .pathMatchers("/").permitAll()
                 .pathMatchers("/dataflow_api/doc/**").permitAll()
                 .anyExchange().authenticated()

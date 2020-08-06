@@ -281,6 +281,18 @@
                  :on-success      [::success-delete-processor parent-id]
                  :on-failure      [::http-request-failure :delete-processor]}}))
 
+;;; LIST Collections
+(re-frame/reg-event-fx
+  ::fetch-collection-list
+  (fn [{:keys [db]} _]
+    {:http-xhrio {:method            :get
+                  :uri               "/dataflow_api/collection"
+                  :timeout           5000
+                  :response-format   (ajax/json-response-format {:keywords? true})
+                  :headers (basic-headers db)
+                  :on-success [::fetch-collection-list-success]
+                  :on-failure [::http-request-failure :collections]}}))
+
 ;; LOOKUPS
 (re-frame/reg-event-fx
  ::lookup-processor-types
@@ -333,6 +345,8 @@
    (-> db
        (assoc-in [:loading :dataflow] false)
        (assoc :current-dataflow result))))
+
+
 
 (re-frame/reg-event-db
  ::fetch-dataflow-processors-success
@@ -407,6 +421,12 @@
    (-> db
        (assoc-in [:loading :delete-processor] false)
        (assoc-in [:request-errors :delete-processor] nil))))
+
+(re-frame/reg-event-db
+ ::fetch-collection-list-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc :collections result))))
 
 (re-frame/reg-event-db
   ::http-request-failure

@@ -153,6 +153,7 @@
         [:> TextField {:variant :standard
                        :style {:padding 0 :margin 0}
                        :margin :dense
+                       :fullWidth true
                        :autoFocus true
                        :onBlur #(swap! edit-state not)
                        :onKeyDown #(edit-text-keypress % edit-state done-event)

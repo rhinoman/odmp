@@ -27,4 +27,8 @@
      [:div
       [:> Typography {:variant "h3"} "Open Data Management Platform"]]
      [:div
-      [:h4 "TODO: Snazzy charts and graphs go here"]])))
+      [:> Typography {:variant :subtitle1} "TODO: Snazzy charts and graphs go here"]
+      [:> Typography {:variant :subtitle1} "TODO: Need a real logo"]]
+     [:div
+      [:> Typography {:variant :body1}
+       "You're looking at an extremely early build of OpenDMP.  It doesn't do much yet."]])))

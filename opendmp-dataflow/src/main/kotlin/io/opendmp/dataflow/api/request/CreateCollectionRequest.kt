@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.dataflow.api.request
 
-enum class ProcessorType {
-    INGEST, COLLECT, SCRIPT, AGGREGATE, EXTERNAL
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.Size
+
+data class CreateCollectionRequest(
+        @field:NotBlank(message = "Name is Required")
+        @field:Size(min = 3, max = 64, message = "Name must be between 3 and 64 characters")
+        val name: String?,
+        @field:Size(min = 1, max = 256, message = "Description has a max length of 256 characters")
+        val description: String? = "No description",
+        val group: String? = "No group"
+) {
 }

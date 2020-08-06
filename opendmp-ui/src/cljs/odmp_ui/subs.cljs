@@ -82,6 +82,12 @@
  (fn [db _]
    (:current-processor db)))
 
+;; The list of all collections
+(re-frame/reg-sub
+ ::collections
+ (fn [db _]
+   (:collections db)))
+
 ;; Lookups
 (re-frame/reg-sub
  ::lookup-processor-types

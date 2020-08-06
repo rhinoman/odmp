@@ -102,18 +102,23 @@
        [:> Tooltip {:title "Search" :placement "right"}
         [:> ListItem {:button true
                       :key "search"
+                      :disabled true
                       :class (:sidebarListItem classes)}
          [:> ListItemIcon [:> SearchIcon]]
          (adj-label "Search")]]
        [:> Tooltip {:title "Browse" :placement "right"}
         [:> ListItem {:button true
-                      :key "browse"
-                      :class (:sidebarListItem classes)}
+                      :component "a"
+                      :href "#/collections"
+                      :key "collections"
+                      :class [(:sidebarListItem classes)
+                              (if (= @active-link :collections) (:activeItem classes) "")]}
          [:> ListItemIcon [:> BrowseCollectionsIcon]]
          (adj-label "Browse Collections")]]
        [:> Tooltip {:title "My Collections" :placement "right"}
         [:> ListItem {:button true
                       :key "favorites"
+                      :disabled true
                       :class (:sidebarListItem classes)}
          [:> ListItemIcon [:> FavoriteIcon]]
          (adj-label "My Collections")]]

@@ -17,19 +17,13 @@
 package io.opendmp.dataflow.api.controller
 
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
-import io.opendmp.common.model.ProcessorType
-import io.opendmp.dataflow.TestUtils
-import io.opendmp.dataflow.api.request.CreateDataflowRequest
-import io.opendmp.dataflow.api.response.DataflowListItem
+import com.mongodb.client.result.DeleteResult
+import io.opendmp.dataflow.api.request.CreateCollectionRequest
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
-import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.model.ProcessorModel
-import io.opendmp.dataflow.service.DataflowService
-import org.apache.camel.test.spring.junit5.CamelSpringBootTest
-import org.apache.camel.test.spring.junit5.CamelSpringTest
-import org.bson.types.ObjectId
+import io.opendmp.dataflow.model.CollectionModel
+import io.opendmp.dataflow.service.CollectionService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -44,7 +38,6 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.findAllAndRemove
 import org.springframework.data.mongodb.core.query.Query
-import org.springframework.data.mongodb.core.remove
 import org.springframework.http.MediaType
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf
@@ -54,25 +47,25 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 
 @ExtendWith(SpringExtension::class)
-@WebFluxTest(DataflowController::class)
+@WebFluxTest(CollectionController::class)
 @ComponentScan(basePackages = [
     "io.opendmp.dataflow.service",
     "io.opendmp.dataflow.messaging",
     "import com.c4_soft.springaddons.security.oauth2.test.webflux"
 ])
-@ContextConfiguration(classes = [MongoConfig::class, DataflowController::class])
+@ContextConfiguration(classes = [MongoConfig::class, CollectionController::class])
 @EnableConfigurationProperties(MongoProperties::class)
-class DataflowControllerTest(
-        @Autowired val dataflowService: DataflowService,
-        @Autowired val client: WebTestClient,
-        @Autowired val mongoTemplate: ReactiveMongoTemplate
+class CollectionControllerTest @Autowired constructor(
+        val collectionService: CollectionService,
+        val client: WebTestClient,
+        val mongoTemplate: ReactiveMongoTemplate
 ) {
-    private val baseUri : String = "/dataflow_api/dataflow"
+
+    private val baseUri: String = "/dataflow_api/collection"
 
     @AfterEach
     fun cleanUp() {
-        mongoTemplate.findAllAndRemove<DataflowModel>(Query()).blockLast()
-        mongoTemplate.findAllAndRemove<ProcessorModel>(Query()).blockLast()
+        mongoTemplate.findAllAndRemove<CollectionModel>(Query()).blockLast()
     }
 
     @MockBean
@@ -86,99 +79,71 @@ class DataflowControllerTest(
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
-    fun `should create a new basic dataflow`() {
+    fun `should create a new basic collection`() {
 
         val response = client.mutateWith(csrf())
                 .post().uri(baseUri)
-                .bodyValue(CreateDataflowRequest(name = "FOOBAR"))
+                .bodyValue(CreateCollectionRequest(name = "FOOBAR"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().is2xxSuccessful
-                .expectBody<DataflowModel>()
+                .expectBody<CollectionModel>()
                 .returnResult()
+
         val model = response.responseBody
         assertEquals("FOOBAR", model?.name)
     }
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
-    fun `should return a list of dataflows`() {
-        val dataflows = listOf(
-                DataflowModel(
-                        name = "FOOBAR",
-                        creator = "",
-                        description = "THE FOOBAR",
-                        group = ""))
-        mongoTemplate.insertAll<DataflowModel>(dataflows).blockLast()
+    fun `should return a list of collections`(){
+        val collections = listOf(
+                CollectionModel(name = "FOOBAR", creator = "odmp-user", group = "NONSUCH"),
+                CollectionModel(name = "FOOBAR2", creator = "odmp-user", group= "NONSUCH2")
+        )
+        mongoTemplate.insertAll<CollectionModel>(collections).blockLast()
         val response = client.get().uri(baseUri)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().is2xxSuccessful
-                .expectBody<List<DataflowListItem>>()
+                .expectBody<List<CollectionModel>>()
                 .returnResult()
         val list = response.responseBody
-        assertEquals("FOOBAR", list!![0].dataflow.name)
+        assertEquals(2, list?.size)
+        assertEquals("FOOBAR", list!![0].name)
     }
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
-    fun `should return a single dataflow`() {
-        val dataflow = DataflowModel(
-                id = ObjectId.get().toHexString(),
-                name = "FOOBAR",
-                creator = "",
-                description = "THE FOOBAR",
-                group = "")
-        mongoTemplate.insert<DataflowModel>(dataflow).block()
-        val response = client.get().uri(baseUri + "/" + dataflow.id)
+    fun `should return a single collection`(){
+        val collection = CollectionModel(name = "FOOBAR", creator = "odmp-user", group = "NONSUCH")
+        mongoTemplate.insert(collection).block()
+        val response = client.get().uri(baseUri + "/" + collection.id)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().is2xxSuccessful
-                .expectBody<DataflowModel>()
+                .expectBody<CollectionModel>()
                 .returnResult()
-        val df = response.responseBody
-        assertEquals("FOOBAR", df!!.name)
+
+        val coll = response.responseBody
+        assertEquals("FOOBAR", coll!!.name)
     }
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
-    fun `should return a list of processors`() {
-        val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
-        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1, ProcessorType.INGEST,mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT,mongoTemplate)
-        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT,mongoTemplate)
-
-        val response = client.get().uri(baseUri + "/" + dataflow.id + "/processors")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().is2xxSuccessful
-                .expectBody<List<ProcessorModel>>()
-                .returnResult()
-
-        val pl = response.responseBody
-        assertNotNull(pl)
-        assertEquals(3, pl?.size)
-
-    }
-
-    @Test
-    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
-    fun `should delete a dataflow and its processors`() {
-        val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
-        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,ProcessorType.INGEST,mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT,mongoTemplate)
-        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT,mongoTemplate)
-
+    fun `should delete a single collection`(){
+        val collection = CollectionModel(name = "FOOBAR", creator = "odmp-user", group = "NONSUCH")
+        mongoTemplate.insert(collection).block()
         val response = client.mutateWith(csrf())
-                .delete().uri(baseUri + "/" + dataflow.id)
+                .delete().uri(baseUri + "/" + collection.id)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().is2xxSuccessful
                 .expectBody<Any>()
                 .returnResult()
 
-        val pl = response.responseBody
-        assertNotNull(pl)
+        val res = response.responseBody
+        assertNotNull(res)
     }
 
 }

@@ -72,6 +72,11 @@
     (re-frame/dispatch [::proc-events/clear-processor-edit-fields])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
+  (defroute "/collections" []
+    (re-frame/dispatch [::events/set-active-panel :collection-index-panel])
+    (net/auth-dispatch [::events/fetch-collection-list])
+    (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
+
 
   ;; --------------------
   (hook-browser-navigation!))

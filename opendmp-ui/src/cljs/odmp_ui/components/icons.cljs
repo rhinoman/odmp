@@ -26,10 +26,10 @@
 (defn processor-type-icon [processor-type]
   (case processor-type
     "INGEST" [:> InputIcon]
-    "EXPORT" [:> UploadIcon]
-    "TRANSFORM" [:> TransformIcon]
+    "COLLECT" [:> UploadIcon]
+    ;"TRANSFORM" [:> TransformIcon]
     "SCRIPT" [:> CodeIcon]
-    "AGGREGATOR" [:> MergeIcon]
+    "AGGREGATE" [:> MergeIcon]
     "EXTERNAL" [:> WorkIcon]
     [:> HelpIcon]))
 

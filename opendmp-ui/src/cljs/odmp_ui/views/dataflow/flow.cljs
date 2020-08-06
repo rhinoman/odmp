@@ -153,12 +153,14 @@
     [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]]))
 
 (defn processor-pane [processors classes]
-  (let [num-phases (r/atom (or (dutil/num-phases processors) 1))]
+  (let [num-phases (r/atom (or (dutil/num-phases processors) 1))
+        win-size (rf/subscribe [::window/resize])]
     (fn [processors classes]
       (let [dataflow @(rf/subscribe [::subs/current-dataflow])]
         [:<>
          [toolbar num-phases classes]
-         [:> Paper {:class (:proc-wrapper classes)}
+         ;;; :frdw is just to force a redraw when the window is resized
+         [:> Paper {:class (:proc-wrapper classes) :frdw @win-size}
           (if (= (count processors) 0)
             (empty-flow dataflow classes)
             (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases dataflow classes))
@@ -170,8 +172,7 @@
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
         processors @(rf/subscribe [::subs/current-dataflow-processors])
         delete-dialog? (rf/subscribe [::d-modals/delete-dataflow-dialog-open])
-        create-processor-dialog? (rf/subscribe [::p-modals/create-processor-dialog-open])
-        win-size (rf/subscribe [::window/resize])]
+        create-processor-dialog? (rf/subscribe [::p-modals/create-processor-dialog-open])]
     (style/let [classes flow-styles]
       [:<>
        (if @delete-dialog? (d-modals/confirm-delete-dataflow @dataflow))
@@ -191,9 +192,13 @@
          :edit-opts {:done-event
                      (fn [e]
                        (update-dataflow (assoc @dataflow :name (-> e .-target .-value))))}}
-        ;;; :frdw is just to force a redraw when the window is resized
+        
         (if (nil? @dataflow) [tcom/loading-backdrop])
-        [:> Box {:class (:description-wrapper classes) :frdw (:width @win-size)}
-         [:> Typography {:variant :subtitle1} (:description @dataflow)]]
+        [:> Box {:class (:description-wrapper classes)}
+         [tcom/editable-text
+          :subtitle1
+          (:description @dataflow)
+          {:done-event (fn [e]
+                         (update-dataflow (assoc @dataflow :description (-> e .-target .-value))))}]]
         
         (if (some? @dataflow) [processor-pane processors classes])]])))
