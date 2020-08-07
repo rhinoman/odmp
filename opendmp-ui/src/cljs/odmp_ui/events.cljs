@@ -293,6 +293,22 @@
                   :on-success [::fetch-collection-list-success]
                   :on-failure [::http-request-failure :collections]}}))
 
+;;; POST a new collection
+(re-frame/reg-event-fx
+ ::post-collection
+ (fn [{:keys [db]} [_ data]]
+   {:db (-> db
+            (assoc-in [:loading :post-collection] true))
+    :http-xhrio {:method             :post
+                 :uri                "/dataflow_api/collection"
+                 :params             data
+                 :timeout            5000
+                 :headers            (basic-headers db)
+                 :format             (ajax/json-request-format)
+                 :response-format    (ajax/json-response-format {:keywords? true})
+                 :on-success         [::success-post-collection]
+                 :on-failure         [::http-request-failure :post-collection]}}))
+
 ;; LOOKUPS
 (re-frame/reg-event-fx
  ::lookup-processor-types
@@ -429,6 +445,16 @@
        (assoc :collections result))))
 
 (re-frame/reg-event-db
+ ::success-post-collection
+ (fn [db [_ result]]
+   (re-frame/dispatch [::fetch-collection-list])
+   (re-frame/dispatch [::toggle-create-collection-dialog])
+   (re-frame/dispatch [::set-snackbar "success" "Collection Created"])
+   (-> db
+       (assoc-in [:loading :post-collection] false)
+       (assoc-in [:request-errors :post-collection] nil))))
+
+(re-frame/reg-event-db
   ::http-request-failure
   (fn [db [_ loc result]]
     (let [error-status (get-in result [:parse-error :status])]
@@ -464,6 +490,14 @@
                   (assoc-in [:request-errors :post-processor] nil)
                   (assoc :create-processor-dialog-open (not (:create-processor-dialog-open db)))
                   (assoc :create-processor-dialog-phase pnum)))))
+
+(re-frame/reg-event-db
+ ::toggle-create-collection-dialog
+ (fn-traced [db [_ _]]
+            (-> db
+                (assoc :create-collection-dialog-fields {})
+                (assoc-in [:request-errors :post-collection] nil)
+                (assoc :create-collection-dialog-open (not (:create-collection-dialog-open db))))))
 
 (re-frame/reg-event-db
  ::set-snackbar
