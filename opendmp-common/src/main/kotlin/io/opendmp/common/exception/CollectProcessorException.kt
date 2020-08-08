@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.message
+package io.opendmp.common.exception
 
-import io.opendmp.common.model.properties.DataLocationType
-import io.opendmp.common.model.HealthState
-import io.opendmp.common.model.RunState
-
-data class ProcessResponseMessage(val requestId: String,
-                                  val runPlanId: String,
-                                  val processId: String,
-                                  val healthState: HealthState,
-                                  val runState: RunState,
-                                  val dataLocation: DataLocationType,
-                                  val locationKey: String? = null) {}
+class CollectProcessorException(message: String = "Error processing collect") : Exception(message) {
+}

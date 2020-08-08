@@ -16,14 +16,19 @@
 
 package io.opendmp.common.message
 
-import io.opendmp.common.model.properties.DataLocationType
-import io.opendmp.common.model.HealthState
-import io.opendmp.common.model.RunState
+import io.opendmp.common.model.Result
+import io.opendmp.common.model.properties.DestinationType
+import java.time.Instant
+import java.util.*
 
-data class ProcessResponseMessage(val requestId: String,
-                                  val runPlanId: String,
-                                  val processId: String,
-                                  val healthState: HealthState,
-                                  val runState: RunState,
-                                  val dataLocation: DataLocationType,
-                                  val locationKey: String? = null) {}
+data class CollectionCompleteMessage(
+        val requestId: String = UUID.randomUUID().toString(),
+        val timeStamp: Instant,
+        val destinationType: DestinationType,
+        val location: String,
+        val flowId: String,
+        val processorId: String,
+        val result: Result,
+        val errorMessage: String? = null
+) {
+}

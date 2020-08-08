@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.message
+package io.opendmp.common.model.properties
 
-import io.opendmp.common.model.properties.DataLocationType
-import io.opendmp.common.model.HealthState
-import io.opendmp.common.model.RunState
-
-data class ProcessResponseMessage(val requestId: String,
-                                  val runPlanId: String,
-                                  val processId: String,
-                                  val healthState: HealthState,
-                                  val runState: RunState,
-                                  val dataLocation: DataLocationType,
-                                  val locationKey: String? = null) {}
+enum class DestinationType {
+    NONE, FOLDER, S3
+}

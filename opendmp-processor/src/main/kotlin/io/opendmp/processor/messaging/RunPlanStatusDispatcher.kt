@@ -14,54 +14,44 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.messaging
+package io.opendmp.processor.messaging
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.opendmp.common.message.StartRunPlanRequestMessage
-import io.opendmp.common.message.StopRunPlanRequestMessage
+import io.opendmp.common.message.CollectionCompleteMessage
 import org.apache.camel.ProducerTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class RunPlanDispatcher @Autowired constructor(
+class RunPlanStatusDispatcher @Autowired constructor(
         private val producerTemplate: ProducerTemplate
-) {
+){
 
-    @Value("\${odmp.pulsar.namespace}")
+    @Value("\${odmp.pulsar.namespace")
     lateinit var pulsarNamespace: String
 
-    private val log = LoggerFactory.getLogger(RunPlanDispatcher::class.java)
+    private val log = LoggerFactory.getLogger(javaClass)
 
     private val mapper = jacksonObjectMapper()
 
-    fun startEndPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_start_request?producerName=odmpDataflow"
+    fun collectEndPoint(): String =
+            "pulsar:persistent://$pulsarNamespace/runplan_collect_status?producerName=odmpProducer"
 
-    fun stopEndPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_stop_request?producerName=odmpDataflow"
-
-    fun sendMessage(msg: Any, endpoint: String) {
+    private fun sendMessage(msg: Any, endpoint: String) {
         try {
             val jsonData = mapper.writeValueAsString(msg)
             producerTemplate.sendBody(endpoint, jsonData)
         } catch (jpe: JsonProcessingException) {
-            log.error("Error converting request message", jpe)
+            log.error("Error converting message", jpe)
         } catch (ex: Exception) {
             log.error("Error sending message", ex)
         }
     }
 
-    fun dispatchRunPlan(msg: StartRunPlanRequestMessage) {
-       sendMessage(msg, startEndPointUrl())
+    suspend fun sendCollectionComplete(msg: CollectionCompleteMessage) {
+        sendMessage(msg, collectEndPoint())
     }
-
-    fun stopRunPlan(msg: StopRunPlanRequestMessage) {
-        sendMessage(msg, stopEndPointUrl())
-    }
-
 }

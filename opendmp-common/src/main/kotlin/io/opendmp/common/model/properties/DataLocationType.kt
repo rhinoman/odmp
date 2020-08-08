@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.common.model.properties
 
 enum class DataLocationType {
     CACHE, DISK, NONE

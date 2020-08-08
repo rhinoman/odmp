@@ -15,6 +15,8 @@
  */
 package io.opendmp.common.model
 
+import io.opendmp.common.model.properties.DataLocationType
+
 /**
  * Two additional fields needed beyond the SourceModel
  * dataLocationType - CACHE, DISK, or NONE - depending on where the input data has been stored

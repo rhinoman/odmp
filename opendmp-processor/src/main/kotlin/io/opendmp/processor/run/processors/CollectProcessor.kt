@@ -16,12 +16,80 @@
 
 package io.opendmp.processor.run.processors
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.opendmp.common.exception.CollectProcessorException
+import io.opendmp.common.message.CollectionCompleteMessage
+import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.common.model.ProcessorRunModel
+import io.opendmp.common.model.Result
+import io.opendmp.processor.messaging.RunPlanStatusDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
+import org.apache.camel.ProducerTemplate
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Configurable
+import java.time.Instant
+import java.util.*
 
+@Configurable
 class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
 
+    @Autowired
+    lateinit var producerTemplate: ProducerTemplate
+
+    @Autowired
+    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
     override fun process(exchange: Exchange?) {
-        TODO("Not yet implemented")
+        val props = processor.properties!!
+        val destinationType = DestinationType.valueOf(props["type"].toString())
+        val collectionId = props["collection"].toString()
+
+        val payload = exchange?.getIn()?.getBody(ByteArray::class.java)
+                ?: throw CollectProcessorException("No data to process")
+
+        val time: Instant = Instant.now()
+        val recordId = UUID.randomUUID().toString().replace("-", "")
+
+        val endpoint = when(destinationType) {
+            DestinationType.FOLDER -> {
+                val folderLocation = props["location"].toString()
+                "file://$folderLocation/$recordId"
+            }
+            else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
+        }
+
+        var result: Result = Result.SUCCESS
+        var error: String? = null
+        try {
+            producerTemplate.sendBody(endpoint, payload)
+        } catch(cex: CamelExecutionException) {
+            log.error("Error exporting data", cex)
+            result = Result.ERROR
+            error = "Error exporting data: ${cex.localizedMessage}"
+        }
+
+        //Finally, send a message back to the dataflow service with collection information
+        val msg = CollectionCompleteMessage(
+                destinationType = destinationType,
+                flowId = processor.flowId,
+                processorId = processor.id,
+                timeStamp = time,
+                location = endpoint,
+                result = result,
+                errorMessage = error)
+
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            runPlanStatusDispatcher.sendCollectionComplete(msg)
+        }
+
+        exchange.getIn().body = payload
     }
 }
