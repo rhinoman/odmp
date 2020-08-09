@@ -22,6 +22,7 @@ import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.Result
+import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.messaging.RunPlanStatusDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,24 +31,26 @@ import kotlinx.coroutines.launch
 import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
+import org.apache.camel.spring.SpringCamelContext
+import org.apache.camel.spring.boot.SpringBootCamelContext
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowire
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Configurable
 import java.time.Instant
 import java.util.*
 
-@Configurable
 class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
 
-    @Autowired
-    lateinit var producerTemplate: ProducerTemplate
-
-    @Autowired
-    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
+    private val producerTemplate: ProducerTemplate =
+            SpringContext.getBean(ProducerTemplate::class)
+    private val runPlanStatusDispatcher: RunPlanStatusDispatcher =
+            SpringContext.getBean(RunPlanStatusDispatcher::class)
 
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun process(exchange: Exchange?) {
+
         val props = processor.properties!!
         val destinationType = DestinationType.valueOf(props["type"].toString())
         val collectionId = props["collection"].toString()
@@ -83,6 +86,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                 processorId = processor.id,
                 timeStamp = time,
                 location = endpoint,
+                collectionId = collectionId,
                 result = result,
                 errorMessage = error)
 

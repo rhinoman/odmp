@@ -29,7 +29,7 @@ class RunPlanRequestRouter(
         @Autowired val runPlanRequestHandler: RunPlanRequestHandler) : RouteBuilder() {
 
     @Value("\${odmp.pulsar.namespace}")
-    val pulsarNamespace: String = "public/default"
+    lateinit var pulsarNamespace: String
 
     fun endPointUrl() : String =
             "pulsar:non-persistent://$pulsarNamespace/runplan_start_request"

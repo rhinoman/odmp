@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.message
+package io.opendmp.dataflow.model
 
-import io.opendmp.common.model.Result
 import io.opendmp.common.model.properties.DestinationType
+import org.bson.types.ObjectId
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
-import java.util.*
 
-data class CollectionCompleteMessage(
-        val requestId: String = UUID.randomUUID().toString(),
-        val timeStamp: Instant,
-        val destinationType: DestinationType,
-        val location: String,
-        val flowId: String,
-        val processorId: String,
-        val collectionId: String,
-        val result: Result,
-        val errorMessage: String? = null
+@Document(collection = "data_sets")
+class DatasetModel(@Id val id: String = ObjectId.get().toHexString(),
+                   @Indexed val collectionId: String,
+                   val dataflowId: String,
+                   val destinationType: DestinationType,
+                   val location: String,
+                   @CreatedDate
+                   val createdOn: Instant
 ) {
 }

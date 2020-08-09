@@ -16,10 +16,27 @@
 
 package io.opendmp.dataflow.messaging
 
+import io.opendmp.dataflow.handler.RunPlanStatusHandler
 import org.apache.camel.builder.RouteBuilder
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
-class ProcessResponseRouter{
-    fun configure() {
+@Profile("!test")
+@Component
+class RunPlanCollectStatusRouter(
+        @Autowired val runPlanStatusHandler: RunPlanStatusHandler
+) : RouteBuilder(){
+
+    @Value("\${odmp.pulsar.namespace}")
+    lateinit var pulsarNamespace: String
+
+    fun endPointUrl() : String =
+            "pulsar:persistent://$pulsarNamespace/runplan_collect_status"
+
+    override fun configure() {
+        from(endPointUrl()).to("bean:runPlanStatusHandler?method=receiveCollectStatus")
     }
+
 }
