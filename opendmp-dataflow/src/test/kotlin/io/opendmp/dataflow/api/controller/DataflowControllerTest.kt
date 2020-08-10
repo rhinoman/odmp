@@ -143,10 +143,12 @@ class DataflowControllerTest(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should return a list of processors`() {
-        val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
-        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1, ProcessorType.INGEST,mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT,mongoTemplate)
-        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT,mongoTemplate)
+        val dataflow = TestUtils.createBasicDataflow("Foobar")
+        mongoTemplate.save(dataflow).block()
+        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1, ProcessorType.INGEST)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT)
+        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT)
+        mongoTemplate.insertAll(listOf(proc1, proc2, proc3)).blockLast()
 
         val response = client.get().uri(baseUri + "/" + dataflow.id + "/processors")
                 .accept(MediaType.APPLICATION_JSON)
@@ -164,10 +166,12 @@ class DataflowControllerTest(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should delete a dataflow and its processors`() {
-        val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
-        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,ProcessorType.INGEST,mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT,mongoTemplate)
-        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT,mongoTemplate)
+        val dataflow = TestUtils.createBasicDataflow("Foobar")
+        mongoTemplate.save(dataflow).block()
+        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,ProcessorType.INGEST)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT)
+        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT)
+        mongoTemplate.insertAll(listOf(proc1, proc2, proc3)).blockLast()
 
         val response = client.mutateWith(csrf())
                 .delete().uri(baseUri + "/" + dataflow.id)

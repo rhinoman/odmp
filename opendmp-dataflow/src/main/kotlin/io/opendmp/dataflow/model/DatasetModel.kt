@@ -26,6 +26,7 @@ import java.time.Instant
 
 @Document(collection = "data_sets")
 class DatasetModel(@Id val id: String = ObjectId.get().toHexString(),
+                   val name: String,
                    @Indexed val collectionId: String,
                    val dataflowId: String,
                    val destinationType: DestinationType,

@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.findAllAndRemove
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.remove
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -49,12 +51,13 @@ class RunPlanServiceTest @Autowired constructor(
 
     @AfterEach
     fun cleanUp() {
-        mongoTemplate.remove<DataflowModel>()
-        mongoTemplate.remove<ProcessorModel>()
+        mongoTemplate.findAllAndRemove<DataflowModel>(Query())
+        mongoTemplate.findAllAndRemove<ProcessorModel>(Query())
     }
 
     fun createDataflow() : DataflowModel {
-        val dataflow = TestUtils.createBasicDataflow("Foobar", mongoTemplate)
+        val dataflow = TestUtils.createBasicDataflow("Foobar")
+        mongoTemplate.insert(dataflow).block()
 
         dataflow.enabled = true
         mongoTemplate.save(dataflow).block()
@@ -65,8 +68,10 @@ class RunPlanServiceTest @Autowired constructor(
     @Test
     fun `should generate a runplan`() = runBlocking<Unit> {
         val dataflow = createDataflow()
-        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id, 1, 1, ProcessorType.INGEST, mongoTemplate)
-        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1, ProcessorType.COLLECT, mongoTemplate)
+        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id, 1, 1, ProcessorType.INGEST)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1, ProcessorType.COLLECT)
+        mongoTemplate.insert(proc1).block()
+        mongoTemplate.insert(proc2).block()
         proc1.inputs = listOf(SourceModel(SourceType.INGEST_FILE_DROP, "/tmp"))
         proc2.inputs = listOf(SourceModel(SourceType.PROCESSOR, proc1.id))
         mongoTemplate.save(proc1).block()

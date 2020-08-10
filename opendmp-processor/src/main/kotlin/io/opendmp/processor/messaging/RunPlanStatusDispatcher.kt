@@ -37,6 +37,10 @@ class RunPlanStatusDispatcher @Autowired constructor(
 
     private val mapper = jacksonObjectMapper()
 
+    init {
+        mapper.findAndRegisterModules()
+    }
+
     fun collectEndPoint(): String =
             "pulsar:persistent://$pulsarNamespace/runplan_collect_status?producerName=odmpProducer"
 

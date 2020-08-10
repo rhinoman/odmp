@@ -16,36 +16,43 @@
 
 package io.opendmp.dataflow.handler
 
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.util.MessageUtil
+import io.opendmp.dataflow.api.exception.NotFoundException
 import io.opendmp.dataflow.model.DatasetModel
+import io.opendmp.dataflow.service.CollectionService
+import io.opendmp.dataflow.service.DataflowService
+import io.opendmp.dataflow.service.DatasetService
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
 import org.apache.camel.CamelContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Component
 class RunPlanStatusHandler(
-        @Autowired private val camelContext: CamelContext) {
+        @Autowired private val camelContext: CamelContext,
+        @Autowired private val datasetService: DatasetService) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private val mapper = jacksonObjectMapper()
-
-    suspend fun receiveCollectStatus(data: String) {
+    suspend fun receiveCollectStatus(data: String) : Mono<DatasetModel>? {
         log.debug("Received COLLECT status")
         try {
             // Nothing to do if we can't extract the message, eh?
-            val msg = MessageUtil.extractMessageFromString<CollectionCompleteMessage>(data) ?: return
-            val dataset = DatasetModel(
-                    collectionId = msg.collectionId,
-                    dataflowId = msg.flowId,
-                    destinationType = msg.destinationType,
-                    location = msg.location,
-                    createdOn = msg.timeStamp)
+            val msg = MessageUtil.extractMessageFromString<CollectionCompleteMessage>(data) ?: return null
+            return datasetService.createDataset(msg)
         } catch (ex: Exception) {
             log.error("Error processing collection completion", ex)
+            return null
         }
     }
 

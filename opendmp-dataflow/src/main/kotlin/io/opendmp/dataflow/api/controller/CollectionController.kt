@@ -19,6 +19,7 @@ package io.opendmp.dataflow.api.controller
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateCollectionRequest
 import io.opendmp.dataflow.model.CollectionModel
+import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.service.CollectionService
 import kotlinx.coroutines.flow.Flow
 import org.springframework.security.core.Authentication
@@ -49,6 +50,11 @@ class CollectionController(private val collectionService: CollectionService) {
     @DeleteMapping("/{id}")
     fun deleteOne(@PathVariable("id") id: String) : Mono<DeleteResult> {
         return collectionService.delete(id)
+    }
+
+    @GetMapping("/{id}/datasets")
+    suspend fun getDatasets(@PathVariable("id") id: String) : Flow<DatasetModel> {
+        return collectionService.getDatasets(id)
     }
 
 }

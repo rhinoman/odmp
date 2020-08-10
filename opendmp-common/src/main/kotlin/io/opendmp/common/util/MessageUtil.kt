@@ -28,6 +28,10 @@ object MessageUtil {
 
     val log: Logger = LoggerFactory.getLogger(javaClass)
 
+    init {
+        mapper.findAndRegisterModules()
+    }
+
     inline fun <reified T : Any> extractMessageFromString(data: String) : T? {
         return try {
             mapper.readValue<T>(data)

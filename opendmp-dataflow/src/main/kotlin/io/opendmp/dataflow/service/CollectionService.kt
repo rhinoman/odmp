@@ -20,16 +20,14 @@ import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.Util
 import io.opendmp.dataflow.api.request.CreateCollectionRequest
 import io.opendmp.dataflow.model.CollectionModel
+import io.opendmp.dataflow.model.DatasetModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.slf4j.LoggerFactory
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.findAll
-import org.springframework.data.mongodb.core.findById
+import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
-import org.springframework.data.mongodb.core.remove
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -59,6 +57,11 @@ class CollectionService (private val mongoTemplate: ReactiveMongoTemplate) {
 
     suspend fun getList() : Flow<CollectionModel> {
         return mongoTemplate.findAll<CollectionModel>().asFlow()
+    }
+
+    suspend fun getDatasets(collectionId: String) : Flow<DatasetModel> {
+        val query = Query(Criteria.where("collectionId").isEqualTo(collectionId))
+        return mongoTemplate.find<DatasetModel>(query).asFlow()
     }
 
     fun delete(id: String) : Mono<DeleteResult> {

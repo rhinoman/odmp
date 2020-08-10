@@ -77,7 +77,7 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
                        data: UpdateDataflowRequest,
                        authentication: Authentication) : Mono<DataflowModel> {
 
-        val username = Util.getUsername(authentication)
+        //val username = Util.getUsername(authentication)
         return mongoTemplate.findById<DataflowModel>(id).flatMap { cur ->
             val oldEnableState = cur.enabled
             cur.name = data.name!!

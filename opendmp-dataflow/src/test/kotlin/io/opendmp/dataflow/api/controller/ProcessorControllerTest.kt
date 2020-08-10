@@ -85,7 +85,8 @@ class ProcessorControllerTest(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should create a new processor`(){
-        val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
+        val flow = TestUtils.createBasicDataflow("FLOW1")
+        mongoTemplate.save(flow).block()
         val req = CreateProcessorRequest(
                 name = "FOOBAR",
                 flowId = flow.id,
@@ -110,8 +111,10 @@ class ProcessorControllerTest(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should be able to get a processor`() {
-        val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
-        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.SCRIPT, mongoTemplate)
+        val flow = TestUtils.createBasicDataflow("FLOW1")
+        mongoTemplate.save(flow).block()
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.SCRIPT)
+        mongoTemplate.save(proc).block()
 
         val response = client.get()
                 .uri(baseUri + "/" + proc.id)
@@ -128,8 +131,10 @@ class ProcessorControllerTest(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should be able to update a processor`() {
-        val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
-        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1, ProcessorType.SCRIPT, mongoTemplate)
+        val flow = TestUtils.createBasicDataflow("FLOW1")
+        mongoTemplate.save(flow).block()
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1, ProcessorType.SCRIPT)
+        mongoTemplate.save(proc).block()
 
         val updateReq = UpdateProcessorRequest(
                 name = proc.name,
@@ -161,8 +166,10 @@ class ProcessorControllerTest(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should be able to delete a processor`() {
-        val flow = TestUtils.createBasicDataflow("FLOW1", mongoTemplate)
-        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.SCRIPT, mongoTemplate)
+        val flow = TestUtils.createBasicDataflow("FLOW1")
+        mongoTemplate.save(flow).block()
+        val proc = TestUtils.createBasicProcessor("proc1", flow.id, 1,1,ProcessorType.SCRIPT)
+        mongoTemplate.save(proc).block()
 
         val response = client.mutateWith(csrf())
                 .delete()

@@ -18,11 +18,13 @@ package io.opendmp.dataflow.api.controller
 
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
 import com.mongodb.client.result.DeleteResult
+import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateCollectionRequest
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.CollectionModel
+import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.service.CollectionService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -144,6 +146,24 @@ class CollectionControllerTest @Autowired constructor(
 
         val res = response.responseBody
         assertNotNull(res)
+    }
+
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should return a list of datasets`(){
+        val collection = CollectionModel(name = "FOOBAR", creator = "odmp-user", group = "NONSUCH")
+        mongoTemplate.insert(collection).block()
+        val datasets = TestUtils.createBasicDatasets(collection.id, 5)
+        mongoTemplate.insertAll<DatasetModel>(datasets).blockLast()
+        val response = client.get().uri(baseUri + "/${collection.id}/datasets")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<List<DatasetModel>>()
+                .returnResult()
+        assertNotNull(response.responseBody)
+
+        assertEquals(5, response.responseBody?.size)
     }
 
 }
