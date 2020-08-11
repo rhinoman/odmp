@@ -1,4 +1,4 @@
-;; Copyright 2020 The Open Data Management Platform contributors.
+;; Copyright 2020 James Adam and the Open Data Management Platform contributors.
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@
     (re-frame/dispatch [::events/set-active-panel :processor-item-panel])
     (net/auth-dispatch [::events/fetch-processor id {:load-processors? true}])
     (re-frame/dispatch [::proc-events/clear-processor-edit-fields])
+    (re-frame/dispatch [::events/clear-collection-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/collections" []

@@ -130,6 +130,12 @@
 (defn basic-headers [db]
   {:Authorization (str "Bearer " (get-token db))})
 
+
+(re-frame/reg-event-db
+ ::clear-collection-list
+ (fn [db [_ _]]
+   (assoc db :collection nil)))
+
 ;;; Fetch Dataflow list
 (re-frame/reg-event-fx
   ::fetch-dataflow-list
@@ -342,6 +348,17 @@
                  :response-format (ajax/json-response-format)
                  :on-success      [::success-lookup :source-types]
                  :on-failure      [::http-request-failure :lookup-source-types]}}))
+
+(re-frame/reg-event-fx
+ ::lookup-destination-types
+ (fn [{:keys [db]} [_ ptype]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/dataflow_api/lookup/destination_types")
+                 :timeout         3000
+                 :headers         (basic-headers db)
+                 :response-format (ajax/json-response-format)
+                 :on-success      [::success-lookup :destination-types]
+                 :on-failure      [::http-request-failure :lookup-destination-types]}}))
 
 (re-frame/reg-event-db
  ::success-lookup

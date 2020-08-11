@@ -48,7 +48,7 @@ object TestUtils {
     }
 
     private val fmt = DateTimeFormatter
-            .ofLocalizedDateTime(FormatStyle.SHORT)
+            .ofPattern("yyyyDDDHHmmss.S")
             .withZone(ZoneId.systemDefault())
 
     fun createBasicDataset(collectionId: String, time: Instant) : DatasetModel {

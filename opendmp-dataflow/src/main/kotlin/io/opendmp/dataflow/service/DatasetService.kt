@@ -58,7 +58,7 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
             val flowName = xs.t2.name
             val time = msg.timeStamp
             val fmt = DateTimeFormatter
-                    .ofLocalizedDateTime(FormatStyle.SHORT)
+                    .ofPattern("yyyyDDDHHmmss.S")
                     .withZone(ZoneId.systemDefault())
             val dataset = DatasetModel(
                     name = "$flowName-${fmt.format(time)}",

@@ -24,6 +24,7 @@
             [odmp-ui.components.icons :refer [processor-type-icon]]
             [odmp-ui.views.processor.input-fields :refer [input-fields]]
             [odmp-ui.views.processor.script-fields :refer [script-fields]]
+            [odmp-ui.views.processor.collect-fields :refer [collect-fields]]
             [odmp-ui.views.processor.styles :refer [proc-styles]]
             [clojure.string :as str]
             ["@material-ui/core/Box" :default Box]
@@ -163,5 +164,6 @@
                  [input-fields processor]
                  (case (:type @processor)
                    "SCRIPT" [script-fields processor]
+                   "COLLECT" [collect-fields processor]
                    [:<>])]
                 ]))]]])))

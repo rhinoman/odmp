@@ -76,4 +76,20 @@ class LookupControllerTest(
         assertTrue(list.contains("MANUAL"))
     }
 
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should get a list of Destination types`() {
+        val response = client
+                .get().uri("$baseUri/destination_types")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<List<String>>()
+                .returnResult()
+
+        val list = response.responseBody
+        assertNotNull(list)
+        assertTrue(list!!.size > 1)
+    }
+
 }

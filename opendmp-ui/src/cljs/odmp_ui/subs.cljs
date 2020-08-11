@@ -104,6 +104,11 @@
  (fn [db _]
    (get-in db [:lookup :source-types])))
 
+(re-frame/reg-sub
+ ::lookup-destination-types
+ (fn [db _]
+   (get-in db [:lookup :destination-types])))
+
 ;; User
 (re-frame/reg-sub
  ::user-info

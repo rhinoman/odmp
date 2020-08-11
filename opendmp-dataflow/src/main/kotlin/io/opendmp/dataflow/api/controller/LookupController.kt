@@ -18,6 +18,7 @@ package io.opendmp.dataflow.api.controller
 
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceType
+import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.dataflow.model.TriggerType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -48,6 +49,11 @@ class LookupController {
                 sourceTypes.filter { it.toString().startsWith("INGEST_") }.asFlow()
             else -> sourceTypes.filter{ !it.toString().startsWith("INGEST") }.asFlow()
         }
+    }
+
+    @GetMapping("/destination_types")
+    fun getDestinationTypes(): Flow<DestinationType> {
+        return DestinationType.values().asFlow()
     }
 
 }
