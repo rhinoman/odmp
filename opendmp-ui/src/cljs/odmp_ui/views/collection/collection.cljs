@@ -14,16 +14,19 @@
 
 (ns odmp-ui.views.collection.collection
   (:require [re-frame.core :as rf]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [odmp-ui.subs :as subs]
+            [odmp-ui.util.styles :as style]))
 
 
-(defn collection-sytles [^js/Mui.Theme theme]
+(defn collection-styles [^js/Mui.Theme theme]
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
         p-type (keyword (:type palette))]
     {}))
 
 (defn collection
   "Display a collection"
+  []
   (let [collection (rf/subscribe [::subs/current-collection])]
     (style/let [classes collection-styles]
       [:<>

@@ -78,6 +78,11 @@
     (net/auth-dispatch [::events/fetch-collection-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
 
+  (defroute "/collections/:id" [id]
+    (re-frame/dispatch [::events/set-active-panel :collection-item-panel])
+    (net/auth-dispatch [::events/fetch-collection id])
+    (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
+
 
   ;; --------------------
   (hook-browser-navigation!))

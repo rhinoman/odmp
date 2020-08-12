@@ -28,6 +28,7 @@
    [odmp-ui.views.dataflow.flow :refer [flow]]
    [odmp-ui.views.processor.edit :refer [processor-editor]]
    [odmp-ui.views.collection.index :refer [collection-index]]
+   [odmp-ui.views.collection.collection :refer [collection]]
    [odmp-ui.util.styles :as style]
    ["@material-ui/core" :refer [createMuiTheme
                                 useTheme
@@ -60,6 +61,7 @@
     :dataflow-item-panel [flow]
     :processor-item-panel [processor-editor]
     :collection-index-panel [collection-index]
+    :collection-item-panel [collection]
     [:div]))
 
 (defn show-panel [panel-name]
