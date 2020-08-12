@@ -295,9 +295,21 @@
                   :uri               "/dataflow_api/collection"
                   :timeout           5000
                   :response-format   (ajax/json-response-format {:keywords? true})
-                  :headers (basic-headers db)
-                  :on-success [::fetch-collection-list-success]
-                  :on-failure [::http-request-failure :collections]}}))
+                  :headers           (basic-headers db)
+                  :on-success        [::fetch-collection-list-success]
+                  :on-failure        [::http-request-failure :collections]}}))
+
+;;; Fetch an individual collection
+(re-frame/reg-event-fx
+ ::fetch-collection
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method             :get
+                 :uri                (str "/dataflow_api/collection/" id)
+                 :timeout            5000
+                 :response-format    (ajax/json-response-format {:keywords? true})
+                 :headers            (basic-headers db)
+                 :on-success         [::fetch-collection-success]
+                 :on-failure         [::http-request-failure :get-collection]}}))
 
 ;;; POST a new collection
 (re-frame/reg-event-fx
@@ -460,6 +472,13 @@
  (fn [db [_ result]]
    (-> db
        (assoc :collections result))))
+
+(re-frame/reg-event-db
+ ::fetch-collection-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc-in [:loading :collection] false)
+       (assoc :current-collection result))))
 
 (re-frame/reg-event-db
  ::success-post-collection

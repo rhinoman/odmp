@@ -70,3 +70,18 @@
  ::edit-script-language
  (fn [db _]
    (get-in db [:edit-processor-fields :properties :language])))
+
+(rf/reg-sub
+ ::edit-collect-collection
+ (fn [db _]
+   (get-in db [:edit-processor-fields :properties :collection])))
+
+(rf/reg-sub
+ ::edit-collect-destination-type
+ (fn [db _]
+   (get-in db [:edit-processor-fields :properties :type])))
+
+(rf/reg-sub
+ ::edit-collect-location
+ (fn [db _]
+   (get-in db [:edit-processor-fields :properties :location])))
