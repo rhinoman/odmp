@@ -24,6 +24,7 @@ import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.DatasetModel
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -41,6 +42,9 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
@@ -85,8 +89,10 @@ class RunPlanStatusHandlerTest @Autowired constructor(
         )
         val jsonString = mapper.writeValueAsString(ccm)
         runBlocking {
-            runPlanStatusHandler.receiveCollectStatus(jsonString)?.block()
+            val ds = runPlanStatusHandler.receiveCollectStatus(jsonString)
+            while(!ds!!.isDisposed) { Thread.sleep(100) }
         }
+
         val dataset = mongoTemplate.find<DatasetModel>(
                 Query(Criteria.where("collectionId").isEqualTo(collection.id))
         ).blockLast()

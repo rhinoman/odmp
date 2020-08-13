@@ -22,8 +22,10 @@ import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.processor.config.RedisConfig
 import io.opendmp.processor.handler.RunPlanRequestHandler
 import io.opendmp.processor.messaging.RunPlanRequestRouter
+import io.opendmp.processor.messaging.RunPlanStatusDispatcher
 import org.apache.camel.CamelContext
 import org.apache.camel.EndpointInject
+import org.apache.camel.ProducerTemplate
 import org.apache.camel.component.mock.MockEndpoint
 import org.apache.camel.support.DefaultExchange
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest
@@ -57,6 +59,12 @@ class TestCollectProcessor @Autowired constructor(
 
     @MockBean
     lateinit var runPlanRequestRouter: RunPlanRequestRouter
+
+    @MockBean
+    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
+
+    @MockBean
+    lateinit var producerTemplate: ProducerTemplate
 
     @EndpointInject("mock:a")
     protected val mockA = MockEndpoint()

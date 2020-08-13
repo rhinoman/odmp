@@ -23,14 +23,16 @@ import org.apache.camel.ProducerTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
+@Profile("!test")
 @Component
 class RunPlanStatusDispatcher @Autowired constructor(
         private val producerTemplate: ProducerTemplate
 ){
 
-    @Value("\${odmp.pulsar.namespace")
+    @Value("\${odmp.pulsar.namespace}")
     lateinit var pulsarNamespace: String
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -55,7 +57,7 @@ class RunPlanStatusDispatcher @Autowired constructor(
         }
     }
 
-    suspend fun sendCollectionComplete(msg: CollectionCompleteMessage) {
+    fun sendCollectionComplete(msg: CollectionCompleteMessage) {
         sendMessage(msg, collectEndPoint())
     }
 }

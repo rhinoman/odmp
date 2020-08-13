@@ -64,7 +64,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
         val endpoint = when(destinationType) {
             DestinationType.FOLDER -> {
                 val folderLocation = props["location"].toString()
-                "file://$folderLocation/$recordId"
+                "file://$folderLocation"
             }
             else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
         }
@@ -72,7 +72,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
         var result: Result = Result.SUCCESS
         var error: String? = null
         try {
-            producerTemplate.sendBody(endpoint, payload)
+            producerTemplate.sendBodyAndHeader(endpoint, payload, Exchange.FILE_NAME, recordId)
         } catch(cex: CamelExecutionException) {
             log.error("Error exporting data", cex)
             result = Result.ERROR
@@ -90,9 +90,8 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                 result = result,
                 errorMessage = error)
 
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-            runPlanStatusDispatcher.sendCollectionComplete(msg)
-        }
+
+        runPlanStatusDispatcher.sendCollectionComplete(msg)
 
         exchange.getIn().body = payload
     }

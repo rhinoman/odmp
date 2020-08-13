@@ -21,9 +21,7 @@ import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.dataflow.Util
 import io.opendmp.dataflow.model.DatasetModel
-import kotlinx.coroutines.flow.flatMap
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.asFlow
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
@@ -33,6 +31,7 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.data.mongodb.core.remove
 import org.springframework.stereotype.Service
+import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
@@ -47,14 +46,13 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun createDataset(msg: CollectionCompleteMessage) : Mono<DatasetModel> {
+    fun createDataset(msg: CollectionCompleteMessage): Disposable {
         val collection = collectionService.get(msg.collectionId)
                 .switchIfEmpty { throw CollectProcessorException("the specified collection does not exist.") }
         val dataflow = dataflowService.get(msg.flowId)
                 .switchIfEmpty { throw CollectProcessorException("the specified dataflow does not exist") }
 
-       return Mono.zip(collection, dataflow).flatMap { xs ->
-
+       return Mono.zip(collection, dataflow).subscribe { xs ->
             val flowName = xs.t2.name
             val time = msg.timeStamp
             val fmt = DateTimeFormatter
@@ -67,9 +65,8 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                     destinationType = msg.destinationType,
                     location = msg.location,
                     createdOn = msg.timeStamp)
-            mongoTemplate.save(dataset)
+            mongoTemplate.save(dataset).block()
         }
-
     }
 
     fun get(id: String) : Mono<DatasetModel> {

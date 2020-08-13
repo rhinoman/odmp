@@ -34,8 +34,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.stereotype.Component
+import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
+import reactor.kotlin.core.publisher.toMono
 
 @Component
 class RunPlanStatusHandler(
@@ -44,7 +46,7 @@ class RunPlanStatusHandler(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun receiveCollectStatus(data: String) : Mono<DatasetModel>? {
+    suspend fun receiveCollectStatus(data: String): Disposable?  {
         log.debug("Received COLLECT status")
         try {
             // Nothing to do if we can't extract the message, eh?
