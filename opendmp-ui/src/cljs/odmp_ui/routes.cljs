@@ -81,6 +81,7 @@
   (defroute "/collections/:id" [id]
     (re-frame/dispatch [::events/set-active-panel :collection-item-panel])
     (net/auth-dispatch [::events/fetch-collection id])
+    (net/auth-dispatch [::events/fetch-collection-datasets id])
     (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
 
 

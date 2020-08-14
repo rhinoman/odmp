@@ -93,6 +93,11 @@
  (fn [db _]
    (:current-collection db)))
 
+(re-frame/reg-sub
+ ::current-collection-datasets
+ (fn [db _]
+   (:current-collection-datasets db)))
+
 ;; Lookups
 (re-frame/reg-sub
  ::lookup-processor-types

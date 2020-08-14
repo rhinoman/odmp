@@ -327,6 +327,18 @@
                  :on-success         [::success-post-collection]
                  :on-failure         [::http-request-failure :post-collection]}}))
 
+;;; GET a collection's datasets
+(re-frame/reg-event-fx
+ ::fetch-collection-datasets
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method             :get
+                 :uri                (str "/dataflow_api/collection/" id "/datasets")
+                 :timeout            5000
+                 :response-format    (ajax/json-response-format {:keywords? true})
+                 :headers            (basic-headers db)
+                 :on-success         [::fetch-collection-datasets-success]
+                 :on-failure         [::http-request-failure :collection-datasets]}}))
+
 ;; LOOKUPS
 (re-frame/reg-event-fx
  ::lookup-processor-types
@@ -489,6 +501,12 @@
    (-> db
        (assoc-in [:loading :post-collection] false)
        (assoc-in [:request-errors :post-collection] nil))))
+
+(re-frame/reg-event-db
+ ::fetch-collection-datasets-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc :current-collection-datasets result))))
 
 (re-frame/reg-event-db
   ::http-request-failure

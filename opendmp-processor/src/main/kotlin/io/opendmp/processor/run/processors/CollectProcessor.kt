@@ -60,11 +60,13 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
 
         val time: Instant = Instant.now()
         val recordId = UUID.randomUUID().toString().replace("-", "")
-
-        val endpoint = when(destinationType) {
+        var endpoint: String = ""
+        var location: String = ""
+        when(destinationType) {
             DestinationType.FOLDER -> {
                 val folderLocation = props["location"].toString()
-                "file://$folderLocation"
+                endpoint = "file://$folderLocation"
+                location = "$endpoint/$recordId"
             }
             else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
         }
@@ -85,7 +87,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                 flowId = processor.flowId,
                 processorId = processor.id,
                 timeStamp = time,
-                location = endpoint,
+                location = location,
                 collectionId = collectionId,
                 result = result,
                 errorMessage = error)
