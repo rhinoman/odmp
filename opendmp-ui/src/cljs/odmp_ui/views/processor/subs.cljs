@@ -85,3 +85,8 @@
  ::edit-collect-location
  (fn [db _]
    (get-in db [:edit-processor-fields :properties :location])))
+
+(rf/reg-sub
+ ::edit-collect-record-prefix
+ (fn [db _]
+   (get-in db [:edit-processor-fields :properties :prefix])))

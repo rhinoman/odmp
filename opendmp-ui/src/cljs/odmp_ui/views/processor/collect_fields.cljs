@@ -39,6 +39,7 @@
         collection (rf/subscribe [::proc-subs/edit-collect-collection])
         dest-type (rf/subscribe [::proc-subs/edit-collect-destination-type])
         location (rf/subscribe [::proc-subs/edit-collect-location])
+        prefix   (rf/subscribe [::proc-subs/edit-collect-record-prefix])
         coll-field-value (or @collection
                              (get-in @processor [:properties :collection])
                              "")
@@ -46,21 +47,35 @@
                                   (get-in @processor [:properties :type])
                                   "NONE")
         loc-field-value (or (get-in @processor [:properties :location])
-                            "")]
+                            "")
+        prefix-field-value (or (get-in @processor [:properties :prefix])
+                               "")]
     (if (nil? @collections) (rf/dispatch [::events/fetch-collection-list]))
     (if (nil? @dest-types) (rf/dispatch [::events/lookup-destination-types]))
     (style/let [classes proc-styles]
       (if (and (some? @dest-types) (some? @collections))
         [:> Box {:style {:margin-top 10}}
          [:> Typography {:variant :subtitle2} "Choose a Collection"]
-         [:> FormControl {:variant :filled :required true :margin :dense :fullWidth true}
-          [:> InputLabel {:id "INPUT_COLLECTION_LABEL"} "Collection"]
-          [:> Select {:labelid "INPUT_COLLECTION_LABEL"
-                      :value coll-field-value
-                      :onChange #(rf/dispatch [::proc-events/set-processor-property :collection (-> % .-target .-value)])}
-           [:> MenuItem {:value ""} [:em "NONE"]]
-           (map (fn [c] ^{:key (str "INPUT_COLLECTION_" (:id c))}
-                  [:> MenuItem {:value (:id c)} (:name c)]) @collections)]]
+         [:> Grid {:container true :spacing 2}
+          [:> Grid {:item true :xs 3}
+           [:> FormControl {:variant :filled :required true :margin :dense :fullWidth true}
+            [:> InputLabel {:id "INPUT_COLLECTION_LABEL"} "Collection"]
+            [:> Select {:labelid "INPUT_COLLECTION_LABEL"
+                        :value coll-field-value
+                        :onChange #(rf/dispatch [::proc-events/set-processor-property :collection (-> % .-target .-value)])}
+             [:> MenuItem {:value ""} [:em "NONE"]]
+             (map (fn [c] ^{:key (str "INPUT_COLLECTION_" (:id c))}
+                    [:> MenuItem {:value (:id c)} (:name c)]) @collections)]]]
+          [:> Grid {:item true :xs 9}
+           [:> TextField {:margin :dense
+                          :variant :filled
+                          :required false
+                          :fullWidth true
+                          :label "Record Prefix (record names will start with this)"
+                          :onKeyDown ignore-return
+                          :type :text
+                          :defaultValue prefix-field-value
+                          :onBlur #(rf/dispatch [::proc-events/set-processor-property :prefix (-> % .-target .-value)])}]]]
          [:> Typography {:variant :subtitle2 :style {:marginTop 10}} "Select a destination for the data"]
          [:> FormControl {:variant :filled :required true :margin :dense :fullWidth true}
           [:> InputLabel {:id "INPUT_DESTINATION_TYPE_LABEL"} "Destination Type"]

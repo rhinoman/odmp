@@ -26,6 +26,7 @@ data class CollectionCompleteMessage(
         val timeStamp: Instant,
         val destinationType: DestinationType,
         val location: String,
+        val prefix: String?,
         val flowId: String,
         val processorId: String,
         val collectionId: String,

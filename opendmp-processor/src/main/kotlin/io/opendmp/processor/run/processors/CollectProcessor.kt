@@ -54,7 +54,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
         val props = processor.properties!!
         val destinationType = DestinationType.valueOf(props["type"].toString())
         val collectionId = props["collection"].toString()
-
+        val prefix: String? = props["prefix"]?.toString()
         val payload = exchange?.getIn()?.getBody(ByteArray::class.java)
                 ?: throw CollectProcessorException("No data to process")
 
@@ -66,7 +66,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
             DestinationType.FOLDER -> {
                 val folderLocation = props["location"].toString()
                 endpoint = "file://$folderLocation"
-                location = "$endpoint/$recordId"
+                location = "$folderLocation/$recordId"
             }
             else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
         }
@@ -90,6 +90,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                 location = location,
                 collectionId = collectionId,
                 result = result,
+                prefix = prefix,
                 errorMessage = error)
 
 

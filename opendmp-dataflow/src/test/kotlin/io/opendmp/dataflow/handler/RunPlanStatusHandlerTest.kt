@@ -85,7 +85,8 @@ class RunPlanStatusHandlerTest @Autowired constructor(
                 location = "/tmp/out",
                 processorId = UUID.randomUUID().toString(),
                 timeStamp = Instant.now(),
-                result = Result.SUCCESS
+                result = Result.SUCCESS,
+                prefix = "The Record Prefix"
         )
         val jsonString = mapper.writeValueAsString(ccm)
         runBlocking {

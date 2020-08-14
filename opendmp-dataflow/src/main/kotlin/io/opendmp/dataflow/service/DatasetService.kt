@@ -53,19 +53,25 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                 .switchIfEmpty { throw CollectProcessorException("the specified dataflow does not exist") }
 
        return Mono.zip(collection, dataflow).subscribe { xs ->
-            val flowName = xs.t2.name
-            val time = msg.timeStamp
-            val fmt = DateTimeFormatter
-                    .ofPattern("yyyyDDDHHmmss.S")
-                    .withZone(ZoneId.systemDefault())
-            val dataset = DatasetModel(
-                    name = "$flowName-${fmt.format(time)}",
-                    collectionId = msg.collectionId,
-                    dataflowId = msg.flowId,
-                    destinationType = msg.destinationType,
-                    location = msg.location,
-                    createdOn = msg.timeStamp)
-            mongoTemplate.save(dataset).block()
+           val flowName = xs.t2.name
+           val time = msg.timeStamp
+           val fmt = DateTimeFormatter
+                   .ofPattern("yyyyDDDHHmmss.S")
+                   .withZone(ZoneId.systemDefault())
+           val prefix = msg.prefix
+           val name = if(prefix != null) {
+               "$prefix-${fmt.format(time)}"
+           } else {
+               "$flowName-${fmt.format(time)}"
+           }
+           val dataset = DatasetModel(
+                   name = name,
+                   collectionId = msg.collectionId,
+                   dataflowId = msg.flowId,
+                   destinationType = msg.destinationType,
+                   location = msg.location,
+                   createdOn = msg.timeStamp)
+           mongoTemplate.save(dataset).block()
         }
     }
 
