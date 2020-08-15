@@ -57,7 +57,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
 
         val deps: List<ProcessorRunModel?> =
                 runPlan.processorDependencyMap[sp.id]?.map { runPlan.processors[it] } ?: listOf()
-        val routeId = "${runPlan.id}:${sp.id}"
+        val routeId = "${runPlan.id}-${sp.id}"
         when {
             deps.size == 1 -> {
                 val dest = "direct:${runPlan.id}-${deps.first()!!.id}"
@@ -100,7 +100,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
             ProcessorType.COLLECT -> CollectProcessor(curProc)
             else -> throw UnsupportedProcessorTypeException("The processor type ${curProc.type} is not supported")
         }
-        val routeId = "${runPlan.id}:${curProc.id}"
+        val routeId = "${runPlan.id}-${curProc.id}"
         when {
             deps.size == 1 ->
                 from(sourceEp)

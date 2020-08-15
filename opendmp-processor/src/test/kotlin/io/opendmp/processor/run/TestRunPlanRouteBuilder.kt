@@ -95,16 +95,20 @@ class TestRunPlanRouteBuilder @Autowired constructor(
 
         testCamelContext.addRoutes(routeBuilder)
         val startProc = runPlan.processors[runPlan.startingProcessors.first()]
-        val srId = "${runPlan.id}:${startProc!!.id}"
+        val srId = "${runPlan.id}-${startProc!!.id}"
         val route2Id = testCamelContext.routes[1].routeId
         AdviceWithRouteBuilder.adviceWith(testCamelContext, srId) { a ->
             a.replaceFromWith("direct:start")
         }
         AdviceWithRouteBuilder.adviceWith(testCamelContext, route2Id) { a ->
-            val compId = "${route2Id}:complete"
+            val compId = "${route2Id}-complete"
+            val foobar = testCamelContext.routes
+            val endpoints = testCamelContext.endpoints
+            val route = testCamelContext.getRoute(route2Id)
             a.weaveById<AdviceWithDefinition>(compId).replace().to("mock:a")
         }
         val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
+
         start.sendBody(text)
         mockA.expectedMessageCount(1)
         mockA.expectedBodiesReceived(text.toUpperCase().toByteArray())
