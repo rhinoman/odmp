@@ -17,6 +17,7 @@
                  [breaking-point "0.1.2"]
                  [cider/cider-nrepl "0.24.0"]]
 
+  :scm {:dir ".."}
   :plugins [[lein-shadow "0.1.7"]
             [lein-shell "0.5.0"]]
   :license {:name "Apache License 2.0"
