@@ -51,7 +51,8 @@
                                :dev {:compiler-options {:closure-defines {re-frame.trace.trace-enabled? true
                                                                           day8.re-frame.tracing.trace-enabled? true
                                                                           }}}
-                               :release {:compiler-options 
+                               :release {:sign-releases false
+                                         :compiler-options 
                                          {:infer-externs :auto
                                           :optimizations :advanced}
                                          :build-options
