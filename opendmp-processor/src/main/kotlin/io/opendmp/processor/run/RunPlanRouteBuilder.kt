@@ -60,19 +60,25 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
         val routeId = "${runPlan.id}:${sp.id}"
         when {
             deps.size == 1 -> {
-                val dest = "seda:${deps.first()!!.id}"
-                from(sourceEp).routeId(routeId).to(dest)
+                val dest = "direct:${runPlan.id}-${deps.first()!!.id}"
+                from(sourceEp)
+                        .routeId(routeId)
+                        .startupOrder(Utils.getNextStartupOrder())
+                        .to(dest)
             }
             deps.size > 1 -> {
                 // If we have more than 1 processor expecting output from this processor,
                 // do a multicast
-                val dest = deps.map { d -> "seda:${d!!.id}"}.joinToString(",")
+                val dest = deps.map { d -> "direct:${runPlan.id}-${d!!.id}"}
+
                 from(sourceEp)
                         // Set a routeId to make finding this route in the Camel Context easier later
                         .routeId(routeId)
+                        .startupOrder(Utils.getNextStartupOrder())
+                        //.to("direct:${runPlan.id}-${sp.id}-multi")
                         .multicast()
                         .parallelProcessing()
-                        .to(dest)
+                        .to(*dest.toTypedArray())
             }
             else -> {
                 throw RunPlanLogicException("Starting processor has no outputs")
@@ -86,7 +92,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
      * continueRoute - for the processors from the middle of a chain to the end
      */
     private fun continueRoute(curProc: ProcessorRunModel) {
-        val sourceEp = "seda:${curProc.id}"
+        val sourceEp = "direct:${runPlan.id}-${curProc.id}"
         val deps: List<ProcessorRunModel?> =
                 runPlan.processorDependencyMap[curProc.id]?.map { runPlan.processors[it] } ?: listOf()
         val proc = when(curProc.type){
@@ -96,21 +102,30 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
         }
         val routeId = "${runPlan.id}:${curProc.id}"
         when {
-            deps.size == 1 -> from(sourceEp).process(proc).to("seda:${deps.first()!!.id}")
+            deps.size == 1 ->
+                from(sourceEp)
+                        .startupOrder(Utils.getNextStartupOrder())
+                        .process(proc)
+                        .to("direct:${runPlan.id}-${deps.first()!!.id}").end()
             deps.size > 1 -> {
-                val dest = deps.map { d -> "seda:${d!!.id}"}.joinToString(",")
+                val dest = deps.map { d -> "direct:${runPlan.id}-${d!!.id}"}
                 from(sourceEp)
                         .routeId(routeId)
+                        .startupOrder(Utils.getNextStartupOrder())
                         .process(proc)
-                        .multicast().to(dest)
+                        //.to("direct:${runPlan.id}-${curProc.id}-multi")
+                        .multicast()
+                        .parallelProcessing()
+                        .to(*dest.toTypedArray())
             }
             else -> { //End of the line
-                val completionId = "${runPlan.id}:${curProc.id}:complete"
+                val completionId = "${runPlan.id}-${curProc.id}-complete"
                 from(sourceEp)
                         .routeId(routeId)
+                        .startupOrder(Utils.getNextStartupOrder())
                         .process(proc)
                         .process(CompletionProcessor())
-                        .id(completionId).end()
+                        .id(completionId)
             }
         }
         deps.forEach { this.continueRoute(it!!) }

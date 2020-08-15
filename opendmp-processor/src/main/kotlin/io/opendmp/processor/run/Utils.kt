@@ -19,6 +19,10 @@ package io.opendmp.processor.run
 import io.opendmp.common.exception.NotImplementedException
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicInteger
 
 object Utils {
 
@@ -33,5 +37,9 @@ object Utils {
         }
 
     }
+
+    private val routeStartupCounter = AtomicInteger(99999)
+
+    fun getNextStartupOrder() = routeStartupCounter.getAndDecrement()
 
 }

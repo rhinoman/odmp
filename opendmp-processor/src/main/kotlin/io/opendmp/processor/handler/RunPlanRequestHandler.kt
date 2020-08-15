@@ -46,7 +46,7 @@ class RunPlanRequestHandler(
         try {
             val msg = mapper.readValue<StartRunPlanRequestMessage>(data)
             //stash runplan in redis
-            log.info("Recieved Run Plan: ${msg.requestId}")
+            log.info("Received Run Plan: ${msg.requestId}")
             //Check if Run plan is already loaded
             if (rpTemplate.opsForValue().get(msg.requestId) != null) {
                 throw RunPlanConflictException("Run Plan is already running")
@@ -76,7 +76,10 @@ class RunPlanRequestHandler(
                     .filter { it.id.startsWith(rpRec.id) }
                     .forEach {
                         camelContext.routeController.stopRoute(it.routeId)
+                        val remd = camelContext.removeEndpoints(".*://${msg.runPlanId}.*")
+                        log.info("Stopped ${remd.size} endpoints for route ${it.id}")
                         camelContext.removeRoute(it.routeId)
+
                     }
             rpTemplate.delete(rpRec.id)
         } catch (jpe: JsonProcessingException) {
