@@ -1,3 +1,5 @@
+
+
 odmp:
   pulsar:
     namespace: ${pulsar_tenant:public/default}
@@ -27,16 +29,16 @@ spring:
 
         provider:
           keycloak:
-            issuer-uri: http://localhost:8083/auth/realms/odmp
-            authorization-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/auth
-            token-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/token
-            user-info-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/userinfo
-            jwk-set-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/certs
+            issuer-uri: ${keycloak_url:http://localhost:8083}/auth/realms/odmp
+            authorization-uri: ${keycloak_url:http://localhost:8083}/auth/realms/odmp/protocol/openid-connect/auth
+            token-uri: ${keycloak_url:http://localhost:8083}/auth/realms/odmp/protocol/openid-connect/token
+            user-info-uri: ${keycloak_url:http://localhost:8083}/auth/realms/odmp/protocol/openid-connect/userinfo
+            jwk-set-uri: ${keycloak_url:http://localhost:8083}/auth/realms/odmp/protocol/openid-connect/certs
             #user-name-attribute: preferred_username
 
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8083/auth/realms/odmp/protocol/openid-connect/certs
+          jwk-set-uri: ${keycloak_url:http://localhost:8083}/auth/realms/odmp/protocol/openid-connect/certs
 
 
 springdoc:
@@ -53,3 +55,5 @@ springdoc:
 #    max-queue-size: -1
 #    allow-core-thread-time-out: false
 #    rejected-policy: callerruns
+server:
+  port: ${odmp_dataflow_port:8080}
