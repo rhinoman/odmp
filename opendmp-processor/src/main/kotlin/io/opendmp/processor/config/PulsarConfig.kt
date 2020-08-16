@@ -32,13 +32,13 @@ import org.springframework.context.annotation.Profile
 class PulsarConfig @Autowired constructor(private val camelContext: CamelContext) {
 
     @Value("\${odmp.pulsar.admin.url}")
-    private val adminUrl: String = "http://localhost:8080"
+    lateinit var adminUrl: String
 
     @Value("\${odmp.pulsar.client.url}")
-    private val clientUrl: String  = "pulsar://localhost:6650"
+    lateinit var clientUrl: String
 
     @Value("\${odmp.pulsar.clusters}")
-    private val clusters: Set<String> = setOf("standalone")
+    lateinit var clusters: Set<String>
 
     @Bean
     fun pulsarClient() : PulsarClient {

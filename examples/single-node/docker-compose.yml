@@ -1,7 +1,7 @@
 # An example of the simplest possible, single node deployment
 # There is no redundancy here - only one mongo, one pulsar, redis, etc.
 # Might be suitable for light-duty usage only - I use it for demos.
-# Not secure - you'll want to generate your own client keys, override and add SSL to haproxy, at least.
+# Not secure - you'll want to change passwords, generate your own client keys, override and add SSL to haproxy, at least.
 version: '3.7'
 
 services:
@@ -14,27 +14,15 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: secret
       DATAFLOW_DB_USERNAME: dataflow_user
       DATAFLOW_DB_PW: secret
-    ports:
-      - 27027:27017
     volumes:
       - ./mongo-data:/docker-entrypoint-initdb.d
-      - mongo_dev_data:/data/db
+      - mongo_dev_data_sn:/data/db
     
-  mongo-express:
-    image: mongo-express:0.54
-    ports:
-      - 8082:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
-      ME_CONFIG_MONGODB_SERVER: mongodb
-    depends_on:
-      - mongodb
-
   keycloak:
     image: jboss/keycloak:10.0.2
     networks:
       - keycloak-net
+      - default
     ports:
       - 8083:8080
       - 8443:8443
@@ -49,11 +37,12 @@ services:
       DB_USER: keycloak
       DB_PASSWORD: secret
       DB_VENDOR: "POSTGRES"
+      KEYCLOAK_IMPORT: /tmp/odmp_realm.json -Dkeycloak.profile.feature.upload_scripts=enabled
 
   auth-postgres:
     image: 'postgres'
     volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
+      - auth_postgres_data_sn:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
@@ -64,32 +53,10 @@ services:
   pulsar:
     image: apachepulsar/pulsar:2.6.0
     volumes:
-      - pulsar_data:/pulsar/data
+      - pulsar_data_sn:/pulsar/data
     environment:
       PULSAR_MEM: " -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
-    ports:
-      - 8076:8080
-      - 6650:6650
     command: bin/pulsar standalone
-
-  pulsar-manager:
-    image: apachepulsar/pulsar-manager:v0.1.0
-    ports:
-      - "9527:9527"
-    depends_on:
-      - pulsar
-    links:
-      - pulsar
-    volumes:
-      - pulsar_data:/data
-    environment:
-      REDIRECT_HOST: "http://127.0.0.1"
-      REDIRECT_PORT: "9527"
-      DRIVER_CLASS_NAME: "org.postgresql.Driver"
-      URL: "jdbc:postgresql://127.0.0.1:5432/pulsar_manager"
-      USERNAME: "pulsar"
-      PASSWORD: "pulsar"
-      LOG_LEVEL: "DEBUG"
 
   redis:
     image: 'redis:6-alpine'
@@ -100,7 +67,7 @@ services:
   haproxy:
     image: 'haproxy:2.1-alpine'
     ports:
-      - 80:8002
+      - 80:80
     volumes:
       - type: bind
         source: ./conf/dev/haproxy.cfg
@@ -109,35 +76,34 @@ services:
   opendmp-ui:
     image: opendmp-ui:0.0.1
     restart: unless-stopped
-    ports: 
-      - 8280:80
 
   opendmp-dataflow:
     image: opendmp-dataflow:0.0.1-SNAPSHOT
     restart: unless-stopped
     environment:
-      PULSAR_ADMIN_URL: "http://pulsar:8076"
-      PULSAR_CLIENT_URL: "http://pulsar:6650"
+      PULSAR_ADMIN_URL: "http://pulsar:8080"
+      PULSAR_CLIENT_URL: "pulsar://pulsar:6650"
       MONGO_HOST: "mongodb"
       MONGO_PORT: 27017
-      KEYCLOAK_URL: http://keycloak:8083
+      KEYCLOAK_URL: "http://keycloak:8080"
+      ODMP_DATAFLOW_PORT: 8042
     
   opendmp-processor:
     image: opendmp-processor:0.0.1-SNAPSHOT
     restart: unless-stopped
     environment:
-      PULSAR_ADMIN_URL: "http://pulsar:8076"
-      PULSAR_CLIENT_URL: "http://pulsar:6650"
+      PULSAR_ADMIN_URL: "http://pulsar:8080"
+      PULSAR_CLIENT_URL: "pulsar://pulsar:6650"
       REDIS_HOST: "redis"
     volumes:
       - /odmp/data:/odmp/data
     
 volumes:
-  auth_postgres_data:
+  auth_postgres_data_sn:
     driver: local
-  mongo_dev_data:
+  mongo_dev_data_sn:
     driver: local
-  pulsar_data:
+  pulsar_data_sn:
     driver: local
     
 networks:
