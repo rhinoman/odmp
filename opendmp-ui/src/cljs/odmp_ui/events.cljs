@@ -13,6 +13,7 @@
 ;; limitations under the License.
 
 (ns odmp-ui.events
+  (:use-macros [cljs.core.async.macros :only [go]])
   (:require
    [re-frame.core :as re-frame]
    [reagent.core :as r]
@@ -22,6 +23,7 @@
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [day8.re-frame.forward-events-fx]
    [secretary.core :as secretary]
+   [cljs.core.async :refer [<! timeout]]
    ["keycloak-js" :as Keycloak]))
 
 (defn navigate
@@ -47,6 +49,16 @@
  (fn [db [_ info]]
    (assoc-in db [:user :info] (js->clj info :keywordize-keys true))))
 
+(re-frame/reg-event-fx
+ ::auth-refresh
+ (fn [{:keys [db]}]
+   (let [kc (get-in db [:auth-state :keycloak])]
+     (go
+       (<! (timeout 30000))
+       (.updateToken kc 30)
+       (re-frame/dispatch [::auth-refresh]))
+     {:db db})))
+
 
 (re-frame/reg-event-fx
  ::auth-complete
@@ -55,15 +67,9 @@
    (re-frame/dispatch [::lookup-processor-types])
    (re-frame/dispatch [::lookup-trigger-types])
    (re-frame/dispatch [::fetch-user-info])
+   (re-frame/dispatch [::auth-refresh])
    {:db db
     :forward-events {:unregister :auth-complete-listener}}))
-
-;; (re-frame/reg-event-fx
-;;  ::keycloak-refresh
-;;  (fn [{:keys [db]} [_ keycloak]]
-;;    {:db db
-;;     :http-xhrio {:method :post
-;;                  :uri ""}}))
 
 (re-frame/reg-event-fx
  ::keycloak-initialized
@@ -71,24 +77,13 @@
    (if (false? result)
      (-> keycloak
          (.login)
-         (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))
-         (.onTokenExpired #(.updateToken keycloak))))
+         (.then #(re-frame/dispatch [::keycloak-initialized keycloak %]))))
      {:db (assoc db :auth-state {:keycloak keycloak :authenticated result})}))
-
-(re-frame/reg-event-db
- ::refresh-keycloak
- (fn [db [_ _]]
-   (let [^js keycloak (get-in db [:auth-state :keycloak])]
-     (println "Refreshing token")
-     (-> keycloak
-         (.updateToken 30)
-         (.success #(println "got a token"))))))
 
 (re-frame/reg-event-fx
  ::initialize-keycloak
   (fn [{:keys [db]} [_ _]]
     (let [^js keycloak (Keycloak "/assets/keycloak.json")]
-      ;(set! (.-onTokenExpired keycloak) #(re-frame/dispatch [::refresh-keycloak]))
       (-> keycloak
           (.init #js{:onLoad "check-sso"
                      :checkLoginIframe false
@@ -135,6 +130,25 @@
  ::clear-collection-list
  (fn [db [_ _]]
    (assoc db :collection nil)))
+
+;;; Get a refresh token from keycloak
+(re-frame/reg-event-fx
+ ::refresh-token
+ (fn [{:keys [db]} _]
+   (let [^js kc (get-in db [:auth-state :keycloak])
+         rtok (. kc -refreshToken)
+         client-id (. kc -clientId)
+         params {:grant_type "refresh_token" :refresh_token rtok :client_id client-id}
+         uri (.. kc -endpoints -token)]
+    {:http-xhrio {:method          :post
+                  :uri             (uri)
+                  :timeout         2000
+                  :format          (ajax/url-request-format)
+                  :response-format (ajax/json-response-format {:keywords? true})
+                  :headers         (basic-headers db)
+                  :params          params
+                  :on-success      [::refresh-token-success]
+                  :on-failure      [::initialize-keycloak]}})))
 
 ;;; Fetch Dataflow list
 (re-frame/reg-event-fx

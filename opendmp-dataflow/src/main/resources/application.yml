@@ -1,5 +1,3 @@
-
-
 odmp:
   pulsar:
     namespace: ${pulsar_tenant:public/default}
