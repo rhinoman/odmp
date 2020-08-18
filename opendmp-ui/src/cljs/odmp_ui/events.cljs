@@ -95,6 +95,11 @@
                         :events #{::keycloak-initialized}
                         :dispatch-to [::auth-complete]}})))
 
+(re-frame/reg-event-fx
+ ::logout
+ (fn [{:keys [db]}]
+   (let [^js keycloak (get-in db [:auth-state :keycloak])]
+     (.logout keycloak))))
 
 (re-frame/reg-event-db
  ::set-active-panel
