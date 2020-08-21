@@ -90,6 +90,11 @@
 			<artifactId>camel-controlbus-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-bean-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
 
 		<!-- test containers -->
 		<dependency>

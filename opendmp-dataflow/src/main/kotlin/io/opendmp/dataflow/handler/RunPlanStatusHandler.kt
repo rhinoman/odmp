@@ -21,12 +21,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
+import io.opendmp.common.message.RunPlanFailureMessage
 import io.opendmp.common.util.MessageUtil
 import io.opendmp.dataflow.api.exception.NotFoundException
 import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.service.CollectionService
 import io.opendmp.dataflow.service.DataflowService
 import io.opendmp.dataflow.service.DatasetService
+import io.opendmp.dataflow.service.ProcessorService
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.map
 import org.apache.camel.CamelContext
@@ -42,7 +44,8 @@ import reactor.kotlin.core.publisher.toMono
 @Component
 class RunPlanStatusHandler(
         @Autowired private val camelContext: CamelContext,
-        @Autowired private val datasetService: DatasetService) {
+        @Autowired private val datasetService: DatasetService,
+        @Autowired private val processorService: ProcessorService) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -55,6 +58,18 @@ class RunPlanStatusHandler(
         } catch (ex: Exception) {
             log.error("Error processing collection completion", ex)
             return null
+        }
+    }
+
+    suspend fun receiveFailureStatus(data: String) {
+        log.debug("Received FAILURE status")
+        try {
+            val msg = MessageUtil.extractMessageFromString<RunPlanFailureMessage>(data)
+            if(msg?.processorId != null) {
+
+            }
+        } catch (ex: Exception) {
+            log.error("Error processing collection completion", ex)
         }
     }
 
