@@ -15,21 +15,20 @@ services:
       DATAFLOW_DB_USERNAME: dataflow_user
       DATAFLOW_DB_PW: secret
     volumes:
-      - ./mongo-data:/docker-entrypoint-initdb.d
+      - /root/odmp/examples/single-node/mongo-data:/docker-entrypoint-initdb.d
       - mongo_dev_data_sn:/data/db
     
   keycloak:
     image: jboss/keycloak:10.0.2
     networks:
-      - keycloak-net
+      - keycloak_net
       - default
     ports:
-      - 8083:8080
       - 8443:8443
     depends_on:
       - auth-postgres
     volumes:
-      - ./kc-data:/tmp
+      - /root/odmp/examples/single-node/kc-data:/tmp
     environment:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: secret
@@ -37,6 +36,7 @@ services:
       DB_USER: keycloak
       DB_PASSWORD: secret
       DB_VENDOR: "POSTGRES"
+      PROXY_ADDRESS_FORWARDING: "true"
       KEYCLOAK_IMPORT: /tmp/odmp_realm.json -Dkeycloak.profile.feature.upload_scripts=enabled
 
   auth-postgres:
@@ -48,48 +48,59 @@ services:
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: secret
     networks:
-      - keycloak-net
+      - keycloak_net
 
   pulsar:
     image: apachepulsar/pulsar:2.6.0
     volumes:
       - pulsar_data_sn:/pulsar/data
     environment:
-      PULSAR_MEM: " -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+      PULSAR_MEM: " -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=2g"
     command: bin/pulsar standalone
 
   redis:
-    image: 'redis:6-alpine'
+    image: 'redis:6'
     restart: unless-stopped
-    ports:
-      - 6379:6379
 
   haproxy:
     image: 'haproxy:2.1-alpine'
+    depends_on:
+      - opendmp-dataflow
+      - opendmp-ui
+      - keycloak
     ports:
       - 80:80
+      - 443:443
     volumes:
       - type: bind
-        source: ./conf/dev/haproxy.cfg
+        source: /root/odmp/examples/single-node/conf/dev/haproxy.cfg
         target: /usr/local/etc/haproxy/haproxy.cfg
+      - /etc/letsencrypt/live/demo.opendmp.io:/etc/haproxy/cert
 
   opendmp-ui:
-    image: opendmp-ui:0.0.1
+    image: opendmp-ui:0.1.1
     restart: unless-stopped
 
   opendmp-dataflow:
     image: opendmp-dataflow:0.0.1-SNAPSHOT
     restart: unless-stopped
+    depends_on:
+      - keycloak
+      - pulsar
+      - mongodb
     environment:
       PULSAR_ADMIN_URL: "http://pulsar:8080"
       PULSAR_CLIENT_URL: "pulsar://pulsar:6650"
       MONGO_HOST: "mongodb"
       MONGO_PORT: 27017
       KEYCLOAK_URL: "http://keycloak:8080"
+      # KEYCLOAK_URL: "https://demo.opendmp.io"
       ODMP_DATAFLOW_PORT: 8042
     
   opendmp-processor:
     image: opendmp-processor:0.0.1-SNAPSHOT
+    depends_on:
+      - pulsar
     restart: unless-stopped
     environment:
       PULSAR_ADMIN_URL: "http://pulsar:8080"
@@ -107,5 +118,4 @@ volumes:
     driver: local
     
 networks:
-  keycloak-net:
-
+  keycloak_net:
