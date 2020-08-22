@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ import io.opendmp.common.model.SourceType
  *   Will be the id of the processor in the case of PROCESSOR source type
  *   Will be the id of the collection in the case of COLLECTION source type
  *   Will be a folder path in the case of INGEST_FILE_DROP, etc.
- *
+ * additionalProperties - adapter-specific additional information (usernames, etc.)
  */
 open class SourceModel(
         val sourceType: SourceType? = SourceType.NONE,
-        val sourceLocation: String? = null) {}
+        val sourceLocation: String? = null,
+        val additionalProperties: Map<String, String> = mapOf()) {}

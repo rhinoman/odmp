@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,34 @@ import io.opendmp.common.exception.RunPlanLogicException
 import io.opendmp.common.exception.UnsupportedProcessorTypeException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
-import io.opendmp.common.model.SourceType
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.CollectProcessor
 import io.opendmp.processor.run.processors.CompletionProcessor
 import io.opendmp.processor.run.processors.ScriptProcessor
+import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.RouteBuilder
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.redis.core.RedisTemplate
 
-class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
+/**
+ * RunPlanRouteBuilder - takes a Run Plan and builds camel routes to set up a data pipeline
+ * This is kind of the heart of the whole system right here
+ */
+class RunPlanRouteBuilder(private val runPlan: RunPlan,
+                          private val numRetries: Int = 5): RouteBuilder() {
 
     override fun configure() {
+        //Set up error handling
+        errorHandler(deadLetterChannel("direct:dead")
+                .retryAttemptedLogLevel(LoggingLevel.WARN)
+                .maximumRedeliveries(numRetries)
+                .backOffMultiplier(2.0)
+                .useExponentialBackOff())
+
+        from("direct:dead")
+                .setHeader("runPlan", constant(runPlan.id))
+                .bean(FailureHandler(), "processFailure")
+                .to("log:io.opendmp.processor.run?level=ERROR")
+
+        //Build the routes
         runPlan.startingProcessors.forEach { spid ->
             val sp = runPlan.processors[spid]
                     ?: error("Starting processor missing from processor map")
@@ -47,6 +63,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
     private fun startRoute(sp: ProcessorRunModel) {
         // Here we assume (and will enforce) that a starting processor has only one input
         // Camel doesn't really support it and I can't imagine a use case for it.
+
         val source = sp.inputs.first()
         val sourceEp = when(sp.type) {
             ProcessorType.INGEST ->
@@ -75,7 +92,6 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
                         // Set a routeId to make finding this route in the Camel Context easier later
                         .routeId(routeId)
                         .startupOrder(Utils.getNextStartupOrder())
-                        //.to("direct:${runPlan.id}-${sp.id}-multi")
                         .multicast()
                         .parallelProcessing()
                         .to(*dest.toTypedArray())
@@ -104,16 +120,18 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
         when {
             deps.size == 1 ->
                 from(sourceEp)
+                        .routeId(routeId)
                         .startupOrder(Utils.getNextStartupOrder())
-                        .process(proc)
+                        .setHeader("processor", constant(curProc.id))
+                        .process(proc).id(curProc.id)
                         .to("direct:${runPlan.id}-${deps.first()!!.id}").end()
             deps.size > 1 -> {
                 val dest = deps.map { d -> "direct:${runPlan.id}-${d!!.id}"}
                 from(sourceEp)
                         .routeId(routeId)
                         .startupOrder(Utils.getNextStartupOrder())
-                        .process(proc)
-                        //.to("direct:${runPlan.id}-${curProc.id}-multi")
+                        .setHeader("processor", constant(curProc.id))
+                        .process(proc).id(curProc.id)
                         .multicast()
                         .parallelProcessing()
                         .to(*dest.toTypedArray())
@@ -123,12 +141,14 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan): RouteBuilder() {
                 from(sourceEp)
                         .routeId(routeId)
                         .startupOrder(Utils.getNextStartupOrder())
-                        .process(proc)
+                        .setHeader("processor", constant(curProc.id))
+                        .process(proc).id(curProc.id)
                         .process(CompletionProcessor())
                         .id(completionId)
+                        .end()
             }
         }
-        deps.forEach { this.continueRoute(it!!) }
+        deps.forEach { continueRoute(it!!) }
     }
 
 }

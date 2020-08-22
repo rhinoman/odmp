@@ -30,6 +30,12 @@
             ["@material-ui/core/Typography" :default Typography]
             ["@material-ui/icons/MenuOpenTwoTone" :default MenuOpenTwoToneIcon]
             ["@material-ui/core/Avatar" :default Avatar]
+            ["@material-ui/core/Grow" :default Grow]
+            ["@material-ui/core/Paper" :default Paper]
+            ["@material-ui/core/Popper" :default Popper]
+            ["@material-ui/core/ClickAwayListener" :default ClickAwayListener]
+            ["@material-ui/core/MenuItem" :default MenuItem]
+            ["@material-ui/core/MenuList" :default MenuList]
             ["@material-ui/icons/AccountCircleTwoTone" :default AccountCircleIcon]))
 
 ;; Topbar styles
@@ -47,8 +53,37 @@
                                              :duration (.. theme -transitions -duration -enteringScreen)}))}
    :expandButton {:left (- (.spacing theme 3))
                   :zIndex (+ (.. theme -zIndex -drawer) 10)}
+   :userMenuIcon {
+                  "&:hover" {:cursor :pointer}}
    :userInfo {:position :absolute :right 25}
    :username {:position :relative :top "50%" :transform "translateY(-50%)"}})
+
+(defn user-menu [user-info]
+  (let [open-state (r/atom false)
+        !menu (atom nil)]
+    (style/let [classes topbar-styles]
+      (fn []
+        [:div {:id "userMenuWrapper"}
+         [:> Tooltip {:title (or (:name @user-info) "Not Logged In") :placement :left}
+          [:> AccountCircleIcon {:fontSize :large
+                                 :class (:userMenuIcon classes)
+                                 :id "userIconButton"
+                                 :ref (fn [el] (reset! !menu el))
+                                 :aria-haspopup true
+                                 :aria-controls (if @open-state "menu-list-grow" nil)
+                                 :onClick #(swap! open-state not)}]]
+         [:> Popper {:open @open-state
+                     :transition true
+                     :disablePortal true
+                     :role nil
+                     :anchor-el @!menu
+                     :style {:z-index 9999}}
+          [:> Paper
+           [:> ClickAwayListener {:onClickAway #(swap! open-state not)}
+            [:> MenuList {:autoFocusItem @open-state
+                           :id "userIconMenuListGrow"}
+             [:> MenuItem {:onClick #((rf/dispatch [::events/logout])
+                                      (swap! open-state not))} "Logout"]]]]]]))))
 
 (defn topbar []
  (let [sidebar-expanded (rf/subscribe [::subs/sidebar-expanded])
@@ -62,6 +97,4 @@
                       :class [(:expandButton classes)]}
        (if @sidebar-expanded [:> MenuOpenTwoToneIcon] [:> MenuTwoToneIcon])]
       [:> Box {:class (:userInfo classes)}
-       [:> Tooltip {:title (or (:name @user-info) "Not Logged In") :placement :left}
-        ;[:> Avatar ]
-        [:> AccountCircleIcon {:fontSize :large}]]]]])))
+       [user-menu user-info]]]])))
