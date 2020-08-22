@@ -16,6 +16,8 @@
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
             [odmp-ui.subs :as subs]
+            [odmp-ui.events :as events]
+            [odmp-ui.util.network :as net]
             [odmp-ui.util.styles :as style]
             [odmp-ui.components.common :as tcom]
             ["@material-ui/core/Box" :default Box]
@@ -56,7 +58,7 @@
    [:> TableCell (:destinationType dataset)]
    [:> TableCell [:> Link {:href (:location dataset) :download true} (:location dataset)]]])
 
-(defn collection
+(defn collection*
   "Display a collection"
   []
   (let [collection (rf/subscribe [::subs/current-collection])
@@ -79,3 +81,15 @@
               [:> TableRow
                [:> TableCell "No Datasets to Display"]])]]]]]]])))
 
+
+(defn collection
+  [id]
+  (r/create-class
+   {:reagent-render collection*
+    :component-did-mount
+    (fn []
+      (net/auth-dispatch [::events/fetch-collection id])
+      (net/auth-dispatch [::events/fetch-collection-datasets id]))
+    :component-will-unmount
+    (fn []
+      (rf/dispatch-sync [::events/clear-collection-data]))}))

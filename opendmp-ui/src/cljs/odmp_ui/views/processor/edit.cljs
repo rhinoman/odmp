@@ -20,6 +20,7 @@
             [odmp-ui.views.processor.events :as proc-events]
             [odmp-ui.views.processor.subs :as proc-subs]
             [odmp-ui.util.styles :as style]
+            [odmp-ui.util.network :as net]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.components.icons :refer [processor-type-icon]]
             [odmp-ui.views.processor.input-fields :refer [input-fields]]
@@ -116,7 +117,7 @@
                                                         :variant :contained
                                                         :startIcon (r/as-element [:> SaveIcon])} "Save"])}])))
 
-(defn processor-editor
+(defn processor-editor*
   "Main Component for editing processors"
   []
   (let [processor (rf/subscribe [::subs/current-processor])
@@ -127,7 +128,7 @@
         errors    (rf/subscribe [::proc-subs/updating-processor-errors])
         is-updating? (rf/subscribe [::proc-subs/updating-processor])]
     (style/let [classes proc-styles]
-      [:<>
+      [:<> 
        (if @delete-dialog? (confirm-delete-processor @processor))
        [:> Box
         [tcom/breadcrumbs (list {:href "#/dataflows" :text "Dataflow Index"}
@@ -167,3 +168,16 @@
                    "COLLECT" [collect-fields processor]
                    [:<>])]
                 ]))]]])))
+
+(defn processor-editor
+  [id]
+  (r/create-class
+   {:reagent-render processor-editor*
+    :component-did-mount
+    (fn []
+      (net/auth-dispatch [::events/fetch-processor id {:load-processors? true}]))
+    :component-will-unmount
+    (fn []
+      (rf/dispatch-sync [::proc-events/clear-processor-edit-fields])
+      (rf/dispatch [::events/clear-collection-list])     
+      (rf/dispatch-sync [::events/clear-processor-data]))}))

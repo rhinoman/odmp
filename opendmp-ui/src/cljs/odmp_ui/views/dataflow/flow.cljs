@@ -21,6 +21,7 @@
             [odmp-ui.util.data :as dutil]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.subs :as subs]
+            [odmp-ui.util.network :as net]
             [odmp-ui.views.dataflow.dataflow-modals :as d-modals]
             [odmp-ui.views.dataflow.processor-modals :as p-modals]
             [odmp-ui.util.window :as window]
@@ -166,7 +167,7 @@
             (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases dataflow classes))
                  (range 1 (inc @num-phases))))]]))))
 
-(defn flow
+(defn flow*
   "Display a dataflow"
   []
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
@@ -202,3 +203,16 @@
                          (update-dataflow (assoc @dataflow :description (-> e .-target .-value))))}]]
         
         (if (some? @dataflow) [processor-pane processors classes])]])))
+
+(defn flow
+  [id]
+  (r/create-class
+   {:reagent-render flow*
+    :component-did-mount
+    (fn []
+      (net/auth-dispatch [::events/fetch-dataflow id])
+      (net/auth-dispatch [::events/fetch-dataflow-processors id]))
+    :component-will-unmount
+    (fn []
+      (rf/dispatch-sync [::events/clear-dataflow-data])
+      (rf/dispatch-sync [::events/clear-processor-data]))}))

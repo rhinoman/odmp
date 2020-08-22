@@ -22,9 +22,7 @@
    [re-frame.core :as re-frame]
    [re-pressed.core :as rp]
    [odmp-ui.events :as events]
-   [odmp-ui.views.processor.events :as proc-events]
    [odmp-ui.util.window :as window]
-   [odmp-ui.util.network :as net]
    [goog.history.EventType :as EventType]))
 
 
@@ -57,31 +55,22 @@
 
   (defroute "/dataflows" []
     (re-frame/dispatch [::events/set-active-panel :dataflow-index-panel])
-    (net/auth-dispatch [::events/fetch-dataflow-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/dataflows/:id" [id]
-    (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel])
-    (net/auth-dispatch [::events/fetch-dataflow id])
-    (net/auth-dispatch [::events/fetch-dataflow-processors id])
+    (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel id])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/processors/:id" [id]
-    (re-frame/dispatch [::events/set-active-panel :processor-item-panel])
-    (net/auth-dispatch [::events/fetch-processor id {:load-processors? true}])
-    (re-frame/dispatch [::proc-events/clear-processor-edit-fields])
-    (re-frame/dispatch [::events/clear-collection-list])
+    (re-frame/dispatch [::events/set-active-panel :processor-item-panel id])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/collections" []
     (re-frame/dispatch [::events/set-active-panel :collection-index-panel])
-    (net/auth-dispatch [::events/fetch-collection-list])
     (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
 
   (defroute "/collections/:id" [id]
-    (re-frame/dispatch [::events/set-active-panel :collection-item-panel])
-    (net/auth-dispatch [::events/fetch-collection id])
-    (net/auth-dispatch [::events/fetch-collection-datasets id])
+    (re-frame/dispatch [::events/set-active-panel :collection-item-panel id])
     (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
 
 

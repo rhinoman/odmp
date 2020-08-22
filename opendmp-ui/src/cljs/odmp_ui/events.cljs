@@ -103,8 +103,8 @@
 
 (re-frame/reg-event-db
  ::set-active-panel
- (fn-traced [db [_ active-panel]]
-   (assoc db :active-panel active-panel)))
+ (fn-traced [db [_ active-panel id]]
+            (assoc db :active-panel {:panel active-panel :resource-id id})))
 
 (re-frame/reg-event-db
  ::set-active-sidebar-link
@@ -582,3 +582,23 @@
  (fn-traced [db [_ _]]
    (assoc db :snackbar nil)))
 
+(re-frame/reg-event-db
+ ::clear-collection-data
+ (fn [db [_ _]]
+   (-> db
+       (assoc :current-collection nil)
+       (assoc :collections nil))))
+
+(re-frame/reg-event-db
+ ::clear-dataflow-data
+ (fn [db [_ _]]
+   (-> db
+       (assoc :current-dataflow nil)
+       (assoc :dataflows nil)
+       (assoc :current-dataflow-processors nil))))
+
+(re-frame/reg-event-db
+ ::clear-processor-data
+ (fn [db [_ _]]
+   (-> db
+       (assoc :current-processor nil))))

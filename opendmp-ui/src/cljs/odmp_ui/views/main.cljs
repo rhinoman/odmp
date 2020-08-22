@@ -53,19 +53,19 @@
 
 ;; main
 
-(defn- panels [panel-name]
+(defn- panels [panel-name resource-id]
   (case panel-name
     :home-panel [home-panel]
     :about-panel [about-panel]
     :dataflow-index-panel [dataflow-index]
-    :dataflow-item-panel [flow]
-    :processor-item-panel [processor-editor]
+    :dataflow-item-panel [flow resource-id]
+    :processor-item-panel [processor-editor resource-id]
     :collection-index-panel [collection-index]
-    :collection-item-panel [collection]
+    :collection-item-panel [collection resource-id]
     [:div]))
 
-(defn show-panel [panel-name]
-  [panels panel-name])
+(defn show-panel [panel-name resource-id]
+  [panels panel-name resource-id])
 
 (defn set-theme [dark-theme?]
   (createMuiTheme (clj->js {:palette {:type (if dark-theme? "dark" "light")
@@ -84,7 +84,7 @@
               :style {:border "none"
                       :padding-top (+ topbar-height 10)}}
         
-        (show-panel @active-panel)]])))
+        (show-panel (:panel @active-panel) (:resource-id @active-panel))]])))
 
 (defn main-panel []
   (let [dark-theme? @(rf/subscribe [::subs/dark-theme?])

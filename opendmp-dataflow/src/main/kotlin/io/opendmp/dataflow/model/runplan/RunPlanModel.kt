@@ -42,7 +42,7 @@ data class RunPlanModel(@Id val id: String = ObjectId.get().toHexString(),
                         // The processors
                         val processors: Map<String, ProcessorModel>,
                         var runState: RunState = RunState.IDLE,
-                        var errors: MutableList<String> = mutableListOf(),
+                        var errors: MutableMap<String, RunError> = mutableMapOf(),
                         @CreatedDate
                         val createdOn: Instant = Instant.now(),
                         @LastModifiedDate

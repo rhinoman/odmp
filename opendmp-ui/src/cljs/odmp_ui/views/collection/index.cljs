@@ -17,6 +17,7 @@
    [re-frame.core :as rf]
    [reagent.core :as r]
    [odmp-ui.util.styles :as style]
+   [odmp-ui.util.network :as net]
    [odmp-ui.subs :as subs]
    [odmp-ui.events :as events]
    [odmp-ui.components.common :as tcom]
@@ -72,7 +73,7 @@
                  :class (:right classes)}
       [:> AddIcon] "Create"]]]])
 
-(defn collection-index []
+(defn collection-index* []
   (let [collections (rf/subscribe [::subs/collections])
         create-dialog-state (rf/subscribe [::modals/create-collection-dialog-open])]
     (style/let [classes collection-index-styles]
@@ -92,3 +93,11 @@
                (map #(collection-row % classes) @collections)
                [:> TableRow
                 [:> TableCell "No Collections to Display"]])]]]]]]])))
+
+(defn collection-index
+  []
+  (r/create-class
+   {:reagent-render collection-index*
+    :component-did-mount
+    (fn [_]
+      (net/auth-dispatch [::events/fetch-collection-list]))}))

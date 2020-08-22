@@ -25,10 +25,8 @@ import io.opendmp.common.message.RunPlanFailureMessage
 import io.opendmp.common.util.MessageUtil
 import io.opendmp.dataflow.api.exception.NotFoundException
 import io.opendmp.dataflow.model.DatasetModel
-import io.opendmp.dataflow.service.CollectionService
-import io.opendmp.dataflow.service.DataflowService
-import io.opendmp.dataflow.service.DatasetService
-import io.opendmp.dataflow.service.ProcessorService
+import io.opendmp.dataflow.model.runplan.RunError
+import io.opendmp.dataflow.service.*
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.map
 import org.apache.camel.CamelContext
@@ -45,7 +43,7 @@ import reactor.kotlin.core.publisher.toMono
 class RunPlanStatusHandler(
         @Autowired private val camelContext: CamelContext,
         @Autowired private val datasetService: DatasetService,
-        @Autowired private val processorService: ProcessorService) {
+        @Autowired private val runPlanService: RunPlanService) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -65,8 +63,15 @@ class RunPlanStatusHandler(
         log.debug("Received FAILURE status")
         try {
             val msg = MessageUtil.extractMessageFromString<RunPlanFailureMessage>(data)
-            if(msg?.processorId != null) {
-
+            runPlanService.get(msg!!.runPlanId).subscribe {rp ->
+                val err = RunError(
+                        id = msg.requestId,
+                        processorId = msg.processorId,
+                        errorMessage = msg.errorMessage,
+                        fromId = msg.fromId,
+                        time = msg.time)
+                rp.errors[err.id] = err
+                runPlanService.updateRunPlan(rp).block()
             }
         } catch (ex: Exception) {
             log.error("Error processing collection completion", ex)

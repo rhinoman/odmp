@@ -19,6 +19,7 @@
             [odmp-ui.components.chips :as chips]
             [odmp-ui.util.styles :as style]
             [odmp-ui.subs :as subs]
+            [odmp-ui.util.network :as net]
             [odmp-ui.events :as events]
             [odmp-ui.views.dataflow.dataflow-modals :as modals]
             ["@material-ui/core/Link" :default Link]
@@ -81,7 +82,7 @@
       [:> AddIcon] "Create"]]]])
 
 
-(defn dataflow-index []
+(defn dataflow-index* []
   (let [dataflows (rf/subscribe [::subs/dataflows])
         create-dialog-state (rf/subscribe [::modals/create-dataflow-dialog-open])
         loading? (rf/subscribe [::subs/loading-dataflows])]
@@ -99,3 +100,14 @@
             (table-header)
             [:> TableBody
              (map #(dataflow-row % classes) @dataflows)]]]]]]])))
+
+(defn dataflow-index
+  []
+  (r/create-class
+   {:reagent-render dataflow-index*
+    :component-did-mount
+    (fn []
+      (net/auth-dispatch [::events/fetch-dataflow-list]))
+    :component-will-unmount
+    (fn []
+      (rf/dispatch-sync [::events/clear-dataflow-data]))}))

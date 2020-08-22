@@ -58,6 +58,14 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         return RunPlanModel.createRunPlan(dataflow, procs.toList())
     }
 
+    fun updateRunPlan(updatedPlan: RunPlanModel) : Mono<RunPlanModel> {
+        return mongoTemplate.save(updatedPlan)
+    }
+
+    fun get(id: String) : Mono<RunPlanModel> {
+        return mongoTemplate.findById(id)
+    }
+
     suspend fun dispatchDataflow(dataflow: DataflowModel) {
         val runPlan = mongoTemplate.save(generateRunPlan(dataflow))
         log.info("Dispatching Dataflow ${dataflow.name}")
