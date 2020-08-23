@@ -22,7 +22,9 @@ import io.opendmp.dataflow.api.request.UpdateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
+import io.opendmp.dataflow.model.runplan.RunPlanModel
 import io.opendmp.dataflow.service.DataflowService
+import io.opendmp.dataflow.service.RunPlanService
 import kotlinx.coroutines.flow.Flow
 import org.springframework.security.core.Authentication
 import org.springframework.validation.BindingResult
@@ -33,7 +35,8 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping("/dataflow_api/dataflow")
-class DataflowController(private val dataflowService: DataflowService) {
+class DataflowController(private val dataflowService: DataflowService,
+                         private val runPlanService: RunPlanService) {
 
     @GetMapping
     suspend fun findAll() : Flow<DataflowListItem> {
@@ -43,6 +46,14 @@ class DataflowController(private val dataflowService: DataflowService) {
     @GetMapping("/{id}")
     fun findOne(@PathVariable("id") id: String) : Mono<DataflowModel> {
         return dataflowService.get(id)
+    }
+
+    /**
+     * Gets the current RunPlan associated with a dataflow
+     */
+    @GetMapping("/{id}/run_plan")
+    fun getRunPlan(@PathVariable("id") id: String) : Mono<RunPlanModel> {
+        return runPlanService.getForDataflow(id)
     }
 
     @PutMapping("/{id}")

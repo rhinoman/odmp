@@ -36,13 +36,13 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
 
     override fun configure() {
         //Set up error handling
-        errorHandler(deadLetterChannel("direct:dead")
+        errorHandler(deadLetterChannel("direct:${runPlan.id}-dead")
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
                 .maximumRedeliveries(numRetries)
                 .backOffMultiplier(2.0)
                 .useExponentialBackOff())
 
-        from("direct:dead")
+        from("direct:${runPlan.id}-dead")
                 .setHeader("runPlan", constant(runPlan.id))
                 .bean(FailureHandler(), "processFailure")
                 .to("log:io.opendmp.processor.run?level=ERROR")

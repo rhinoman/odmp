@@ -16,12 +16,17 @@
 
 package io.opendmp.dataflow.config
 
+import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.runplan.RunPlanModel
+import kotlinx.coroutines.reactive.awaitLast
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.find
 import org.springframework.data.mongodb.core.findAllAndRemove
+import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
 import javax.annotation.PreDestroy
 
@@ -33,8 +38,6 @@ class Lifecycle @Autowired constructor(private val mongoTemplate: ReactiveMongoT
     @PreDestroy
     fun shutDown() {
         log.info("Shutting down...")
-        log.info("Deleting Run Plans from Database")
-        mongoTemplate.findAllAndRemove<RunPlanModel>(Query()).blockLast()
     }
 
 }

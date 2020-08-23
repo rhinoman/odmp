@@ -151,8 +151,14 @@ class TestRunPlanRouteBuilder @Autowired constructor(
         AdviceWithRouteBuilder.adviceWith(testCamelContext, srId) { a ->
             a.replaceFromWith("direct:start")
         }
+        val route3Id = testCamelContext.routes[0].routeId
+        AdviceWithRouteBuilder.adviceWith(testCamelContext, route3Id) { a ->
+            a.weaveByToUri<AdviceWithDefinition>("log:io.opendmp.processor.run?level=ERROR")
+                    .replace().to("mock:a")
+        }
         val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
         start.sendBody(text)
+        mockA.expectedMessageCount(1)
 
     }
 

@@ -19,6 +19,7 @@ package io.opendmp.dataflow.messaging
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.message.StartRunPlanRequestMessage
+import io.opendmp.common.message.StopFlowRequestMessage
 import io.opendmp.common.message.StopRunPlanRequestMessage
 import org.apache.camel.ProducerTemplate
 import org.slf4j.LoggerFactory
@@ -60,7 +61,7 @@ class RunPlanDispatcher @Autowired constructor(
        sendMessage(msg, startEndPointUrl())
     }
 
-    fun stopRunPlan(msg: StopRunPlanRequestMessage) {
+    fun stopDataflow(msg: StopFlowRequestMessage) {
         sendMessage(msg, stopEndPointUrl())
     }
 

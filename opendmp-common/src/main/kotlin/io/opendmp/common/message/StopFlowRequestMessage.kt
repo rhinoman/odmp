@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.api.response
+package io.opendmp.common.message
 
-import io.opendmp.common.model.HealthModel
-import io.opendmp.common.model.RunState
-import io.opendmp.dataflow.model.DataflowModel
-import io.opendmp.dataflow.model.runplan.RunPlanModel
-
-data class DataflowListItem(val dataflow: DataflowModel,
-                            var health: HealthModel? = null,
-                            var state: RunState? = null) {}
+data class StopFlowRequestMessage(val requestId: String,
+                                  val flowId: String) {}

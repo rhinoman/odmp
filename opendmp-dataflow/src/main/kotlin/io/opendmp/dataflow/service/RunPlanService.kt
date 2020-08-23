@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.service
 
+import io.opendmp.common.message.StopFlowRequestMessage
 import io.opendmp.common.message.StopRunPlanRequestMessage
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.DataflowModel
@@ -66,6 +67,10 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         return mongoTemplate.findById(id)
     }
 
+    fun getForDataflow(dataflowId: String) : Mono<RunPlanModel> {
+        return mongoTemplate.findOne(Query(Criteria.where("flowId").isEqualTo(dataflowId)))
+    }
+
     suspend fun dispatchDataflow(dataflow: DataflowModel) {
         val runPlan = mongoTemplate.save(generateRunPlan(dataflow))
         log.info("Dispatching Dataflow ${dataflow.name}")
@@ -90,21 +95,10 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         }
     }
 
-    suspend fun stopRunPlan(runPlanModel: RunPlanModel) {
-        dispatcher.stopRunPlan(StopRunPlanRequestMessage(UUID.randomUUID().toString(), runPlanModel.id))
-        //TODO: Move this to after an ack message that the route was successfully stopped
-        mongoTemplate.findAndRemove<RunPlanModel>(Query(Criteria.where("id").isEqualTo(runPlanModel.id))).toFuture()
-    }
-
     fun stopDataflow(dataflowId: String) {
-        val query = Query(Criteria.where("flowId").isEqualTo(dataflowId))
-        mongoTemplate.findOne<RunPlanModel>(query).toFuture().thenAcceptAsync {
-            CoroutineScope(coroutineContext).launch {
-                stopRunPlan(it)
-            }
-        }
+        dispatcher.stopDataflow(StopFlowRequestMessage(UUID.randomUUID().toString(), dataflowId))
+        mongoTemplate.findAndRemove<RunPlanModel>(Query(Criteria.where("flowId").isEqualTo(dataflowId))).toFuture()
     }
-
 
     /**
      * On application start, we want to immediately start loading and dispatching Dataflows

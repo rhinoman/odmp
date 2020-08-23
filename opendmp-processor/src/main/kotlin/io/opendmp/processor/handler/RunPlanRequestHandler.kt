@@ -21,6 +21,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.opendmp.common.exception.RunPlanConflictException
 import io.opendmp.common.message.StartRunPlanRequestMessage
+import io.opendmp.common.message.StopFlowRequestMessage
 import io.opendmp.common.message.StopRunPlanRequestMessage
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.domain.RunPlanRecord
@@ -48,18 +49,20 @@ class RunPlanRequestHandler(
             //stash runplan in redis
             log.info("Received Run Plan: ${msg.requestId}")
             //Check if Run plan is already loaded
-            if (rpTemplate.opsForValue().get(msg.requestId) != null) {
-                throw RunPlanConflictException("Run Plan is already running")
+            if (rpTemplate.opsForValue().get(msg.flowId) != null) {
+                throw RunPlanConflictException("This dataflow is already running")
             }
             val rp = RunPlan.fromStartRunPlanRequestMessage(msg)
             //Store the run plan to Redis
-            rpTemplate.opsForValue().set(rp.id, RunPlanRecord.fromRunPlan(rp))
+            rpTemplate.opsForValue().set(rp.flowId, RunPlanRecord.fromRunPlan(rp))
             val routeBuilder = RunPlanRouteBuilder(rp)
             camelContext.addRoutes(routeBuilder)
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)
+        } catch (rpce: RunPlanConflictException) {
+          log.warn(rpce.localizedMessage)
         } catch (ex: Exception) {
-            log.error("Error executing processor", ex)
+            log.error("Error building run plan", ex)
         } finally {
                 //TODO: Send a response message here
         }
@@ -68,20 +71,21 @@ class RunPlanRequestHandler(
     suspend fun receiveStopRequest(data: String) {
         log.debug("Received STOP message")
         try {
-            val msg = mapper.readValue<StopRunPlanRequestMessage>(data)
-            log.info("Received Stop request for Run Plan: ${msg.runPlanId}")
-            val rpRec = rpTemplate.opsForValue().get(msg.runPlanId)
+            val msg = mapper.readValue<StopFlowRequestMessage>(data)
+            log.info("Received Stop request for Dataflow: ${msg.flowId}")
+            rpTemplate.opsForValue()
+            val rpRec = rpTemplate.opsForValue().get(msg.flowId)
                     ?: throw RunPlanConflictException("Couldn't find Run Plan in cache")
             camelContext.routes
                     .filter { it.id.startsWith(rpRec.id) }
                     .forEach {
                         camelContext.routeController.stopRoute(it.routeId)
-                        val remd = camelContext.removeEndpoints(".*://${msg.runPlanId}.*")
+                        val remd = camelContext.removeEndpoints(".*://${rpRec.id}.*")
                         log.info("Stopped ${remd.size} endpoints for route ${it.id}")
                         camelContext.removeRoute(it.routeId)
 
                     }
-            rpTemplate.delete(rpRec.id)
+            rpTemplate.delete(msg.flowId)
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)
         } catch (ex: Exception) {

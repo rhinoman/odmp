@@ -28,12 +28,14 @@ import io.opendmp.dataflow.api.response.DataflowListItem
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.*
+import io.opendmp.dataflow.model.runplan.RunPlanModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
@@ -46,6 +48,9 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.kotlin.adapter.rxjava.toFlowable
+import reactor.kotlin.core.publisher.toFlux
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -96,9 +101,22 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
     }
 
     suspend fun getList() : Flow<DataflowListItem> {
-        val dataflows = mongoTemplate.findAll<DataflowModel>().asFlow()
-        return dataflows.map {
-            DataflowListItem(it, HealthModel(HealthState.OK), RunState.IDLE)
+        val dataflows = mongoTemplate.findAll<DataflowModel>()
+        return dataflows.asFlow().map { df ->
+            val runPlan = runPlanService.getForDataflow(df.id).asFlow().firstOrNull()
+            val health = if(runPlan?.errors != null && runPlan.errors.isNotEmpty()) {
+                val lastError = runPlan.errors.values.maxBy { it.time }!!
+                HealthModel(
+                        state = HealthState.ERROR,
+                        lastError = lastError.errorMessage,
+                        lastErrorTime = LocalDateTime.from(lastError.time))
+            } else {
+                HealthModel(state = HealthState.OK)
+            }
+            DataflowListItem(
+                    dataflow = df,
+                    state = if(df.enabled) RunState.RUNNING else RunState.DISABLED,
+                    health = health)
         }
     }
 
