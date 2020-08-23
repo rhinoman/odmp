@@ -18,12 +18,15 @@ package io.opendmp.dataflow.handler
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.message.CollectionCompleteMessage
+import io.opendmp.common.message.RunPlanFailureMessage
+import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.Result
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.DatasetModel
+import io.opendmp.dataflow.model.runplan.RunPlanModel
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
@@ -37,6 +40,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.find
 import org.springframework.data.mongodb.core.findAllAndRemove
+import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
@@ -100,5 +104,36 @@ class RunPlanStatusHandlerTest @Autowired constructor(
         assertNotNull(dataset)
         assertEquals("/tmp/out", dataset!!.location)
         println(dataset.name)
+    }
+
+    @Test
+    fun `should update RunPlan in response to a failure`() {
+        val dataflow = TestUtils.createBasicDataflow("TheBigDataflow")
+        mongoTemplate.save(dataflow).block()
+        val collection = TestUtils.createBasicCollection("My Least Favorite Collection")
+        mongoTemplate.save(collection).block()
+        val processor = TestUtils.createBasicProcessor("Foobar", dataflow.id,1,1,ProcessorType.SCRIPT)
+
+        val runPlan = RunPlanModel.createRunPlan(dataflow, listOf(processor))
+        mongoTemplate.save(runPlan).block()
+
+        val fm = RunPlanFailureMessage(
+                requestId = UUID.randomUUID().toString(),
+                runPlanId = runPlan.id,
+                errorMessage = "It done broke",
+                time = Instant.now(),
+                processorId = processor.id
+        )
+        val jsonString = mapper.writeValueAsString(fm)
+        runBlocking {
+            val ds = runPlanStatusHandler.receiveFailureStatus(jsonString)
+            while(!ds!!.isDisposed) { Thread.sleep(100) }
+        }
+
+        val updatedRunPlan = mongoTemplate.findById<RunPlanModel>(runPlan.id).block()
+        assertNotNull(updatedRunPlan!!.errors)
+        assertEquals(1, updatedRunPlan.errors.size)
+        val error = updatedRunPlan.errors[fm.requestId]
+        assertEquals("It done broke", error!!.errorMessage)
     }
 }

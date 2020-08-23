@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,17 @@
 
 package io.opendmp.dataflow.handler
 
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.message.RunPlanFailureMessage
 import io.opendmp.common.util.MessageUtil
-import io.opendmp.dataflow.api.exception.NotFoundException
-import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.model.runplan.RunError
-import io.opendmp.dataflow.service.*
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
+import io.opendmp.dataflow.service.DatasetService
+import io.opendmp.dataflow.service.RunPlanService
 import org.apache.camel.CamelContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.stereotype.Component
 import reactor.core.Disposable
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
-import reactor.kotlin.core.publisher.toMono
 
 @Component
 class RunPlanStatusHandler(
@@ -47,6 +36,10 @@ class RunPlanStatusHandler(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
+    /**
+     * A collection processor has completed successfully.
+     * Add a new Dataset to the collection
+     */
     suspend fun receiveCollectStatus(data: String): Disposable?  {
         log.debug("Received COLLECT status")
         try {
@@ -59,11 +52,15 @@ class RunPlanStatusHandler(
         }
     }
 
-    suspend fun receiveFailureStatus(data: String) {
+    /**
+     * The Processor service sent us an error.
+     * Add it to the Run Plan
+     */
+    suspend fun receiveFailureStatus(data: String): Disposable? {
         log.debug("Received FAILURE status")
         try {
-            val msg = MessageUtil.extractMessageFromString<RunPlanFailureMessage>(data)
-            runPlanService.get(msg!!.runPlanId).subscribe {rp ->
+            val msg = MessageUtil.extractMessageFromString<RunPlanFailureMessage>(data) ?: return null
+            return runPlanService.get(msg.runPlanId).subscribe {rp ->
                 val err = RunError(
                         id = msg.requestId,
                         processorId = msg.processorId,
@@ -75,6 +72,7 @@ class RunPlanStatusHandler(
             }
         } catch (ex: Exception) {
             log.error("Error processing collection completion", ex)
+            return null
         }
     }
 
