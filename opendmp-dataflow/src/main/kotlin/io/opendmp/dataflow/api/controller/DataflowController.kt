@@ -20,6 +20,7 @@ import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.request.UpdateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
+import io.opendmp.dataflow.api.response.RunPlanStatus
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
 import io.opendmp.dataflow.model.runplan.RunPlanModel
@@ -54,6 +55,14 @@ class DataflowController(private val dataflowService: DataflowService,
     @GetMapping("/{id}/run_plan")
     fun getRunPlan(@PathVariable("id") id: String) : Mono<RunPlanModel> {
         return runPlanService.getForDataflow(id)
+    }
+
+    /**
+     * Get a brief status of the current run plan
+     */
+    @GetMapping("/{id}/run_plan_status")
+    fun getRunPlanStatus(@PathVariable("id") id: String) : Mono<RunPlanStatus> {
+        return runPlanService.getStatusForDataflow(id)
     }
 
     @PutMapping("/{id}")

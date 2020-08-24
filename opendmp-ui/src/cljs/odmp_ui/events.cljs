@@ -179,9 +179,22 @@
                  :uri              (str "/dataflow_api/dataflow/" id)
                  :timeout          5000
                  :response-format  (ajax/json-response-format {:keywords? true})
-                 :headers (basic-headers db)
-                 :on-success [::fetch-dataflow-success]
-                 :on-failure [::http-request-failure :dataflow]}}))
+                 :headers          (basic-headers db)
+                 :on-success       [::fetch-dataflow-success]
+                 :on-failure       [::http-request-failure :dataflow]}}))
+
+;;; Fetch a dataflow run status
+(re-frame/reg-event-fx
+ ::fetch-dataflow-runplan-status
+ (fn [{:keys [db]} [_ id]]
+   {:db db
+    :http-xhrio {:method           :get
+                 :uri              (str "/dataflow_api/dataflow/" id "/run_plan_status")
+                 :timeout          5000
+                 :response-format  (ajax/json-response-format {:keywords? true})
+                 :headers          (basic-headers db)
+                 :on-success       [::fetch-dataflow-runplan-status-success]
+                 :on-failure       [::http-request-failure :dataflow-runplan-status]}}))
 
 
 ;;; Fetch processors for a dataflow
@@ -422,7 +435,11 @@
        (assoc-in [:loading :dataflow] false)
        (assoc :current-dataflow result))))
 
-
+(re-frame/reg-event-db
+ ::fetch-dataflow-runplan-status-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc :current-dataflow-runplan-status result))))
 
 (re-frame/reg-event-db
  ::fetch-dataflow-processors-success
@@ -595,7 +612,8 @@
    (-> db
        (assoc :current-dataflow nil)
        (assoc :dataflows nil)
-       (assoc :current-dataflow-processors nil))))
+       (assoc :current-dataflow-processors nil)
+       (assoc :current-dataflow-runplan-status nil))))
 
 (re-frame/reg-event-db
  ::clear-processor-data

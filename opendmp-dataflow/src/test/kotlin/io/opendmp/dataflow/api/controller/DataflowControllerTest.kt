@@ -21,12 +21,15 @@ import io.opendmp.common.model.ProcessorType
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
+import io.opendmp.dataflow.api.response.RunPlanStatus
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
+import io.opendmp.dataflow.model.runplan.RunPlanModel
 import io.opendmp.dataflow.service.DataflowService
+import io.opendmp.dataflow.service.RunPlanService
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest
 import org.apache.camel.test.spring.junit5.CamelSpringTest
 import org.bson.types.ObjectId
@@ -73,6 +76,7 @@ class DataflowControllerTest(
     fun cleanUp() {
         mongoTemplate.findAllAndRemove<DataflowModel>(Query()).blockLast()
         mongoTemplate.findAllAndRemove<ProcessorModel>(Query()).blockLast()
+        mongoTemplate.findAllAndRemove<RunPlanModel>(Query()).blockLast()
     }
 
     @MockBean
@@ -184,5 +188,55 @@ class DataflowControllerTest(
         val pl = response.responseBody
         assertNotNull(pl)
     }
+
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should return the current runplan for a dataflow`() {
+        val dataflow = TestUtils.createBasicDataflow("Foobar")
+        mongoTemplate.save(dataflow).block()
+        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,ProcessorType.INGEST)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT)
+        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT)
+        mongoTemplate.insertAll(listOf(proc1, proc2, proc3)).blockLast()
+        val runplan1 = RunPlanModel.createRunPlan(dataflow,listOf(proc1,proc2,proc3))
+        mongoTemplate.save(runplan1).block()
+
+        val response = client.get().uri("$baseUri/${dataflow.id}/run_plan")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<RunPlanModel>()
+                .returnResult()
+
+        val rp = response.responseBody
+        assertNotNull(rp)
+        assertEquals(dataflow.id, rp!!.flowId)
+    }
+
+
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should return the current runplan status for a dataflow`() {
+        val dataflow = TestUtils.createBasicDataflow("Foobar")
+        mongoTemplate.save(dataflow).block()
+        val proc1 = TestUtils.createBasicProcessor("Foo1", dataflow.id,1,1,ProcessorType.INGEST)
+        val proc2 = TestUtils.createBasicProcessor("Foo2", dataflow.id, 2, 1,ProcessorType.SCRIPT)
+        val proc3 = TestUtils.createBasicProcessor("Foo3", dataflow.id, 3,1,ProcessorType.COLLECT)
+        mongoTemplate.insertAll(listOf(proc1, proc2, proc3)).blockLast()
+        val runplan1 = RunPlanModel.createRunPlan(dataflow,listOf(proc1,proc2,proc3))
+        mongoTemplate.save(runplan1).block()
+
+        val response = client.get().uri("$baseUri/${dataflow.id}/run_plan_status")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<RunPlanStatus>()
+                .returnResult()
+
+        val rps = response.responseBody
+        assertNotNull(rps)
+        assertEquals(dataflow.id, rps!!.flowId)
+    }
+
 
 }

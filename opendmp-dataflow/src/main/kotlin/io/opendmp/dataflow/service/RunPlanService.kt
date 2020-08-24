@@ -18,9 +18,11 @@ package io.opendmp.dataflow.service
 
 import io.opendmp.common.message.StopFlowRequestMessage
 import io.opendmp.common.message.StopRunPlanRequestMessage
+import io.opendmp.dataflow.api.response.RunPlanStatus
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.ProcessorModel
+import io.opendmp.dataflow.model.runplan.RunError
 import io.opendmp.dataflow.model.runplan.RunPlanModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +71,25 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
 
     fun getForDataflow(dataflowId: String) : Mono<RunPlanModel> {
         return mongoTemplate.findOne(Query(Criteria.where("flowId").isEqualTo(dataflowId)))
+    }
+
+    fun getStatusForDataflow(dataflowId: String) : Mono<RunPlanStatus> {
+        return getForDataflow(dataflowId).map { rp ->
+            val errMap: MutableMap<String, MutableList<RunError>> = mutableMapOf()
+            rp.errors.values.filter{it.processorId != null}.forEach{ re ->
+                if(errMap.containsKey(re.processorId)) {
+                    errMap[re.processorId]!!.add(re)
+                } else {
+                    errMap[re.processorId!!] = mutableListOf(re)
+                }
+            }
+            RunPlanStatus(
+                    id = rp.id,
+                    flowId = dataflowId,
+                    runState = rp.runState,
+                    processorErrors = errMap
+            )
+        }
     }
 
     suspend fun dispatchDataflow(dataflow: DataflowModel) {
