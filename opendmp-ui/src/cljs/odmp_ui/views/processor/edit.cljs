@@ -29,6 +29,7 @@
             [odmp-ui.views.processor.styles :refer [proc-styles]]
             [clojure.string :as str]
             ["@material-ui/core/Box" :default Box]
+            ["@material-ui/lab/Alert" :default Alert]
             ["@material-ui/core/Container" :default Container]
             ["@material-ui/core/Paper" :default Card]
             ["@material-ui/core/CardHeader" :default CardHeader]
@@ -117,6 +118,10 @@
                                                         :variant :contained
                                                         :startIcon (r/as-element [:> SaveIcon])} "Save"])}])))
 
+(defn show-processor-errors
+  [errors]
+  [:> Alert {:serverity :error}])
+
 (defn processor-editor*
   "Main Component for editing processors"
   []
@@ -126,7 +131,9 @@
         delete-dialog? (rf/subscribe [::proc-subs/delete-processor-dialog-open])
         proc-name-edit (rf/subscribe [::proc-subs/edit-name])
         errors    (rf/subscribe [::proc-subs/updating-processor-errors])
-        is-updating? (rf/subscribe [::proc-subs/updating-processor])]
+        is-updating? (rf/subscribe [::proc-subs/updating-processor])
+        proc-errors (rf/subscribe [::subs/current-dataflow-processor-errors])
+        has-error? (contains? proc-errors (:id @processor))]
     (style/let [classes proc-styles]
       [:<> 
        (if @delete-dialog? (confirm-delete-processor @processor))
@@ -157,6 +164,9 @@
           {:done-event (fn [e]
                          (rf/dispatch-sync [::proc-events/set-processor-edit-field :description (-> e .-target .-value)])
                          (save-processor e @processor))}]]
+
+        (if has-error? [show-processor-errors (get @proc-errors (:id @processor))])
+
         [:> Card {:class (:proc-wrapper classes)}
          (if (some? @processor)
            (do [:form {:onSubmit #(save-processor % @processor)}

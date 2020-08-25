@@ -15,6 +15,7 @@
 (ns odmp-ui.views.dataflow.processor
   (:require [re-frame.core :as rf]
             [reagent.core :as r]
+            [odmp-ui.subs :as subs]
             [odmp-ui.util.styles :as style]
             [odmp-ui.components.icons :refer [processor-type-icon]]
             [odmp-ui.events :as events]
@@ -36,14 +37,18 @@
                  "&:hover" {:cursor :pointer
                             :border-color (get-in palette [:primary :contrastText])
                             :border-width :thin
-                            :border-style :solid}}}))
+                            :border-style :solid}}
+     :proc-card-error {:border-color (get-in palette [:secondary :main])}}))
 
-(defn processor-card [processor]
+(defn processor-card [processor proc-errors]
   ^{:key (:id processor)}
   [:<>
-   (style/let [classes processor-styles]
-     [:> Card {:class [(:proc-card classes) (:id processor)]
-               :onClick #(events/navigate (str "/processors/" (:id processor)))}
-      [:> CardHeader {:title (:name processor)
-                      :avatar (r/as-element (processor-type-icon (:type processor)))
-                      :subheader (:description processor)}]])])
+   (let [has-error? (contains? proc-errors (:id processor))]
+     (style/let [classes processor-styles]
+       [:> Card {:class [(:proc-card classes)
+                         (if has-error? (:proc-card-error classes))
+                         (:id processor)]
+                 :onClick #(events/navigate (str "/processors/" (:id processor)))}
+        [:> CardHeader {:title (:name processor)
+                        :avatar (r/as-element (processor-type-icon (:type processor)))
+                        :subheader (:description processor)}]]))])

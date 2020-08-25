@@ -27,6 +27,7 @@
             [odmp-ui.util.window :as window]
             [odmp-ui.views.dataflow.processor :refer [processor-card]]
             ["@material-ui/core/Typography" :default Typography]
+            ["@material-ui/lab/Alert" :default Alert]
             ["@material-ui/core/Box" :default Box]
             ["@material-ui/core/Grid" :default Grid]
             ["@material-ui/core/Button" :default Button]
@@ -128,12 +129,12 @@
 
 (defn phase
   "Displays an individual phase 'column' in the flow"
-  [phase-num processors num-phases dataflow classes & {:keys [body-text]}]
+  [phase-num processors num-phases dataflow proc-errors classes & {:keys [body-text]}]
   ^{:key (str "PHASE_" phase-num)}
   [:div {:class (:phase-col classes)}
     [:> Typography {:variant :subtitle1 :component :h3 :class (:phase-header classes)}
      (str "Phase " phase-num)]
-    (map #(processor-card %) processors)
+    (map #(processor-card % proc-errors) processors)
     (connections processors)
     [:> Button {:color :primary
                 :onClick #(rf/dispatch [::events/toggle-create-processor-dialog phase-num]) 
@@ -149,13 +150,14 @@
 (defn empty-flow
   "What to display when a dataflow has no processors"
   [dataflow classes]
-  (phase 1 [] 0 dataflow classes :body-text [:> Box {:style {:margin-top 5}}
+  (phase 1 [] 0 dataflow nil classes :body-text [:> Box {:style {:margin-top 5}}
     [:> Typography {:variant :body1} "To start building your flow, create a processor."]
     [:> Typography {:variant :body2 :as :i} "Typically, you'll want to start with an ingest processor."]]))
 
 (defn processor-pane [processors classes]
   (let [num-phases (r/atom (or (dutil/num-phases processors) 1))
-        win-size (rf/subscribe [::window/resize])]
+        win-size (rf/subscribe [::window/resize])
+        proc-errors @(rf/subscribe [::subs/current-dataflow-processor-errors])]
     (fn [processors classes]
       (let [dataflow @(rf/subscribe [::subs/current-dataflow])]
         [:<>
@@ -164,7 +166,7 @@
          [:> Paper {:class (:proc-wrapper classes) :frdw @win-size}
           (if (= (count processors) 0)
             (empty-flow dataflow classes)
-            (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases dataflow classes))
+            (map (fn [p] (phase p (filter #(= (:phase %) p) processors) num-phases dataflow proc-errors classes))
                  (range 1 (inc @num-phases))))]]))))
 
 (defn flow*
@@ -173,7 +175,8 @@
   (let [dataflow (rf/subscribe [::subs/current-dataflow])
         processors @(rf/subscribe [::subs/current-dataflow-processors])
         delete-dialog? (rf/subscribe [::d-modals/delete-dataflow-dialog-open])
-        create-processor-dialog? (rf/subscribe [::p-modals/create-processor-dialog-open])]
+        create-processor-dialog? (rf/subscribe [::p-modals/create-processor-dialog-open])
+        runplan-status @(rf/subscribe [::subs/current-dataflow-runplan-status])]
     (style/let [classes flow-styles]
       [:<>
        (if @delete-dialog? (d-modals/confirm-delete-dataflow @dataflow))
@@ -201,7 +204,9 @@
           (:description @dataflow)
           {:done-event (fn [e]
                          (update-dataflow (assoc @dataflow :description (-> e .-target .-value))))}]]
-        
+        (if (or (> (count (:processorErrors runplan-status)) 0)
+                (= (:runState runplan-status) "ERROR"))
+          [:> Alert {:severity :error} "One or more errors has ocurred in this Dataflow!"])
         (if (some? @dataflow) [processor-pane processors classes])]])))
 
 (defn flow
@@ -211,7 +216,8 @@
     :component-did-mount
     (fn []
       (net/auth-dispatch [::events/fetch-dataflow id])
-      (net/auth-dispatch [::events/fetch-dataflow-processors id]))
+      (net/auth-dispatch [::events/fetch-dataflow-processors id])
+      (net/auth-dispatch [::events/fetch-dataflow-runplan-status id]))
     :component-will-unmount
     (fn []
       (rf/dispatch-sync [::events/clear-dataflow-data])

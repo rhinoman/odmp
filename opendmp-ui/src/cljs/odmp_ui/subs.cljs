@@ -64,6 +64,18 @@
  (fn [db _]
    (:current-dataflow db)))
 
+;; The runplan for the current dataflow
+(re-frame/reg-sub
+ ::current-dataflow-runplan-status
+ (fn [db _]
+   (:current-dataflow-runplan-status db)))
+
+;; Errors for the current runplan status
+(re-frame/reg-sub
+ ::current-dataflow-processor-errors
+ (fn [db _]
+   (get-in db [:current-dataflow-runplan-status :processorErrors])))
+
 ;; List of processors currently being examined
 (re-frame/reg-sub
  ::current-dataflow-processors
