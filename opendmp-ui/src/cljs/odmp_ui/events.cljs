@@ -492,6 +492,8 @@
    (re-frame/dispatch [::lookup-source-types (get-in result [:processor :type])])
    (if (:load-processors? opts)
      (re-frame/dispatch [::fetch-dataflow-processors (get-in result [:processor :flowId])]))
+   (if (:load-runplan-status? opts)
+     (re-frame/dispatch [::fetch-dataflow-runplan-status (get-in result [:processor :flowId])]))
    (-> db
        (assoc-in [:loading :processor] false)
        (assoc :current-processor (:processor result))

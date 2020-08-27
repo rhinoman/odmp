@@ -120,7 +120,7 @@
 
 (defn show-processor-errors
   [errors]
-  [:> Alert {:serverity :error}
+  [:> Alert {:severity :error}
    "This processor has experienced errors"
    [:ul
     (map (fn [err] ^{:key (:id err)} [:li (:errorMessage err)]) errors)]])
@@ -136,7 +136,7 @@
         errors    (rf/subscribe [::proc-subs/updating-processor-errors])
         is-updating? (rf/subscribe [::proc-subs/updating-processor])
         proc-errors (rf/subscribe [::subs/current-dataflow-processor-errors])
-        has-error? (contains? proc-errors (:id @processor))]
+        has-error? (contains? @proc-errors (keyword (:id @processor)))]
     (style/let [classes proc-styles]
       [:<> 
        (if @delete-dialog? (confirm-delete-processor @processor))
@@ -168,7 +168,7 @@
                          (rf/dispatch-sync [::proc-events/set-processor-edit-field :description (-> e .-target .-value)])
                          (save-processor e @processor))}]]
 
-        (if has-error? [show-processor-errors (get @proc-errors (:id @processor))])
+        (if has-error? [show-processor-errors (get @proc-errors (keyword (:id @processor)))])
 
         [:> Card {:class (:proc-wrapper classes)}
          (if (some? @processor)
@@ -188,9 +188,11 @@
    {:reagent-render processor-editor*
     :component-did-mount
     (fn []
-      (net/auth-dispatch [::events/fetch-processor id {:load-processors? true}]))
+      (net/auth-dispatch [::events/fetch-processor id {:load-processors? true
+                                                       :load-runplan-status? true}]))
     :component-will-unmount
     (fn []
       (rf/dispatch-sync [::proc-events/clear-processor-edit-fields])
-      (rf/dispatch [::events/clear-collection-list])     
+      (rf/dispatch [::events/clear-collection-list])
+      (rf/dispatch [::events/clear-dataflow-data])
       (rf/dispatch-sync [::events/clear-processor-data]))}))

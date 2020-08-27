@@ -43,7 +43,7 @@
 (defn processor-card [processor proc-errors]
   ^{:key (:id processor)}
   [:<>
-   (let [has-error? (contains? proc-errors (:id processor))]
+   (let [has-error? (contains? proc-errors (keyword (:id processor)))]
      (style/let [classes processor-styles]
        [:> Card {:class [(:proc-card classes)
                          (if has-error? (:proc-card-error classes))
