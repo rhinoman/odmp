@@ -14,31 +14,28 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.messaging
+package io.opendmp.processor.config
 
-import io.opendmp.processor.handler.RunPlanRequestHandler
-import org.apache.camel.builder.RouteBuilder
+import io.opendmp.processor.domain.RunPlanRecord
+import io.opendmp.processor.run.RunningDataflows
+import org.apache.camel.CamelContext
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
-import java.util.*
+import javax.annotation.PreDestroy
 
-@Profile("!test")
 @Component
-class RunPlanStopRequestRouter(
-        @Autowired val runPlanRequestHandler: RunPlanRequestHandler) : RouteBuilder() {
+@Profile("!test")
+class Lifecycle @Autowired constructor(
+        private val camelContext: CamelContext,
+        private val rpTemplate: RedisTemplate<String, RunPlanRecord>){
 
-    @Value("\${odmp.pulsar.namespace}")
-    val pulsarNamespace: String = "public/default"
-
-    val consumerName = "processor-" + UUID.randomUUID().toString().replace("-","")
-
-    fun endPointUrl(): String =
-            "pulsar:persistent://$pulsarNamespace/runplan_stop_request?consumerName=$consumerName"
-
-    override fun configure() {
-        from(endPointUrl()).to("bean:runPlanRequestHandler?method=receiveStopRequest")
+    @PreDestroy
+    fun shutDown() {
+        // This instance is going down, remove running flows from cache.
+        RunningDataflows.get().keys.forEach {
+            rpTemplate.delete(it)
+        }
     }
-
 }

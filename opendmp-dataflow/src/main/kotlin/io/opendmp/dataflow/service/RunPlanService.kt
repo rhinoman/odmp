@@ -31,12 +31,15 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirstOrElse
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -70,7 +73,9 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
     }
 
     fun getForDataflow(dataflowId: String) : Mono<RunPlanModel> {
-        return mongoTemplate.findOne(Query(Criteria.where("flowId").isEqualTo(dataflowId)))
+        return mongoTemplate.findOne(
+                Query(Criteria.where("flowId").isEqualTo(dataflowId))
+                        .with(Sort.by(Sort.Direction.DESC,"updatedOn")))
     }
 
     fun getStatusForDataflow(dataflowId: String) : Mono<RunPlanStatus> {
@@ -100,6 +105,10 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         }
     }
 
+    fun redispatchRunPlan(runPlan: RunPlanModel) {
+        dispatcher.dispatchRunPlan(runPlan.createStartMessage())
+    }
+
     fun dispatchDataflow(dataflow: Mono<DataflowModel>) {
         dataflow.toFuture().thenAccept{
             CoroutineScope(coroutineContext).launch {
@@ -112,13 +121,15 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
         log.info("Loading enabled dataflows")
         val dfQ = Query(Criteria.where("enabled").isEqualTo(true))
         mongoTemplate.find<DataflowModel>(dfQ).asFlow().collect { df ->
-            dispatchDataflow(df)
+            val rp = getForDataflow(df.id).awaitFirstOrNull()
+            if(rp == null){ dispatchDataflow(df) } else { redispatchRunPlan(rp) }
         }
     }
 
     fun stopDataflow(dataflowId: String) {
         dispatcher.stopDataflow(StopFlowRequestMessage(UUID.randomUUID().toString(), dataflowId))
-        mongoTemplate.findAndRemove<RunPlanModel>(Query(Criteria.where("flowId").isEqualTo(dataflowId))).toFuture()
+        mongoTemplate.remove<RunPlanModel>(
+                Query(Criteria.where("flowId").isEqualTo(dataflowId))).block()
     }
 
     /**
@@ -128,8 +139,6 @@ class RunPlanService(@Autowired private val mongoTemplate: ReactiveMongoTemplate
     fun onApplicationStart(event: ApplicationReadyEvent) {
         val scope = CoroutineScope(coroutineContext)
         scope.launch {
-            //Make sure all the run models are cleared out
-            mongoTemplate.findAllAndRemove<RunPlanModel>(Query())
             dispatchDataflows()
         }
     }

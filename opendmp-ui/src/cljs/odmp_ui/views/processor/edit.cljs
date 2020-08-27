@@ -120,7 +120,10 @@
 
 (defn show-processor-errors
   [errors]
-  [:> Alert {:serverity :error}])
+  [:> Alert {:serverity :error}
+   "This processor has experienced errors"
+   [:ul
+    (map (fn [err] ^{:key (:id err)} [:li (:errorMessage err)]) errors)]])
 
 (defn processor-editor*
   "Main Component for editing processors"

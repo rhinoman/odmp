@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitLast
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
@@ -51,6 +52,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.adapter.rxjava.toFlowable
 import reactor.kotlin.core.publisher.toFlux
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 @Service
@@ -109,7 +111,7 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
                 HealthModel(
                         state = HealthState.ERROR,
                         lastError = lastError.errorMessage,
-                        lastErrorTime = LocalDateTime.from(lastError.time))
+                        lastErrorTime = LocalDateTime.ofInstant(lastError.time, ZoneId.systemDefault()))
             } else {
                 HealthModel(state = HealthState.OK)
             }

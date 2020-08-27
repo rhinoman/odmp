@@ -32,7 +32,7 @@ class RunPlanRequestRouter(
     lateinit var pulsarNamespace: String
 
     fun endPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_start_request"
+            "pulsar:persistent://$pulsarNamespace/runplan_start_request"
 
     override fun configure() {
         from(endPointUrl()).to("bean:runPlanRequestHandler?method=receiveStartRequest")

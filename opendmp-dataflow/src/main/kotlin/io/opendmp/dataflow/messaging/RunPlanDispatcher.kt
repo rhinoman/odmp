@@ -41,10 +41,10 @@ class RunPlanDispatcher @Autowired constructor(
     private val mapper = jacksonObjectMapper()
 
     fun startEndPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_start_request?producerName=odmpDataflow"
+            "pulsar:persistent://$pulsarNamespace/runplan_start_request?producerName=odmpDataflow"
 
     fun stopEndPointUrl() : String =
-            "pulsar:non-persistent://$pulsarNamespace/runplan_stop_request?producerName=odmpDataflow"
+            "pulsar:persistent://$pulsarNamespace/runplan_stop_request?producerName=odmpDataflow"
 
     fun sendMessage(msg: Any, endpoint: String) {
         try {

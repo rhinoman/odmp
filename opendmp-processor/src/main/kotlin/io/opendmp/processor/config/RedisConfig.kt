@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,14 @@
 package io.opendmp.processor.config
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.domain.RunPlanRecord
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
-import org.springframework.data.redis.core.RedisOperations
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
-import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
 class RedisConfig {
@@ -47,7 +43,9 @@ class RedisConfig {
     @Bean
     fun runPlanRedisTemplate() : RedisTemplate<String, RunPlanRecord> {
         val valueSerializer = Jackson2JsonRedisSerializer(RunPlanRecord::class.java)
-        valueSerializer.setObjectMapper(jacksonObjectMapper())
+        val mapper = jacksonObjectMapper()
+        mapper.findAndRegisterModules()
+        valueSerializer.setObjectMapper(mapper)
         val template = RedisTemplate<String, RunPlanRecord>()
         template.setConnectionFactory(redisConnectionFactory())
         template.setDefaultSerializer(valueSerializer)

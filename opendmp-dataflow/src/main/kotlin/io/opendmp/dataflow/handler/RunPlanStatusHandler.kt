@@ -41,7 +41,7 @@ class RunPlanStatusHandler(
      * Add a new Dataset to the collection
      */
     suspend fun receiveCollectStatus(data: String): Disposable?  {
-        log.debug("Received COLLECT status")
+        log.info("Received COLLECT status")
         try {
             // Nothing to do if we can't extract the message, eh?
             val msg = MessageUtil.extractMessageFromString<CollectionCompleteMessage>(data) ?: return null
@@ -57,7 +57,7 @@ class RunPlanStatusHandler(
      * Add it to the Run Plan
      */
     suspend fun receiveFailureStatus(data: String): Disposable? {
-        log.debug("Received FAILURE status")
+        log.warn("Received FAILURE status")
         try {
             val msg = MessageUtil.extractMessageFromString<RunPlanFailureMessage>(data) ?: return null
             return runPlanService.get(msg.runPlanId).subscribe {rp ->
@@ -71,7 +71,7 @@ class RunPlanStatusHandler(
                 runPlanService.updateRunPlan(rp).block()
             }
         } catch (ex: Exception) {
-            log.error("Error processing collection completion", ex)
+            log.error("Error processing failure message", ex)
             return null
         }
     }

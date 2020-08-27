@@ -14,23 +14,31 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.domain
+package io.opendmp.processor.run
 
-import java.time.Instant
-import java.time.LocalDateTime
+/**
+ * We need to keep track of the dataflows running on this
+ * ProcessorService instance.
+ */
+object RunningDataflows {
 
-data class RunPlanRecord(
-        val id: String,
-        val flowId: String,
-        val timestamp: LocalDateTime = LocalDateTime.now()) {
+    private val flows: MutableMap<String, String> = mutableMapOf()
 
-    companion object Factory {
-        fun fromRunPlan(rp: RunPlan) : RunPlanRecord {
-            return RunPlanRecord(
-                    id = rp.id,
-                    flowId = rp.flowId
-            )
-        }
+    @Synchronized
+    fun add(flowId: String, runPlanId: String) {
+        flows[flowId] = runPlanId
     }
 
+    fun get() : Map<String, String> {
+        return flows
+    }
+
+    fun get(flowId: String) : String? {
+        return flows[flowId]
+    }
+
+    @Synchronized
+    fun remove(flowId: String) : String? {
+        return flows.remove(flowId)
+    }
 }
