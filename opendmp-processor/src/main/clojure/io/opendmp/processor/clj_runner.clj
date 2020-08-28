@@ -20,7 +20,8 @@
   (:require [cheshire.core :as cheshire]))
 
 (defn local-eval [x]
-  (binding [*ns* (find-ns 'io.opendmp.processor.clj-runner)]
+  (binding [*ns* (find-ns 'io.opendmp.processor.clj-runner)
+            *read-eval* false]
     (eval x)))
 
 (defn execute

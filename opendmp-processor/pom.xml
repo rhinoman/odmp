@@ -127,6 +127,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- JEP for python support -->
+		<dependency>
+			<groupId>black.ninia</groupId>
+			<artifactId>jep</artifactId>
+			<version>3.9.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.clojure</groupId>
 			<artifactId>clojure</artifactId>
