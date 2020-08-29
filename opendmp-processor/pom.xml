@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.opendmp</groupId>
 	<artifactId>opendmp-processor</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>processor</name>
 	<description>Processor Management Service for the Open Data Management  Platform</description>
 	<packaging>clojure</packaging>
@@ -156,6 +156,17 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>repackage</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<finalName>opendmp-processor</finalName>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>com.theoryinpractise</groupId>
@@ -181,6 +192,26 @@
 						<version>${kotlin.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>1.4.12</version>
+				<executions>
+					<execution>
+						<id>default</id>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<repository>opendmp.io/opendmp-processor</repository>
+					<tag>${project.version}</tag>
+					<buildArgs>
+						<JAR_FILE>opendmp-processor.jar</JAR_FILE>
+					</buildArgs>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

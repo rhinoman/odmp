@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.opendmp</groupId>
 	<artifactId>opendmp-dataflow</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>dataflow</name>
 	<description>Dataflow Service for the Open Data Management Platform</description>
 
