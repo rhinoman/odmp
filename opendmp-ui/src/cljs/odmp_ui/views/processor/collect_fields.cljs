@@ -46,9 +46,11 @@
         dest-type-field-value (or @dest-type
                                   (get-in @processor [:properties :type])
                                   "NONE")
-        loc-field-value (or (get-in @processor [:properties :location])
+        loc-field-value (or @location
+                            (get-in @processor [:properties :location])
                             "")
-        prefix-field-value (or (get-in @processor [:properties :prefix])
+        prefix-field-value (or @prefix 
+                               (get-in @processor [:properties :prefix])
                                "")]
     (if (nil? @collections) (rf/dispatch [::events/fetch-collection-list]))
     (if (nil? @dest-types) (rf/dispatch [::events/lookup-destination-types]))
