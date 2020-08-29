@@ -17,5 +17,6 @@
 package io.opendmp.common.model.properties
 
 enum class ScriptLanguage {
-    CLOJURE
+    CLOJURE,
+    PYTHON
 }

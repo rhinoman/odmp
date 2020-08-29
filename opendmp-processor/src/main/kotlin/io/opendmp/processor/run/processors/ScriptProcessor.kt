@@ -20,6 +20,7 @@ import io.opendmp.common.exception.ScriptExecutionException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.properties.ScriptLanguage
 import io.opendmp.processor.executors.ClojureExecutor
+import io.opendmp.processor.executors.PythonExecutor
 import org.apache.camel.Exchange
 
 class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
@@ -33,6 +34,8 @@ class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processo
         val result: ByteArray = when(language) {
             ScriptLanguage.CLOJURE ->
                 ClojureExecutor().executeScript(code, payload)
+            ScriptLanguage.PYTHON ->
+                PythonExecutor().executeScript(code, payload)
             else -> throw ScriptExecutionException("Script language $language is unsupported")
         }
         exchange.getIn().body = result
