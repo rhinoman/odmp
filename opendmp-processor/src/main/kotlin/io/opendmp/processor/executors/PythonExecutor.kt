@@ -20,10 +20,12 @@ import jep.SharedInterpreter
 
 class PythonExecutor : Executor{
     override fun executeScript(code: String, data: ByteArray): ByteArray {
-        val interp = SharedInterpreter()
-        interp.exec("from array import array")
-        interp.exec(code)
-        val output = interp.invoke("process", data)
-        return output as ByteArray
+        val interpreter = SharedInterpreter()
+        interpreter.use { interp ->
+            interp.exec("from array import array")
+            interp.exec(code)
+            val output = interp.invoke("process", data)
+            return output as ByteArray
+        }
     }
 }
