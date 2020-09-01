@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-package io.opendmp.dataflow.api.exception
+package io.opendmp.dataflow.api.response
 
-import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.ResponseStatus
-import java.lang.RuntimeException
-
-@ResponseStatus(HttpStatus.CONFLICT)
-class ResourceConflictException(val msg: String) : RuntimeException(msg) {
-}
+data class CountResponse(val totalCount: Long)

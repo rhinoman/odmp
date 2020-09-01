@@ -362,14 +362,27 @@
 ;;; GET a collection's datasets
 (re-frame/reg-event-fx
  ::fetch-collection-datasets
- (fn [{:keys [db]} [_ id]]
+ (fn [{:keys [db]} [_ id query-params]]
    {:http-xhrio {:method             :get
                  :uri                (str "/dataflow_api/collection/" id "/datasets")
                  :timeout            5000
                  :response-format    (ajax/json-response-format {:keywords? true})
                  :headers            (basic-headers db)
+                 :params             query-params
                  :on-success         [::fetch-collection-datasets-success]
                  :on-failure         [::http-request-failure :collection-datasets]}}))
+
+;;; GET a count of a collection's dataset
+(re-frame/reg-event-fx
+ ::fetch-collection-dataset-count
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method             :get
+                 :uri                (str "/dataflow_api/collection/" id "/datasets/count")
+                 :timeout            5000
+                 :response-format    (ajax/json-response-format {:keywords? true})
+                 :headers            (basic-headers db)
+                 :on-success         [::fetch-dataset-count-success]
+                 :on-failure         [::http-request-failure :collection-dataset-count]}}))
 
 ;; LOOKUPS
 (re-frame/reg-event-fx
@@ -547,22 +560,32 @@
        (assoc :current-collection-datasets result))))
 
 (re-frame/reg-event-db
+ ::fetch-dataset-count-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc :current-collection-dataset-count (:totalCount result)))))
+
+(re-frame/reg-event-db
   ::http-request-failure
   (fn [db [_ loc result]]
-    (let [error-status (get-in result [:parse-error :status])]
-      (case error-status
+    (let [error-status (or (get result :status)
+                           (get-in result [:parse-error :status]))]
+      (cond
         ;; on 401, try to login again
-        401 (do
+        (= error-status 401) (do
               (re-frame/dispatch [::keycloak-initialized (get-in db [:auth-state :keycloak]) false])
               (assoc-in db [:loading loc] false))
         ;; on 400, store the errors
-        400 (-> db
+        (some #{error-status} [400 409])
+          (do
+            (re-frame/dispatch [::set-snackbar "error" (or (get-in result [:response :message]) "Bad Request") ])
+            (-> db
                 (assoc-in [:loading loc] false)
-                (assoc-in [:request-errors loc] result))
-        ;; else
-        (-> db
-            (assoc-in [:loading loc] false)
-            (assoc-in [:request-errors loc] result))))))
+                (assoc-in [:request-errors loc] result)))
+        :else (do
+          (-> db
+              (assoc-in [:loading loc] false)
+              (assoc-in [:request-errors loc] result)))))))
 
 ;; Modal events
 (re-frame/reg-event-db
@@ -606,7 +629,9 @@
  (fn [db [_ _]]
    (-> db
        (assoc :current-collection nil)
-       (assoc :collections nil))))
+       (assoc :collections nil)
+       (assoc :current-collection-datasets nil)
+       (assoc :current-collection-dataset-count nil))))
 
 (re-frame/reg-event-db
  ::clear-dataflow-data

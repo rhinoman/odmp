@@ -42,6 +42,12 @@
         p-type (keyword (:type palette))]
     {}))
 
+(defn fetch-dataset-page [page-num rows-per-page]
+  (let [collection (rf/subscribe [::subs/current-collection])]
+    (rf/dispatch [::events/fetch-collection-datasets (:id @collection) {:page page-num
+                                                                       :maxPerPage rows-per-page}])
+    (rf/dispatch [::events/fetch-collection-dataset-count (:id @collection)])))
+
 (defn table-header []
   [:> TableHead
    [:> TableRow
@@ -58,11 +64,28 @@
    [:> TableCell (:destinationType dataset)]
    [:> TableCell [:> Link {:href (:location dataset) :download true} (:location dataset)]]])
 
+(defn pagination [num-items classes]
+  (let [rows-per-page (r/atom 25)
+        current-page (r/atom 0)]
+    (fn []
+      [:> TablePagination {:component "div"
+                           :rowsPerPageOptions [5 10 25]
+                           :rowsPerPage @rows-per-page
+                           :page @current-page
+                           :count num-items
+                           :onChangeRowsPerPage (fn [e]
+                                                  (reset! rows-per-page (-> e .-target .-value))
+                                                  (fetch-dataset-page @current-page @rows-per-page))
+                           :onChangePage (fn [e np]
+                                           (reset! current-page np)
+                                           (fetch-dataset-page @current-page @rows-per-page))}])))
+
 (defn collection*
   "Display a collection"
   []
   (let [collection (rf/subscribe [::subs/current-collection])
-        datasets   (rf/subscribe [::subs/current-collection-datasets])]
+        datasets   (rf/subscribe [::subs/current-collection-datasets])
+        num-datasets (rf/subscribe [::subs/current-collection-dataset-count])]
     (style/let [classes collection-styles]
       [:<>
        [:> Box [tcom/breadcrumbs (list {:href "#/collections" :text "Collection Index"}
@@ -79,7 +102,9 @@
             (if (> (count @datasets) 0)
               (map #(dataset-row % classes) @datasets)
               [:> TableRow
-               [:> TableCell "No Datasets to Display"]])]]]]]]])))
+               [:> TableCell "No Datasets to Display"]])]]]
+         (if (some? @num-datasets)
+           [pagination @num-datasets classes])]]]])))
 
 
 (defn collection
@@ -89,7 +114,8 @@
     :component-did-mount
     (fn []
       (net/auth-dispatch [::events/fetch-collection id])
-      (net/auth-dispatch [::events/fetch-collection-datasets id]))
+      (net/auth-dispatch [::events/fetch-collection-datasets id {:page 0 :maxPerPage 25}])
+      (net/auth-dispatch [::events/fetch-collection-dataset-count id]))
     :component-will-unmount
     (fn []
       (rf/dispatch-sync [::events/clear-collection-data]))}))

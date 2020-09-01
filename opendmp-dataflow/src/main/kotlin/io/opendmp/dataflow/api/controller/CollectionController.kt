@@ -18,6 +18,7 @@ package io.opendmp.dataflow.api.controller
 
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.api.request.CreateCollectionRequest
+import io.opendmp.dataflow.api.response.CountResponse
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.service.CollectionService
@@ -53,8 +54,16 @@ class CollectionController(private val collectionService: CollectionService) {
     }
 
     @GetMapping("/{id}/datasets")
-    suspend fun getDatasets(@PathVariable("id") id: String) : Flow<DatasetModel> {
-        return collectionService.getDatasets(id)
+    suspend fun getDatasets(@PathVariable("id") id: String,
+                            @RequestParam("maxPerPage", required = false) maxPerPage: Int?,
+                            @RequestParam("page", required = false) page: Int?
+    ) : Flow<DatasetModel> {
+        return collectionService.getDatasets(id, maxPerPage ?: 25, page ?: 0)
+    }
+
+    @GetMapping("/{id}/datasets/count")
+    fun getNumDatasets(@PathVariable("id") id: String) : Mono<CountResponse> {
+        return collectionService.countDatasets(id)
     }
 
 }

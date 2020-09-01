@@ -19,6 +19,7 @@ package io.opendmp.dataflow.service
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.Util
 import io.opendmp.dataflow.api.request.CreateCollectionRequest
+import io.opendmp.dataflow.api.response.CountResponse
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DatasetModel
 import kotlinx.coroutines.flow.Flow
@@ -59,9 +60,16 @@ class CollectionService (private val mongoTemplate: ReactiveMongoTemplate) {
         return mongoTemplate.findAll<CollectionModel>().asFlow()
     }
 
-    suspend fun getDatasets(collectionId: String) : Flow<DatasetModel> {
+    suspend fun getDatasets(collectionId: String, maxPerPage: Int, page: Int) : Flow<DatasetModel> {
         val query = Query(Criteria.where("collectionId").isEqualTo(collectionId))
+                .limit(maxPerPage)
+                .skip((maxPerPage * page).toLong())
         return mongoTemplate.find<DatasetModel>(query).asFlow()
+    }
+
+    fun countDatasets(collectionId: String) : Mono<CountResponse> {
+        return mongoTemplate.count<DatasetModel>(
+                Query(Criteria.where("collectionId").isEqualTo(collectionId))).map { CountResponse(it) }
     }
 
     fun delete(id: String) : Mono<DeleteResult> {

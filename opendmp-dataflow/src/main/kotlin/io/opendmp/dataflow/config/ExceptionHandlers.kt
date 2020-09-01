@@ -16,12 +16,15 @@
 
 package io.opendmp.dataflow.config
 
+import io.opendmp.dataflow.api.exception.ResourceConflictException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.bind.support.WebExchangeBindException
+import org.springframework.web.client.HttpClientErrorException
+import java.time.LocalDateTime
 
 @RestControllerAdvice
 class ExceptionHandlers {
@@ -37,6 +40,18 @@ class ExceptionHandlers {
         return mapOf(
                 Pair("message", "There were errors validating your request"),
                 Pair("errors", errors))
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ResourceConflictException::class)
+    fun handleConflictException(ex: ResourceConflictException) : Map<String, Any> {
+        log.warn(ex.toString())
+        return mapOf(
+                Pair("status", 409),
+                Pair("error", "conflict"),
+                Pair("timestamp", LocalDateTime.now()),
+                Pair("message", ex.message ?: "Could not complete your request due to a resource conflict.")
+        )
     }
 
 }

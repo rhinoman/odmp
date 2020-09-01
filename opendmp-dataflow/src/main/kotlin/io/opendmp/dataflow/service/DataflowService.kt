@@ -17,43 +17,35 @@
 package io.opendmp.dataflow.service
 
 import com.mongodb.client.result.DeleteResult
-import io.opendmp.common.message.StopRunPlanRequestMessage
 import io.opendmp.common.model.HealthModel
 import io.opendmp.common.model.HealthState
 import io.opendmp.common.model.RunState
 import io.opendmp.dataflow.Util
+import io.opendmp.dataflow.api.exception.NotFoundException
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.request.UpdateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
-import io.opendmp.dataflow.messaging.ProcessRequester
-import io.opendmp.dataflow.messaging.RunPlanDispatcher
-import io.opendmp.dataflow.model.*
-import io.opendmp.dataflow.model.runplan.RunPlanModel
-import kotlinx.coroutines.CoroutineScope
+import io.opendmp.dataflow.model.DataflowModel
+import io.opendmp.dataflow.model.ProcessorModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitLast
+import io.opendmp.dataflow.api.exception.BadRequestException
+import io.opendmp.dataflow.api.exception.ResourceConflictException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.security.core.Authentication
-import org.springframework.security.oauth2.core.oidc.user.OidcUser
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import reactor.kotlin.adapter.rxjava.toFlowable
-import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.switchIfEmpty
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
 
 @Service
 class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
@@ -124,13 +116,17 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
 
     fun delete(id: String) : Mono<DeleteResult> {
         val query = Query(Criteria.where("id").isEqualTo(id))
-        val result = mongoTemplate.remove<DataflowModel>(query)
-        return result.doOnNext{
-            // And now we delete all of the processors in this dataflow
-            if(it.deletedCount > 0) {
+        return mongoTemplate.findById<DataflowModel>(id)
+                .switchIfEmpty { throw NotFoundException() }
+                .flatMap { df ->
+            if(df.enabled) {
+                Mono.error(ResourceConflictException("Dataflow cannot be deleted while running!"))
+            } else {
+                // And now we delete all of the processors in this dataflow
+                log.info("Deleted dataflow $id and all associated processors")
                 val query2 = Query(Criteria.where("flowId").isEqualTo(id))
                 mongoTemplate.remove<ProcessorModel>(query2)
-                log.info("Deleted dataflow $id and all associated processors")
+                mongoTemplate.remove(df)
             }
         }
     }

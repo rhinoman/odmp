@@ -95,6 +95,11 @@
 			<artifactId>camel-bean-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-aws2-s3-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
 
 		<!-- test containers -->
 		<dependency>
