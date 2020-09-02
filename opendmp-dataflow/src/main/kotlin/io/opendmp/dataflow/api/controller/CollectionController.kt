@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.service.CollectionService
 import kotlinx.coroutines.flow.Flow
+import org.springframework.data.domain.Sort
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
@@ -56,9 +57,11 @@ class CollectionController(private val collectionService: CollectionService) {
     @GetMapping("/{id}/datasets")
     suspend fun getDatasets(@PathVariable("id") id: String,
                             @RequestParam("maxPerPage", required = false) maxPerPage: Int?,
-                            @RequestParam("page", required = false) page: Int?
+                            @RequestParam("page", required = false) page: Int?,
+                            @RequestParam("sortBy", required = false) sortBy: String?,
+                            @RequestParam("sortDir", required = false) sortDir: Sort.Direction?
     ) : Flow<DatasetModel> {
-        return collectionService.getDatasets(id, maxPerPage ?: 25, page ?: 0)
+        return collectionService.getDatasets(id, maxPerPage ?: 25, page ?: 0, sortBy, sortDir)
     }
 
     @GetMapping("/{id}/datasets/count")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import io.opendmp.dataflow.model.DatasetModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -60,10 +61,19 @@ class CollectionService (private val mongoTemplate: ReactiveMongoTemplate) {
         return mongoTemplate.findAll<CollectionModel>().asFlow()
     }
 
-    suspend fun getDatasets(collectionId: String, maxPerPage: Int, page: Int) : Flow<DatasetModel> {
+    suspend fun getDatasets(collectionId: String,
+                            maxPerPage: Int,
+                            page: Int,
+                            sortBy: String?,
+                            sortDir: Sort.Direction?) : Flow<DatasetModel> {
+
         val query = Query(Criteria.where("collectionId").isEqualTo(collectionId))
-                .limit(maxPerPage)
-                .skip((maxPerPage * page).toLong())
+        if(sortBy != null) {
+            query.with(Sort.by(sortDir ?: Sort.Direction.DESC, sortBy))
+        }
+        query.limit(maxPerPage)
+        query.skip((maxPerPage * page).toLong())
+
         return mongoTemplate.find<DatasetModel>(query).asFlow()
     }
 
