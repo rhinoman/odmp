@@ -33,6 +33,23 @@
    ["@material-ui/core/MenuItem" :default MenuItem]
    ["@material-ui/core/TextField" :default TextField]))
 
+(defn folder-property-fields
+  "Folder Destination properties"
+  [processor]
+  (let [location (:location @(rf/subscribe [::proc-subs/edit-properties]))
+        loc-field-value (or location
+                            (get-in @processor [:properties :location])
+                            "")]
+    [:> TextField {:margin :dense
+                   :variant :filled
+                   :required true
+                   :fullWidth true
+                   :label "Location"
+                   :onKeyDown ignore-return
+                   :type :text
+                   :defaultValue loc-field-value
+                   :onBlur #(rf/dispatch [::proc-events/set-processor-property :location (-> % .-target .-value)])}]))
+
 (defn collect-fields [processor]
   (let [collections (rf/subscribe [::subs/collections])
         dest-types (rf/subscribe [::subs/lookup-destination-types])
@@ -46,9 +63,7 @@
         dest-type-field-value (or @dest-type
                                   (get-in @processor [:properties :type])
                                   "NONE")
-        loc-field-value (or @location
-                            (get-in @processor [:properties :location])
-                            "")
+        
         prefix-field-value (or @prefix 
                                (get-in @processor [:properties :prefix])
                                "")]
@@ -86,13 +101,8 @@
                       :onChange #(rf/dispatch [::proc-events/set-processor-property :type (-> % .-target .-value)])}
            (map (fn [dt] ^{:key (str "INPUT_TYPE_" dt)}
                   [:> MenuItem {:value dt} dt]) @dest-types)]]
-         [:> TextField {:margin :dense
-                        :variant :filled
-                        :required true
-                        :fullWidth true
-                        :label "Location"
-                        :onKeyDown ignore-return
-                        :type :text
-                        :defaultValue loc-field-value
-                        :onBlur #(rf/dispatch [::proc-events/set-processor-property :location (-> % .-target .-value)])}]]))))
+         (case dest-type-field-value
+           "FOLDER" (folder-property-fields processor)
+           "")
+         ]))))
 

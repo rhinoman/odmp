@@ -95,6 +95,22 @@ services:
     ports:
       - 6379:6379
 
+  minio:
+    image: 'minio/minio:latest'
+    command: server /data
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ACCESS_KEY: minio_access_key
+      MINIO_SECRET_KEY: minio_secret_key
+    ports:
+      - "9002:9000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
   haproxy:
     image: 'haproxy:2.1-alpine'
     network_mode: host
@@ -110,6 +126,8 @@ volumes:
   mongo_dev_data:
     driver: local
   pulsar_data:
+    driver: local
+  minio_data:
     driver: local
     
 networks:

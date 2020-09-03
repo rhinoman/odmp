@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
+import org.apache.camel.component.aws2.s3.AWS2S3Constants
 import org.apache.camel.spring.SpringCamelContext
 import org.apache.camel.spring.boot.SpringBootCamelContext
 import org.slf4j.LoggerFactory
@@ -62,19 +63,26 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
         val recordId = UUID.randomUUID().toString().replace("-", "")
         var endpoint: String = ""
         var location: String = ""
-        when(destinationType) {
-            DestinationType.FOLDER -> {
-                val folderLocation = props["location"].toString()
-                endpoint = "file://$folderLocation"
-                location = "$folderLocation/$recordId"
-            }
-            else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
-        }
 
         var result: Result = Result.SUCCESS
         var error: String? = null
         try {
-            producerTemplate.sendBodyAndHeader(endpoint, payload, Exchange.FILE_NAME, recordId)
+            when(destinationType) {
+                DestinationType.FOLDER -> {
+                    val folderLocation = props["location"].toString()
+                    endpoint = "file://$folderLocation"
+                    location = "$folderLocation/$recordId"
+                    producerTemplate.sendBodyAndHeader(endpoint, payload, Exchange.FILE_NAME, recordId)
+                }
+                DestinationType.S3 -> {
+                    val bucket = props["bucket"].toString()
+                    val s3key = props["key"].toString()
+                    location = "$bucket:$s3key"
+                    endpoint = "aws2-s3://$bucket"
+                    producerTemplate.sendBodyAndHeader(endpoint, payload, AWS2S3Constants.KEY, location)
+                }
+                else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
+            }
         } catch(cex: CamelExecutionException) {
             log.error("Error exporting data", cex)
             result = Result.ERROR

@@ -36,6 +36,10 @@ class SpringContext() : ApplicationContextAware {
         inline fun <reified T : Any> getBean(beanClass: KClass<T>): T {
             return context.getBean(beanClass)
         }
+
+        fun getProperty(property: String): String? {
+            return context.environment.getProperty(property)
+        }
     }
 
 }

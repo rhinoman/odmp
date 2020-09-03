@@ -13,7 +13,6 @@ odmp:
   processor:
     instance-type: ${odmp_processor_service_instance_type:GENERAL}
 
-
 camel:
   threadpool:
     pool-size: 20
@@ -23,3 +22,10 @@ camel:
     rejected-policy: callerruns
   springboot:
     main-run-controller: true
+  component:
+    aws2-s3:
+      access-key: ${aws_access_key:minio_access_key}
+      secret-key: ${aws_secret_key:minio_secret_key}
+      region: ${aws_region:#{null}}
+      uri-endpoint-override: ${aws_s3_endpoint:#{null}}
+      override-endpoint: ${aws_s3_override_endpoint:false}
