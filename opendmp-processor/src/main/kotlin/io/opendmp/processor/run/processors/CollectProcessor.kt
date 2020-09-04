@@ -77,9 +77,9 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                 DestinationType.S3 -> {
                     val bucket = props["bucket"].toString()
                     val s3key = props["key"].toString()
-                    location = "$bucket:$s3key"
+                    location = "$bucket:$s3key/$recordId"
                     endpoint = "aws2-s3://$bucket"
-                    producerTemplate.sendBodyAndHeader(endpoint, payload, AWS2S3Constants.KEY, location)
+                    producerTemplate.sendBodyAndHeader(endpoint, payload, AWS2S3Constants.KEY, "$s3key/$recordId")
                 }
                 else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
             }

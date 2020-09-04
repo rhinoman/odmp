@@ -58,6 +58,7 @@
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/dataflows/:id" [id]
+    (println id)
     (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel id])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 

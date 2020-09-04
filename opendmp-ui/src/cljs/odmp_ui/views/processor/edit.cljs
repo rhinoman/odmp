@@ -193,6 +193,6 @@
     :component-will-unmount
     (fn []
       (rf/dispatch-sync [::proc-events/clear-processor-edit-fields])
-      (rf/dispatch [::events/clear-collection-list])
-      (rf/dispatch [::events/clear-dataflow-data])
+      (rf/dispatch-sync [::events/clear-collection-list])
+      (rf/dispatch-sync [::events/clear-dataflow-data])
       (rf/dispatch-sync [::events/clear-processor-data]))}))

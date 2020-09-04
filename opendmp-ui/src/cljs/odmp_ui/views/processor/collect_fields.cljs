@@ -50,6 +50,39 @@
                    :defaultValue loc-field-value
                    :onBlur #(rf/dispatch [::proc-events/set-processor-property :location (-> % .-target .-value)])}]))
 
+(defn s3-property-fields
+  "S3 Destination properties"
+  [processor]
+  (let [bucket (:bucket @(rf/subscribe [::proc-subs/edit-properties]))
+        key    (:key @(rf/subscribe [::proc-subs/edit-properties]))
+        bucket-field-value (or bucket
+                               (get-in @processor [:properties :bucket])
+                               "")
+        key-field-value (or key
+                            (get-in @processor [:properties :key])
+                            "")]
+    [:> Grid {:container true :spacing 2}
+     [:> Grid {:item true :xs 4}
+      [:> TextField {:margin :dense
+                     :variant :filled
+                     :required true
+                     :fullWidth true
+                     :label "S3 Bucket"
+                     :onKeyDown ignore-return
+                     :type :text
+                     :defaultValue bucket-field-value
+                     :onBlur #(rf/dispatch [::proc-events/set-processor-property :bucket (-> % .-target .-value)])}]]
+     [:> Grid {:item true :xs 8}
+      [:> TextField {:margin :dense
+                     :variant :filled
+                     :required true
+                     :fullWidth true
+                     :label "S3 Key Prefix"
+                     :onKeyDown ignore-return
+                     :type :text
+                     :defaultValue key-field-value
+                     :onBlur #(rf/dispatch [::proc-events/set-processor-property :key (-> % .-target .-value)])}]]]))
+
 (defn collect-fields [processor]
   (let [collections (rf/subscribe [::subs/collections])
         dest-types (rf/subscribe [::subs/lookup-destination-types])
@@ -103,6 +136,6 @@
                   [:> MenuItem {:value dt} dt]) @dest-types)]]
          (case dest-type-field-value
            "FOLDER" (folder-property-fields processor)
-           "")
+           "S3" (s3-property-fields processor))
          ]))))
 

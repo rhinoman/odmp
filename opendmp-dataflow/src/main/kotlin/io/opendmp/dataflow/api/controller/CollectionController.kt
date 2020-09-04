@@ -56,10 +56,10 @@ class CollectionController(private val collectionService: CollectionService) {
 
     @GetMapping("/{id}/datasets")
     suspend fun getDatasets(@PathVariable("id") id: String,
-                            @RequestParam("maxPerPage", required = false) maxPerPage: Int?,
-                            @RequestParam("page", required = false) page: Int?,
-                            @RequestParam("sortBy", required = false) sortBy: String?,
-                            @RequestParam("sortDir", required = false) sortDir: Sort.Direction?
+                            @RequestParam(required = false) maxPerPage: Int?,
+                            @RequestParam(required = false) page: Int?,
+                            @RequestParam(required = false) sortBy: String?,
+                            @RequestParam(required = false) sortDir: Sort.Direction?
     ) : Flow<DatasetModel> {
         return collectionService.getDatasets(id, maxPerPage ?: 25, page ?: 0, sortBy, sortDir)
     }

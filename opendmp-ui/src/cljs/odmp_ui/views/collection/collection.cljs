@@ -45,12 +45,14 @@
     {}))
 
 (defn fetch-dataset-page [page-state]
-  (let [collection (rf/subscribe [::subs/current-collection])]
+  (let [collection (rf/subscribe [::subs/current-collection])
+        page-state* (reduce-kv (fn [m k v]
+                                 (cond
+                                   (nil? @v) m
+                                   (or (= @v "asc") (= @v "desc")) (assoc m k (upper-case @v))
+                                   :else (assoc m k @v))) {} page-state)]
     (rf/dispatch [::events/fetch-collection-datasets
-                  (:id @collection) {:page @(:page page-state)
-                                     :maxPerPage @(:maxPerPage page-state)
-                                     :sortBy @(:sortBy page-state)
-                                     :sortDir (upper-case @(:sortDir page-state))}])
+                  (:id @collection) page-state*])
     (rf/dispatch [::events/fetch-collection-dataset-count (:id @collection)])))
 
 (defn flip-sort-dir [cur-dir]

@@ -4,4 +4,7 @@
   (if (= (.-keyCode e) 13) (.preventDefault e)))
 
 (defn upper-case [s]
-  (if (nil? s) nil (clojure.string/upper-case s)))
+  (cond
+      (nil? s) nil
+      (string? s) (clojure.string/upper-case s)
+      :else s))

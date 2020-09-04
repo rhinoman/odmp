@@ -94,7 +94,7 @@ class RunPlanRequestHandler(
         val curRec = rpTemplate.opsForValue().get(runPlanRecord.flowId)
         if (curRec != null && curRec.timestamp == runPlanRecord.timestamp) {
             log.info("Killing Zombie RunPlan record")
-            rpTemplate.delete(runPlanRecord.id)
+            rpTemplate.delete(runPlanRecord.flowId)
         }
     }
 
