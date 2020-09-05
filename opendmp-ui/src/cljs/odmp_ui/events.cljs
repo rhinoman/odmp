@@ -59,15 +59,14 @@
        (re-frame/dispatch [::auth-refresh]))
      {:db db})))
 
-
 (re-frame/reg-event-fx
  ::auth-complete
  (fn [{:keys [db]} event]
-   (secretary/dispatch! (-> js/window .-location .-hash))
    (re-frame/dispatch [::lookup-processor-types])
    (re-frame/dispatch [::lookup-trigger-types])
    (re-frame/dispatch [::fetch-user-info])
    (re-frame/dispatch [::auth-refresh])
+   (secretary/dispatch! (-> js/window .-location .-hash))
    {:db db
     :forward-events {:unregister :auth-complete-listener}}))
 

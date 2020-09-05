@@ -215,7 +215,6 @@
    {:reagent-render flow*
     :component-did-mount
     (fn []
-      (println id)
       (net/auth-dispatch [::events/fetch-dataflow id])
       (net/auth-dispatch [::events/fetch-dataflow-processors id])
       (net/auth-dispatch [::events/fetch-dataflow-runplan-status id]))

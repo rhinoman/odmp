@@ -32,13 +32,19 @@
 (defn hook-browser-navigation! []
 
 ;; Quick and dirty history configuration.
-(let [h (History.)]
-  (gevents/listen h EventType/NAVIGATE #(secretary/dispatch! ^js (.-token %)))
-  (doto h (.setEnabled true))
-  ;; location will have to be implemented using (.-location js/window)
-  (when (empty? (.-hash (location)))
-      (set! (.-hash (location)) "#/")))
-)
+  (let [h (History.)]
+    (gevents/listen h EventType/NAVIGATE #(secretary/dispatch! ^js (.-token %)))
+    (doto h (.setEnabled true))
+    ;; location will have to be implemented using (.-location js/window)
+    (when (empty? (.-hash (location)))
+      (set! (.-hash (location)) "#/"))))
+
+;; Because keycloak has a habit of sending back urls
+;; with broken query strings tacked on that confuse the router :(
+(defn unscrew-id [^String id]
+  (if (clojure.string/includes? id "&")
+    (first (clojure.string/split id #"&"))
+    id))
 
 
 (defn app-routes []
@@ -58,12 +64,11 @@
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/dataflows/:id" [id]
-    (println id)
-    (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel id])
+    (re-frame/dispatch [::events/set-active-panel :dataflow-item-panel (unscrew-id id)])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/processors/:id" [id]
-    (re-frame/dispatch [::events/set-active-panel :processor-item-panel id])
+    (re-frame/dispatch [::events/set-active-panel :processor-item-panel (unscrew-id id)])
     (re-frame/dispatch [::events/set-active-sidebar-link :dataflows]))
 
   (defroute "/collections" []
@@ -71,7 +76,7 @@
     (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
 
   (defroute "/collections/:id" [id]
-    (re-frame/dispatch [::events/set-active-panel :collection-item-panel id])
+    (re-frame/dispatch [::events/set-active-panel :collection-item-panel (unscrew-id id)])
     (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
 
 

@@ -39,6 +39,7 @@
     (rdom/render [views/main-panel] root-el)))
 
 (defn init []
+  (println "STARTING")
   (re-frame/dispatch-sync [::events/initialize-keycloak])
   
   (re-frame/dispatch-sync [::events/initialize-db])

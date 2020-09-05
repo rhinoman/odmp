@@ -53,14 +53,18 @@
 (defn s3-property-fields
   "S3 Destination properties"
   [processor]
-  (let [bucket (:bucket @(rf/subscribe [::proc-subs/edit-properties]))
-        key    (:key @(rf/subscribe [::proc-subs/edit-properties]))
+  (let [bucket    (:bucket @(rf/subscribe [::proc-subs/edit-properties]))
+        key       (:key @(rf/subscribe [::proc-subs/edit-properties]))
+        mime-type (:mimeType @(rf/subscribe [::proc-subs/edit-properties]))
         bucket-field-value (or bucket
                                (get-in @processor [:properties :bucket])
                                "")
         key-field-value (or key
                             (get-in @processor [:properties :key])
-                            "")]
+                            "")
+        mime-field-value (or mime-type
+                             (get-in @processor [:properties :mimeType])
+                             "application/octet-stream")]
     [:> Grid {:container true :spacing 2}
      [:> Grid {:item true :xs 4}
       [:> TextField {:margin :dense
@@ -81,7 +85,16 @@
                      :onKeyDown ignore-return
                      :type :text
                      :defaultValue key-field-value
-                     :onBlur #(rf/dispatch [::proc-events/set-processor-property :key (-> % .-target .-value)])}]]]))
+                     :onBlur #(rf/dispatch [::proc-events/set-processor-property :key (-> % .-target .-value)])}]]]
+    [:> TextField {:margin :dense
+                   :variant :filled
+                   :required true
+                   :fullWidth true
+                   :label "MIME Type"
+                   :onKeyDown ignore-return
+                   :type :text
+                   :defaultValue mime-field-value
+                   :onBlur #(rf/dispatch [::proc-events/set-processor-property :mimeType (-> % .-target .-value)])}]))
 
 (defn collect-fields [processor]
   (let [collections (rf/subscribe [::subs/collections])

@@ -21,4 +21,5 @@
    :dataflows []
    :current-dataflow {}
    :create-dataflow-dialog-open false
+   :active-panel nil
    :auth-state {:keycloak nil :authenticated false}})
