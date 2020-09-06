@@ -88,7 +88,6 @@
                      :onBlur #(rf/dispatch [::proc-events/set-processor-property :key (-> % .-target .-value)])}]]]
     [:> TextField {:margin :dense
                    :variant :filled
-                   :required true
                    :fullWidth true
                    :label "MIME Type"
                    :onKeyDown ignore-return

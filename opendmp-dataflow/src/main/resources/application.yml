@@ -6,6 +6,10 @@ odmp:
       url: ${pulsar_admin_url:http://localhost:8076}
     client:
       url: ${pulsar_client_url:pulsar://localhost:6650}
+  file:
+    base-path: ${file_base_path:/}
+  secret: ${odmp_secret:ODMP_SIGNING_SECRET_KEY_NOT_FOR_PRODUCTION_USE}
+
 spring:
   data:
     mongodb:
@@ -46,12 +50,6 @@ springdoc:
   swagger-ui:
     path: /dataflow_api/doc/swagger-ui.html
 
-#camel:
-#  threadpool:
-#    pool-size: 20
-#    max-pool-size: 50
-#    max-queue-size: -1
-#    allow-core-thread-time-out: false
-#    rejected-policy: callerruns
+
 server:
   port: ${odmp_dataflow_port:8080}

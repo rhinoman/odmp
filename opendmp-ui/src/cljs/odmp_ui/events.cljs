@@ -383,6 +383,18 @@
                  :on-success         [::fetch-dataset-count-success]
                  :on-failure         [::http-request-failure :collection-dataset-count]}}))
 
+;; REQUEST a dataset download
+(re-frame/reg-event-fx
+ ::request-dataset-download
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method             :get
+                 :uri                (str "/dataflow_api/dataset/" id "/request_download")
+                 :timeout            5000
+                 :response-format    (ajax/json-response-format {:keywords? true})
+                 :headers            (basic-headers db)
+                 :on-success         [::request-dataset-download-success]
+                 :on-failure         [::http-request-failure ::request-dataset-download]}}))
+
 ;; LOOKUPS
 (re-frame/reg-event-fx
  ::lookup-processor-types
@@ -563,6 +575,17 @@
  (fn [db [_ result]]
    (-> db
        (assoc :current-collection-dataset-count (:totalCount result)))))
+
+(re-frame/reg-event-fx
+ ::request-dataset-download-success
+ (fn [{:keys [db]} [_ result]]
+   (let [token (:token result)
+         file-url (str "/dataflow_api/dataset/download?token=" token)
+         iframe (.. js/document (getElementById "downloaderIframe"))]
+     (println iframe)
+     (set! (-> iframe .-src) file-url)
+     )
+   {:db db}))
 
 (re-frame/reg-event-db
   ::http-request-failure

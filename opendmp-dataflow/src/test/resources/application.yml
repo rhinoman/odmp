@@ -6,6 +6,9 @@ odmp:
       url: ${pulsar_admin_url:http://localhost:8076}
     client:
       url: ${pulsar_client_url:pulsar://localhost:6650}
+  file:
+    base-path: ${file_base_path:/}
+  secret: ${odmp_secret:ODMP_SIGNING_SECRET_KEY_NOT_FOR_PRODUCTION_USE}
 
 spring:
   data:

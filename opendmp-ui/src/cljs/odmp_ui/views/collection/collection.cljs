@@ -55,6 +55,10 @@
                   (:id @collection) page-state*])
     (rf/dispatch [::events/fetch-collection-dataset-count (:id @collection)])))
 
+(defn request-download [event dataset]
+  (.preventDefault event)
+  (rf/dispatch [::events/request-dataset-download (:id dataset)]))
+
 (defn flip-sort-dir [cur-dir]
   (if (= cur-dir "asc") "desc" "asc"))
 
@@ -84,7 +88,9 @@
    [:> TableCell {:width "30%"} (:name dataset)]
    [:> TableCell {:width "20%"} (:createdOn dataset)]
    [:> TableCell {:width "10%"} (:destinationType dataset)]
-   [:> TableCell [:> Link {:href (:location dataset) :download true} (:location dataset)]]])
+   [:> TableCell [:> Link {:href "#"
+                           :onClick #(request-download % dataset)}
+                  (:location dataset)]]])
 
 (defn pagination [num-items page-state classes]
   [:> TablePagination {:component "div"
@@ -113,6 +119,7 @@
          [tcom/full-content-ui
           {:title (:name @collection)}
           (if (nil? @collection) [tcom/loading-backdrop])
+          [:iframe {:style {:display :none} :id "downloaderIframe"}]
           [:> Paper
            (if (nil? @datasets) [tcom/loading-backdrop])
            [:> TableContainer

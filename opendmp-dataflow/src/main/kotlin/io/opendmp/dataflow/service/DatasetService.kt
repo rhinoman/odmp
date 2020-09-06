@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,44 @@
 
 package io.opendmp.dataflow.service
 
+import com.fasterxml.jackson.module.kotlin.convertValue
+import com.google.common.net.HttpHeaders
 import com.mongodb.client.result.DeleteResult
+import com.nimbusds.jose.*
+import com.nimbusds.jose.crypto.MACSigner
+import com.nimbusds.jose.crypto.MACVerifier
 import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
+import io.opendmp.common.model.properties.DestinationType
+import io.opendmp.common.util.MessageUtil.mapper
 import io.opendmp.dataflow.Util
+import io.opendmp.dataflow.api.exception.PermissionDeniedException
+import io.opendmp.dataflow.api.response.DownloadRequestResponse
 import io.opendmp.dataflow.model.DatasetModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.asFlow
+import org.apache.pulsar.shade.javax.ws.rs.BadRequestException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.InputStreamResource
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.data.mongodb.core.remove
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.webjars.NotFoundException
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
+import java.io.InputStream
+import java.nio.file.Files
+import java.nio.file.Path
+import java.time.Duration
+import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -45,6 +64,12 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                       private val collectionService: CollectionService) {
 
     private val log = LoggerFactory.getLogger(javaClass)
+
+    @Value("\${odmp.file.base-path}")
+    lateinit var basePath: String
+
+    @Value("\${odmp.secret}")
+    lateinit var secret: String
 
     fun createDataset(msg: CollectionCompleteMessage): Disposable {
         val collection = collectionService.get(msg.collectionId)
@@ -82,6 +107,51 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
     fun delete(id: String) : Mono<DeleteResult> {
         val query = Query(Criteria.where("id").isEqualTo(id))
         return mongoTemplate.remove<DatasetModel>(query)
+    }
+
+    /**
+     * Generates a temporarily valid download token using a shared secret
+     */
+    fun requestDownloadToken(id: String) : DownloadRequestResponse {
+        val timestamp = Instant.now()
+        val payload = mapOf("datasetId" to id, "timestamp" to timestamp)
+        val signer: JWSSigner = MACSigner(secret)
+        val tok = JWSObject(JWSHeader(JWSAlgorithm.HS256), Payload(mapper.writeValueAsString(payload)))
+        tok.sign(signer)
+        return DownloadRequestResponse(token = tok.serialize(), timestamp = timestamp)
+    }
+
+    fun download(token: String) : Mono<ResponseEntity<InputStreamResource>> {
+        val jws = JWSObject.parse(token)
+        val verifier: JWSVerifier = MACVerifier(secret)
+        if(!jws.verify(verifier)) {
+            throw PermissionDeniedException("Download Token is invalid")
+        }
+        val req = mapper.readValue(jws.payload.toString(), Map::class.java)
+        val id = req["datasetId"] as String
+        val timestamp = mapper.convertValue(req["timestamp"], Instant::class.java)
+        // If the token is more than 5 seconds old, reject
+        if(Instant.now().minusMillis(5000).isAfter(timestamp)) {
+            throw PermissionDeniedException("Token is expired")
+        }
+        val entity = ResponseEntity.ok().header(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN")
+        return get(id).switchIfEmpty { throw NotFoundException("Requested data not found") }
+                .map { ds ->
+                    when (ds.destinationType) {
+                        DestinationType.FOLDER -> {
+                            val filePath = Path.of(basePath).resolve(ds.location)
+                                    entity.header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"${ds.name}\"")
+                                            .body(InputStreamResource(Files.newInputStream(filePath)))
+                        }
+                        DestinationType.S3 -> {
+                            entity.body(InputStreamResource(Files.newInputStream(Path.of(""))))
+                        }
+                        DestinationType.NONE -> {
+                            entity.body(InputStreamResource(InputStream.nullInputStream()))
+                        }
+                        else -> throw RuntimeException ("Unknown Destination Type")
+                    }
+                }
     }
 
 }
