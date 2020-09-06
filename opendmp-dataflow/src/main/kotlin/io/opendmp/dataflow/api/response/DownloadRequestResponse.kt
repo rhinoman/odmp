@@ -18,4 +18,4 @@ package io.opendmp.dataflow.api.response
 
 import java.time.Instant
 
-data class DownloadRequestResponse(val token: String, val timestamp: Instant) {}
+data class DownloadRequestResponse(val token: String?, val url: String?, val timestamp: Instant) {}

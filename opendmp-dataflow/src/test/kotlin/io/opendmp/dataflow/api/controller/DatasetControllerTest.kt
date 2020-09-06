@@ -110,7 +110,7 @@ class DatasetControllerTest @Autowired constructor(
     @WithMockAuthentication()
     fun `token should validate for file download`() {
         val dataset = createBasicDataset("FOOBAR", DestinationType.NONE, "earth")
-        val dlReq = datasetService.requestDownloadToken(dataset.id)
+        val dlReq = datasetService.requestDownloadToken(dataset)
 
         val response = client.get()
                 .uri("$baseUri/download?token=${dlReq.token}")

@@ -579,8 +579,11 @@
 (re-frame/reg-event-fx
  ::request-dataset-download-success
  (fn [{:keys [db]} [_ result]]
-   (let [token (:token result)
-         file-url (str "/dataflow_api/dataset/download?token=" token)
+   (let [url (:url result)
+         token (:token result)
+         file-url (if (nil? url)
+                    (str "/dataflow_api/dataset/download?token=" token)
+                    url)
          iframe (.. js/document (getElementById "downloaderIframe"))]
      (set! (-> iframe .-src) file-url))
    {:db db}))

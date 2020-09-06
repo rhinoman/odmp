@@ -9,6 +9,11 @@ odmp:
   file:
     base-path: ${file_base_path:/}
   secret: ${odmp_secret:ODMP_SIGNING_SECRET_KEY_NOT_FOR_PRODUCTION_USE}
+  s3:
+    access-key: ${aws_access_key:minio_access_key}
+    secret-key: ${aws_secret_key:minio_secret_key}
+    region: ${aws_region:us-east-1}
+    endpoint: ${aws_s3_endpoint:#{null}}
 
 spring:
   data:

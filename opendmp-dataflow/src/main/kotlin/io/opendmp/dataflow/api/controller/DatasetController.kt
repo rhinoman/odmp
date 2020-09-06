@@ -32,7 +32,7 @@ class DatasetController(private val datasetService: DatasetService) {
      */
     @GetMapping("/{id}/request_download")
     fun requestDownload(@PathVariable("id") id: String) : Mono<DownloadRequestResponse> {
-        return Mono.just(datasetService.requestDownloadToken(id))
+        return datasetService.requestDownload(id)
     }
 
     /**

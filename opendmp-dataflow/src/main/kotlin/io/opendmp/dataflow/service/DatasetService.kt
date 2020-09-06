@@ -16,7 +16,8 @@
 
 package io.opendmp.dataflow.service
 
-import com.fasterxml.jackson.module.kotlin.convertValue
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.AmazonS3Client
 import com.google.common.net.HttpHeaders
 import com.mongodb.client.result.DeleteResult
 import com.nimbusds.jose.*
@@ -26,13 +27,12 @@ import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.common.util.MessageUtil.mapper
-import io.opendmp.dataflow.Util
+import io.opendmp.dataflow.api.exception.BadRequestException
 import io.opendmp.dataflow.api.exception.PermissionDeniedException
 import io.opendmp.dataflow.api.response.DownloadRequestResponse
 import io.opendmp.dataflow.model.DatasetModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.reactive.asFlow
-import org.apache.pulsar.shade.javax.ws.rs.BadRequestException
+import org.apache.tika.Tika
+import org.apache.tika.io.TikaInputStream
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.InputStreamResource
@@ -48,20 +48,18 @@ import org.webjars.NotFoundException
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
-import reactor.kotlin.core.publisher.toMono
 import java.io.InputStream
-import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import java.util.*
 
 @Service
 class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                       private val dataflowService: DataflowService,
-                      private val collectionService: CollectionService) {
+                      private val collectionService: CollectionService,
+                      private val s3Client: AmazonS3) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -109,16 +107,39 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
         return mongoTemplate.remove<DatasetModel>(query)
     }
 
+    fun requestDownload(id: String) : Mono<DownloadRequestResponse> {
+        return get(id).map {ds ->
+            when(ds.destinationType) {
+                DestinationType.FOLDER -> requestDownloadToken(ds)
+                DestinationType.S3 -> requestDownloadLink(ds)
+                DestinationType.NONE -> throw BadRequestException("Unknown destination type")
+            }
+        }
+    }
+
     /**
      * Generates a temporarily valid download token using a shared secret
      */
-    fun requestDownloadToken(id: String) : DownloadRequestResponse {
+    fun requestDownloadToken(ds: DatasetModel) : DownloadRequestResponse {
         val timestamp = Instant.now()
-        val payload = mapOf("datasetId" to id, "timestamp" to timestamp)
+        val payload = mapOf("datasetId" to ds.id, "timestamp" to timestamp)
         val signer: JWSSigner = MACSigner(secret)
         val tok = JWSObject(JWSHeader(JWSAlgorithm.HS256), Payload(mapper.writeValueAsString(payload)))
         tok.sign(signer)
-        return DownloadRequestResponse(token = tok.serialize(), timestamp = timestamp)
+        return DownloadRequestResponse(token = tok.serialize(), url = null, timestamp = timestamp)
+    }
+
+    /**
+     * Generates a pre-signed URL for S3-compatible Object storage
+     */
+    fun requestDownloadLink(ds: DatasetModel) : DownloadRequestResponse {
+        val timestamp = Instant.now()
+        val locc = ds.location.split(":")
+        val bucket = locc[0]
+        val key = locc[1]
+        val exp = Instant.now().plusSeconds(10L)
+        val url = s3Client.generatePresignedUrl(bucket, key, Date.from(exp))
+        return DownloadRequestResponse(token = null, url = url.toString(), timestamp = timestamp)
     }
 
     fun download(token: String) : Mono<ResponseEntity<InputStreamResource>> {
@@ -140,11 +161,12 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                     when (ds.destinationType) {
                         DestinationType.FOLDER -> {
                             val filePath = Path.of(basePath).resolve(ds.location)
-                                    entity.header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"${ds.name}\"")
-                                            .body(InputStreamResource(Files.newInputStream(filePath)))
-                        }
-                        DestinationType.S3 -> {
-                            entity.body(InputStreamResource(Files.newInputStream(Path.of(""))))
+                            val tika = Tika()
+                            val inputStream = TikaInputStream.get(filePath)
+                            val mimeType = tika.detect(inputStream)
+                            entity.header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"${ds.name}\"")
+                                    .header(HttpHeaders.CONTENT_TYPE, mimeType)
+                                    .body(InputStreamResource(inputStream))
                         }
                         DestinationType.NONE -> {
                             entity.body(InputStreamResource(InputStream.nullInputStream()))
