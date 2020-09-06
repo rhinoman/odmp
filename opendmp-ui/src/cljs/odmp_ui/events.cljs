@@ -582,9 +582,7 @@
    (let [token (:token result)
          file-url (str "/dataflow_api/dataset/download?token=" token)
          iframe (.. js/document (getElementById "downloaderIframe"))]
-     (println iframe)
-     (set! (-> iframe .-src) file-url)
-     )
+     (set! (-> iframe .-src) file-url))
    {:db db}))
 
 (re-frame/reg-event-db
