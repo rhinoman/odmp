@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.handler
 
+import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.message.RunPlanFailureMessage
@@ -61,6 +62,9 @@ class RunPlanStatusHandlerTest @Autowired constructor(
 
     @MockBean
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
+
+    @MockBean
+    lateinit var s3Client: AmazonS3
 
     @AfterEach
     fun cleanUp() {

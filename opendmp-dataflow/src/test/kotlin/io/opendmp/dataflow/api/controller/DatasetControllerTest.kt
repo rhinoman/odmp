@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.api.controller
 
+import com.amazonaws.services.s3.AmazonS3
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
 import com.c4_soft.springaddons.security.oauth2.test.webflux.OidcIdAuthenticationTokenWebTestClientConfigurer.oidcId
 import io.opendmp.common.model.properties.DestinationType
@@ -73,6 +74,9 @@ class DatasetControllerTest @Autowired constructor(
     @MockBean
     lateinit var processRequester: ProcessRequester
 
+    @MockBean
+    lateinit var s3Client: AmazonS3
+
     private val baseUri : String = "/dataflow_api/dataset"
 
     fun createBasicDataset(name: String, destType: DestinationType, location: String)
@@ -90,7 +94,7 @@ class DatasetControllerTest @Autowired constructor(
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
     fun `should request and receive a download token`() {
-        val dataset = createBasicDataset("FOOBAR", DestinationType.NONE, "earth")
+        val dataset = createBasicDataset("FOOBAR", DestinationType.FOLDER, "earth")
 
         val response = client.mutateWith(oidcId()).get()
                 .uri("$baseUri/${dataset.id}/request_download")

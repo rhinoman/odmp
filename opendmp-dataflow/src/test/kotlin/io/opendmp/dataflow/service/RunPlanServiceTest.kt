@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.service
 
+import com.amazonaws.services.s3.AmazonS3
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
@@ -48,6 +49,9 @@ class RunPlanServiceTest @Autowired constructor(
 
     @MockBean
     lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
+
+    @MockBean
+    lateinit var s3Client: AmazonS3
 
     @AfterEach
     fun cleanUp() {

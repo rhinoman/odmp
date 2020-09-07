@@ -112,7 +112,7 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
             when(ds.destinationType) {
                 DestinationType.FOLDER -> requestDownloadToken(ds)
                 DestinationType.S3 -> requestDownloadLink(ds)
-                DestinationType.NONE -> throw BadRequestException("Unknown destination type")
+                DestinationType.NONE -> requestDownloadToken(ds)
             }
         }
     }

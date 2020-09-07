@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.api.controller
 
+import com.amazonaws.services.s3.AmazonS3
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.dataflow.TestUtils
@@ -87,6 +88,9 @@ class DataflowControllerTest(
 
     @MockBean
     lateinit var processRequester: ProcessRequester
+
+    @MockBean
+    lateinit var s3Client: AmazonS3
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
