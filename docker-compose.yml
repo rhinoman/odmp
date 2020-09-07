@@ -61,6 +61,7 @@ services:
 
   pulsar:
     image: apachepulsar/pulsar:2.6.0
+    restart: unless-stopped
     volumes:
       - pulsar_data:/pulsar/data
     environment:
