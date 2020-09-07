@@ -36,6 +36,7 @@ services:
       DB_USER: keycloak
       DB_PASSWORD: secret
       DB_VENDOR: "POSTGRES"
+      #KEYCLOAK_FRONTEND_URL: http://keycloak:8080
       PROXY_ADDRESS_FORWARDING: "true"
       KEYCLOAK_IMPORT: /tmp/odmp_realm.json -Dkeycloak.profile.feature.upload_scripts=enabled
 
@@ -77,12 +78,25 @@ services:
         target: /usr/local/etc/haproxy/haproxy.cfg
       - /etc/letsencrypt/live/demo.opendmp.io:/etc/haproxy/cert
 
+  minio:
+    image: 'minio/minio:latest'
+    command: server /data
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ACCESS_KEY: ${S3_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${S3_SECRET_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+
   opendmp-ui:
-    image: opendmp-ui:0.1.3
+    image: opendmp.io/opendmp-ui:0.2.1
     restart: unless-stopped
 
   opendmp-dataflow:
-    image: opendmp-dataflow:0.1.0
+    image: opendmp.io/opendmp-dataflow:0.2.0
     restart: unless-stopped
     depends_on:
       - keycloak
@@ -96,9 +110,14 @@ services:
       KEYCLOAK_URL: "http://keycloak:8080"
       # KEYCLOAK_URL: "https://demo.opendmp.io"
       ODMP_DATAFLOW_PORT: 8042
+      AWS_ACCESS_KEY: ${S3_ACCESS_KEY}
+      AWS_SECRET_KEY: ${S3_SECRET_KEY}
+      AWS_S3_ENDPOINT: ${S3_ENDPOINT}
+    volumes:  
+      - /odmp/data:/odmp/data
     
   opendmp-processor:
-    image: opendmp.io/opendmp-processor:0.1.0
+    image: opendmp.io/opendmp-processor:0.2.0
     depends_on:
       - pulsar
     restart: unless-stopped
@@ -106,6 +125,11 @@ services:
       PULSAR_ADMIN_URL: "http://pulsar:8080"
       PULSAR_CLIENT_URL: "pulsar://pulsar:6650"
       REDIS_HOST: "redis"
+      AWS_ACCESS_KEY: ${S3_ACCESS_KEY}
+      AWS_SECRET_KEY: ${S3_SECRET_KEY}
+      AWS_S3_ENDPOINT: ${S3_ENDPOINT}
+      AWS_S3_OVERRIDE_ENDPOINT: "true"
+      
     volumes:
       - /odmp/data:/odmp/data
     
@@ -115,6 +139,8 @@ volumes:
   mongo_dev_data_sn:
     driver: local
   pulsar_data_sn:
+    driver: local
+  minio_data:
     driver: local
     
 networks:
