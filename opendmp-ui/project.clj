@@ -1,4 +1,4 @@
-(defproject opendmp-ui "0.1.3"
+(defproject opendmp-ui "0.2.0"
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/clojurescript "1.10.748"
                   :exclusions [com.google.javascript/closure-compiler-unshaded
