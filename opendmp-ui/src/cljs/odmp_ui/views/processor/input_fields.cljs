@@ -104,6 +104,6 @@
                              [input-field idx @processor itm])
                            (:inputs @processor)))
        ;; Only aggregators can have more than one input field
-       (if (= num-inputs 0)
+       (if (or (= num-inputs 0) (= (:type @processor) "AGGREGATE"))
         ^{:key (str (:id processor) "_INPUT_FIELD_NEW")}
         [input-field (if (= num-inputs 0) 0 num-inputs) @processor nil])])))
