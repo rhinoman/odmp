@@ -30,12 +30,14 @@ jobs:
       - name: Run maven script
         uses: xlui/action-maven-cli/jdk11@master
         id: test-dataflow
+        working-directory: opendmp-dataflow
         with:
-          lifecycle: 'clean test --file opendmp-dataflow/pom.xml'
+          lifecycle: 'clean test'
 
       # Runs a set of commands using the runners shell
       - name: Run maven script
         uses: xlui/action-maven-cli/jdk11@master
         id: test-processor
+        working-directory: opendmp-processor
         with:
-          lifecycle: 'clean test --file opendmp-processor/pom.xml' 
+          lifecycle: 'clean test' 
