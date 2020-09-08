@@ -206,7 +206,7 @@
                          (update-dataflow (assoc @dataflow :description (-> e .-target .-value))))}]]
         (if (or (> (count (:processorErrors runplan-status)) 0)
                 (= (:runState runplan-status) "ERROR"))
-          [:> Alert {:severity :error} "One or more errors has ocurred in this Dataflow!"])
+          [:> Alert {:severity :error} "One or more errors have ocurred in this Dataflow!"])
         (if (some? @dataflow) [processor-pane processors classes])]])))
 
 (defn flow
