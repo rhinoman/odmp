@@ -211,7 +211,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<repository>opendmp.io/opendmp-processor</repository>
+					<repository>opendmp/opendmp-processor</repository>
 					<tag>${project.version}</tag>
 					<buildArgs>
 						<JAR_FILE>opendmp-processor.jar</JAR_FILE>

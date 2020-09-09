@@ -182,7 +182,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<imageName>opendmp.io/opendmp-dataflow:${project.version}</imageName>
+					<imageName>opendmp/opendmp-dataflow:${project.version}</imageName>
 				</configuration>
 			</plugin>
 			<plugin>

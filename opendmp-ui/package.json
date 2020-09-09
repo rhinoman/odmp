@@ -4,12 +4,10 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.56",
     "ace-builds": "^1.4.12",
-    "highlight.js": "9.18.1",
     "keycloak-js": "^10.0.2",
     "react": "16.13.0",
     "react-ace": "^9.1.1",
     "react-dom": "16.13.0",
-    "react-highlight.js": "1.0.7",
     "react-lineto": "^3.2.0"
   },
   "devDependencies": {
