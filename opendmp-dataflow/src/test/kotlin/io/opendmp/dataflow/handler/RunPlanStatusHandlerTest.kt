@@ -73,6 +73,7 @@ class RunPlanStatusHandlerTest @Autowired constructor(
         mongoTemplate.findAllAndRemove<DataflowModel>(Query())
         mongoTemplate.findAllAndRemove<CollectionModel>(Query())
         mongoTemplate.findAllAndRemove<DatasetModel>(Query())
+        mongoTemplate.findAllAndRemove<RunPlanModel>(Query())
     }
 
     private val mapper = jacksonObjectMapper()
