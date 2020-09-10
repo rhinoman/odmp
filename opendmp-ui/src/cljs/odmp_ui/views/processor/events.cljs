@@ -41,6 +41,11 @@
    (assoc-in db [:edit-processor-fields :inputs idx :sourceLocation] value)))
 
 (rf/reg-event-db
+ ::set-processor-input-additional-property
+ (fn [db [_ idx property value]]
+   (assoc-in db [:edit-processor-fields :inputs idx :additionalProperties property] value)))
+
+(rf/reg-event-db
  ::toggle-delete-processor-dialog
  (fn [db [_ _]]
    (-> db

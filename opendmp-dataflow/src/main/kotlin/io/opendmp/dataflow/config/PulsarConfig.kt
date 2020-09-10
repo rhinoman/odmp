@@ -53,7 +53,7 @@ class PulsarConfig @Autowired constructor(private val camelContext: CamelContext
 
     @Bean
     fun pulsarAutoConfig() : AutoConfiguration {
-        return PulsarAutoConfig(pulsarAdmin(), clusters)
+        return AutoConfiguration(pulsarAdmin(), clusters)
     }
 
     @Bean

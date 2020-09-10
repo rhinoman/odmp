@@ -31,7 +31,7 @@
             ["@material-ui/core/TextField" :default TextField]))
 
 
-(defn text-input-location [idx field]
+(defn text-input-location [idx field & label]
   (let [edit-inputs (rf/subscribe [::proc-subs/edit-inputs])
         loc-field-value (or 
                          ;(get-in @edit-inputs [idx :sourceLocation])
@@ -41,7 +41,7 @@
                    :variant :filled
                    :required true
                    :fullWidth true
-                   :label "Location"
+                   :label (or label "Location")
                    :onKeyDown ignore-return
                    :type :text
                    :defaultValue loc-field-value
@@ -63,6 +63,27 @@
       [:> MenuItem {:value ""} [:em "None"]]
       (map (fn [p] ^{:key (str "INPUT_" idx "_LOC_" (:id p))}
              [:> MenuItem {:value (:id p)} (:name p)]) proc-candidates)]]))
+
+(defn s3-input-fields
+  "Fields for specifying S3 data input"
+  [idx field]
+  (let [edit-inputs (rf/subscribe [::proc-subs/edit-inputs])
+        bucket-field-value (or (get-in field [:additionalProperties :bucket])
+                               "")]
+    [:> Grid {:container true :spacing 2}
+     [:> Grid {:item true :xs 4}
+      [:> TextField {:margin :dense
+                     :variant :filled
+                     :required true
+                     :fullWidth true
+                     :label "Bucket"
+                     :onKeyDown ignore-return
+                     :type :text
+                     :defaultValue bucket-field-value
+                     :onBlur #(rf/dispatch [::proc-events/set-processor-input-additional-property
+                                            idx "bucket" (-> % .-target .-value)])}]]
+     [:> Grid {:item true :xs 8}
+      [text-input-location idx field "Key Prefix"]]]))
 
 (defn input-field
   "Displays an individual input field"
@@ -91,6 +112,7 @@
          "NONE" [:> FormControl {:variant :filled :margin :dense :fullWidth true}
                  [:> InputLabel "Select a Source Type"]]
          "PROCESSOR" [processor-input-location idx field processor @flow-processors]
+         "INGEST_S3" [s3-input-fields idx field]
          [text-input-location idx field])]]]))
 
 (defn input-fields [processor]

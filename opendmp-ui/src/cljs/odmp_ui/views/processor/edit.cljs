@@ -67,11 +67,14 @@
   (reduce-kv (fn [m k v]
                (let [st (:sourceType v)
                      sl (:sourceLocation v)
+                     sp (:additionalProperties v)
                      curt (get-in cur-inputs [k :sourceType])
-                     curl (get-in cur-inputs [k :sourceLocation])]
+                     curl (get-in cur-inputs [k :sourceLocation])
+                     curp (get-in cur-inputs [k :additionalProperties])]
                  (-> m
                      (assoc-in [k :sourceType] (or st curt))
-                     (assoc-in [k :sourceLocation] (or sl curl)))))
+                     (assoc-in [k :sourceLocation] (or sl curl))
+                     (assoc-in [k :additionalProperties] (or sp curp)))))
              (or cur-inputs []) field-inputs))
    
 

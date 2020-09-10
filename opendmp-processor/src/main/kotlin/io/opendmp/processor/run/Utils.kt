@@ -17,6 +17,7 @@
 package io.opendmp.processor.run
 
 import io.opendmp.common.exception.NotImplementedException
+import io.opendmp.common.exception.ProcessorDefinitionException
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,13 @@ object Utils {
                 "file://${source.sourceLocation!!}?readLock=changed"
             SourceType.INGEST_FTP ->
                 "ftp://${source.sourceLocation!!}?binary=true"
+            SourceType.INGEST_S3 -> {
+                val bucket = source.additionalProperties["bucket"]
+                        ?: throw ProcessorDefinitionException("Bucket must be specified for S3 ingest")
+                val keyPrefix = source.sourceLocation
+                        ?: throw ProcessorDefinitionException("No S3 key prefix provided!")
+                "aws2-s3://$bucket?prefix=$keyPrefix"
+            }
             else -> throw NotImplementedException("SourceType ${source.sourceType} not supported")
         }
 

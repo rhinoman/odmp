@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.1.RELEASE</version>
+		<version>2.3.3.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.opendmp</groupId>
@@ -16,8 +16,8 @@
 	<packaging>clojure</packaging>
 	<properties>
 		<java.version>11</java.version>
-		<kotlin.version>1.3.72</kotlin.version>
-		<camel.version>3.4.0</camel.version>
+		<kotlin.version>1.4.0</kotlin.version>
+		<camel.version>3.5.0</camel.version>
 		<opendmp.common.version>0.2.0</opendmp.common.version>
 	</properties>
 

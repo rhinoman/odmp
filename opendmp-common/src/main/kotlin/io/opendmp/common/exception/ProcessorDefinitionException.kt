@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.common.exception
 
-/**
- * SourceType identifies the type of a source input
- *   It will most often be PROCESSOR or an INGEST type
- */
-enum class SourceType {
-    PROCESSOR, INGEST_FILE_DROP, INGEST_FTP, INGEST_S3, NONE
+class ProcessorDefinitionException(message: String = "Processor Definition is Invalid") : Exception(message) {
 }
