@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.model
 
+import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.properties.DestinationType
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.CreatedDate
@@ -31,6 +32,8 @@ class DatasetModel(@Id val id: String = ObjectId.get().toHexString(),
                    val dataflowId: String,
                    val destinationType: DestinationType,
                    val location: String,
+                   @Indexed val dataTag: String?,
+                   val history: List<List<DataEvent>>?,
                    @CreatedDate
                    val createdOn: Instant
 ) {

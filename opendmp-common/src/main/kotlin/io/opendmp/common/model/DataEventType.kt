@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.run.processors
+package io.opendmp.common.model
 
-import io.opendmp.common.model.ProcessorRunModel
-import org.apache.camel.Processor
-
-abstract class AbstractProcessor(val processor: ProcessorRunModel) : Processor {
-
+enum class DataEventType {
+    INGESTED, TRANSFORMED, AGGREGATED, COLLECTED
 }

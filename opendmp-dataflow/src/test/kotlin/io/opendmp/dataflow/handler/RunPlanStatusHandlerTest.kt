@@ -20,6 +20,8 @@ import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.message.RunPlanFailureMessage
+import io.opendmp.common.model.DataEvent
+import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.Result
 import io.opendmp.common.model.properties.DestinationType
@@ -85,6 +87,14 @@ class RunPlanStatusHandlerTest @Autowired constructor(
         mongoTemplate.save(dataflow).block()
         val collection = TestUtils.createBasicCollection("My Least Favorite Collection")
         mongoTemplate.save(collection).block()
+
+        val tag = UUID.randomUUID().toString()
+        val history: List<List<DataEvent>> = listOf(listOf(DataEvent(
+                dataTag = tag,
+                eventType = DataEventType.INGESTED,
+                processorId = UUID.randomUUID().toString(),
+                processorName = "THE INGESTINATOR")))
+
         val ccm = CollectionCompleteMessage(
                 requestId = UUID.randomUUID().toString(),
                 collectionId = collection.id,
@@ -94,8 +104,9 @@ class RunPlanStatusHandlerTest @Autowired constructor(
                 processorId = UUID.randomUUID().toString(),
                 timeStamp = Instant.now(),
                 result = Result.SUCCESS,
-                prefix = "The Record Prefix"
-        )
+                prefix = "The Record Prefix",
+                dataTag = tag,
+                history = history)
         val jsonString = mapper.writeValueAsString(ccm)
         runBlocking {
             val ds = runPlanStatusHandler.receiveCollectStatus(jsonString)

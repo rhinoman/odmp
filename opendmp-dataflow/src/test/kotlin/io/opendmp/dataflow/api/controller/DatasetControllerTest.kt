@@ -19,6 +19,8 @@ package io.opendmp.dataflow.api.controller
 import com.amazonaws.services.s3.AmazonS3
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
 import com.c4_soft.springaddons.security.oauth2.test.webflux.OidcIdAuthenticationTokenWebTestClientConfigurer.oidcId
+import io.opendmp.common.model.DataEvent
+import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.dataflow.api.response.DownloadRequestResponse
 import io.opendmp.dataflow.config.MongoConfig
@@ -81,13 +83,21 @@ class DatasetControllerTest @Autowired constructor(
 
     fun createBasicDataset(name: String, destType: DestinationType, location: String)
             : DatasetModel{
+        val tag = UUID.randomUUID().toString()
+        val history: List<List<DataEvent>> = listOf(listOf(DataEvent(
+                dataTag = tag,
+                eventType = DataEventType.INGESTED,
+                processorId = UUID.randomUUID().toString(),
+                processorName = "THE INGESTINATOR")))
         val datasetModel = DatasetModel(
                 name = name,
                 collectionId = UUID.randomUUID().toString(),
                 createdOn = Instant.now(),
                 dataflowId = UUID.randomUUID().toString(),
                 destinationType = destType,
-                location = location)
+                location = location,
+                dataTag = tag,
+                history = history)
         return mongoTemplate.save(datasetModel).block()!!
     }
 

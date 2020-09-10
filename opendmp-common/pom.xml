@@ -5,7 +5,7 @@
 
     <groupId>io.opendmp</groupId>
     <artifactId>opendmp-common</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>

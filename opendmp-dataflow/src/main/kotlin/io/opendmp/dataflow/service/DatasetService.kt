@@ -93,6 +93,8 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                    dataflowId = msg.flowId,
                    destinationType = msg.destinationType,
                    location = msg.location,
+                   dataTag = msg.dataTag,
+                   history = msg.history,
                    createdOn = msg.timeStamp)
            mongoTemplate.save(dataset).block()
         }

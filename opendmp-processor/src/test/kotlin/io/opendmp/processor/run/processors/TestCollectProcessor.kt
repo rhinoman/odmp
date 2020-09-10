@@ -20,6 +20,7 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.processor.config.RedisConfig
+import io.opendmp.processor.domain.DataEnvelope
 import io.opendmp.processor.handler.RunPlanRequestHandler
 import io.opendmp.processor.messaging.RunPlanRequestRouter
 import io.opendmp.processor.messaging.RunPlanStatusDispatcher
@@ -79,7 +80,8 @@ class TestCollectProcessor @Autowired constructor(
                 "type" to DestinationType.FOLDER.toString(),
                 "location" to "/tmp/testoutput"
         )
-        exchange.getIn().body = "I'm Data!"
+        exchange.getIn().body = DataEnvelope(
+                data = "I'm Data!".toByteArray(Charsets.UTF_8))
         val processor = ProcessorRunModel(
                 id = UUID.randomUUID().toString(),
                 flowId = UUID.randomUUID().toString(),
@@ -90,8 +92,9 @@ class TestCollectProcessor @Autowired constructor(
 
         val collectProcessor = CollectProcessor(processor)
         collectProcessor.process(exchange)
-        val payloadOut = exchange.getIn().body as ByteArray
-        assertEquals("I'm Data!", String(payloadOut, Charsets.UTF_8))
+        val envelopeOut = exchange.getIn().body as DataEnvelope
+        val data = envelopeOut.data
+        assertEquals("I'm Data!", String(data, Charsets.UTF_8))
     }
 
 }

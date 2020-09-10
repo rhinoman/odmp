@@ -17,8 +17,11 @@
 package io.opendmp.processor.run.processors
 
 import io.opendmp.common.exception.ScriptExecutionException
+import io.opendmp.common.model.DataEvent
+import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.properties.ScriptLanguage
+import io.opendmp.processor.domain.DataEnvelope
 import io.opendmp.processor.executors.ClojureExecutor
 import io.opendmp.processor.executors.PythonExecutor
 import org.apache.camel.Exchange
@@ -29,15 +32,23 @@ class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processo
         val language = ScriptLanguage.valueOf(props["language"].toString())
         val code = props["code"].toString()
 
-        val payload = exchange?.getIn()?.getBody(ByteArray::class.java)
-                ?: throw ScriptExecutionException("No data to process")
+        val envelope = exchange?.getIn()?.getBody(DataEnvelope::class.java)
+                ?: throw ScriptExecutionException("Data Envelope not found")
+
         val result: ByteArray = when(language) {
             ScriptLanguage.CLOJURE ->
-                ClojureExecutor().executeScript(code, payload)
+                ClojureExecutor().executeScript(code, envelope.data)
             ScriptLanguage.PYTHON ->
-                PythonExecutor().executeScript(code, payload)
+                PythonExecutor().executeScript(code, envelope.data)
             else -> throw ScriptExecutionException("Script language $language is unsupported")
         }
-        exchange.getIn().body = result
+        envelope.data = result
+        envelope.history.add(DataEvent(
+                dataTag = envelope.tag,
+                eventType = DataEventType.TRANSFORMED,
+                processorId = processor.id,
+                processorName = processor.name))
+
+        exchange.getIn().body = envelope
     }
 }

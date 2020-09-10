@@ -23,6 +23,7 @@ import io.opendmp.common.model.ProcessorType
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.CollectProcessor
 import io.opendmp.processor.run.processors.CompletionProcessor
+import io.opendmp.processor.run.processors.DataWrapper
 import io.opendmp.processor.run.processors.ScriptProcessor
 import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.RouteBuilder
@@ -81,6 +82,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 from(sourceEp)
                         .routeId(routeId)
                         .startupOrder(Utils.getNextStartupOrder())
+                        .process(DataWrapper(sp))
                         .to(dest)
             }
             deps.size > 1 -> {
@@ -92,6 +94,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                         // Set a routeId to make finding this route in the Camel Context easier later
                         .routeId(routeId)
                         .startupOrder(Utils.getNextStartupOrder())
+                        .process(DataWrapper(sp))
                         .multicast()
                         .parallelProcessing()
                         .to(*dest.toTypedArray())

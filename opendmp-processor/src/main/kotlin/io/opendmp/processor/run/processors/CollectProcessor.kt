@@ -19,10 +19,13 @@ package io.opendmp.processor.run.processors
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
+import io.opendmp.common.model.DataEvent
+import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.Result
 import io.opendmp.processor.config.SpringContext
+import io.opendmp.processor.domain.DataEnvelope
 import io.opendmp.processor.messaging.RunPlanStatusDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,8 +59,17 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
         val destinationType = DestinationType.valueOf(props["type"].toString())
         val collectionId = props["collection"].toString()
         val prefix: String? = props["prefix"]?.toString()
-        val payload = exchange?.getIn()?.getBody(ByteArray::class.java)
-                ?: throw CollectProcessorException("No data to process")
+
+        val envelope = exchange?.getIn()?.getBody(DataEnvelope::class.java)
+                ?: throw CollectProcessorException("Data Envelope not found")
+
+        val payload = envelope.data
+
+        envelope.history.add(
+                DataEvent(dataTag = envelope.tag,
+                          eventType = DataEventType.COLLECTED,
+                          processorId = processor.id,
+                          processorName = processor.name))
 
         val time: Instant = Instant.now()
         val recordId = UUID.randomUUID().toString().replace("-", "")
@@ -92,7 +104,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
             result = Result.ERROR
             error = "Error exporting data: ${cex.localizedMessage}"
         }
-
+        val history: List<List<DataEvent>> = listOf(envelope.history, envelope.paths.flatten())
         //Finally, send a message back to the dataflow service with collection information
         val msg = CollectionCompleteMessage(
                 destinationType = destinationType,
@@ -103,11 +115,13 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                 collectionId = collectionId,
                 result = result,
                 prefix = prefix,
+                dataTag = envelope.tag,
+                history = history,
                 errorMessage = error)
 
 
         runPlanStatusDispatcher.sendCollectionComplete(msg)
 
-        exchange.getIn().body = payload
+        exchange.getIn().body = envelope
     }
 }

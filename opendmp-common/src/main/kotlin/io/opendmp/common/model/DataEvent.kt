@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.message
+package io.opendmp.common.model
 
-import io.opendmp.common.model.DataEvent
-import io.opendmp.common.model.Result
-import io.opendmp.common.model.properties.DestinationType
 import java.time.Instant
-import java.util.*
 
-data class CollectionCompleteMessage(
-        val requestId: String = UUID.randomUUID().toString(),
-        val timeStamp: Instant,
-        val destinationType: DestinationType,
-        val location: String,
-        val prefix: String?,
-        val flowId: String,
-        val processorId: String,
-        val collectionId: String,
-        val result: Result,
-        val history: List<List<DataEvent>>,
+data class DataEvent(
         val dataTag: String,
-        val errorMessage: String? = null
-) {
-}
+        val timestamp: Instant = Instant.now(),
+        val eventType: DataEventType,
+        val processorId: String,
+        val processorName: String,
+        val description: String? = null) {}

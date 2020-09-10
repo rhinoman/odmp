@@ -1,8 +1,6 @@
 package io.opendmp.dataflow
 
-import io.opendmp.common.model.ProcessorType
-import io.opendmp.common.model.SourceModel
-import io.opendmp.common.model.SourceType
+import io.opendmp.common.model.*
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.dataflow.model.*
 import org.springframework.context.annotation.PropertySource
@@ -52,13 +50,21 @@ object TestUtils {
             .withZone(ZoneId.systemDefault())
 
     fun createBasicDataset(collectionId: String, time: Instant) : DatasetModel {
+        val tag = UUID.randomUUID().toString()
+        val history: List<List<DataEvent>> = listOf(listOf(DataEvent(
+                dataTag = tag,
+                eventType = DataEventType.INGESTED,
+                processorId = UUID.randomUUID().toString(),
+                processorName = "THE INGESTINATOR")))
         return DatasetModel(
                 collectionId = collectionId,
                 createdOn = time,
                 dataflowId = UUID.randomUUID().toString(),
                 destinationType = DestinationType.FOLDER,
                 location = "/tmp/out",
-                name = "TheDataflow-${fmt.format(time)}")
+                name = "TheDataflow-${fmt.format(time)}",
+                dataTag = tag,
+                history = history)
     }
 
     fun createBasicDatasets(collectionId: String, num: Int) : List<DatasetModel> {
