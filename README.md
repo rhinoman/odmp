@@ -1,5 +1,7 @@
 # Open Data Management Platform
 
+See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data-management-thing/) introducing the project
+
 ## Rationale:
 
 - Eliminate bespoke data management systems being implemented for every organization/program/project and concomitant duplication of effort.
