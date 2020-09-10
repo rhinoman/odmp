@@ -23,13 +23,13 @@ See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data
 - There are some commercial, closed-source solutions out there, most of which are very expensive.  But I’m unaware of any similar open-source solution.
 
 
-## Hypothetical Architecture
+## Architecture
 
 ![Architecture](/doc/architecture.jpg)
 
 - Assume this all runs in Kubernetes or Docker Swarm.
 
-## (Very) Early Screenshots
+## Early Screenshots
 
 ### Dataflow Index Screen
 ![Dataflow Index](/doc/screenshots/dataflow_index.jpg)
