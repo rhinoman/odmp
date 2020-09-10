@@ -1,0 +1,18 @@
+language: java
+jdk:
+  - openjdk11
+services:
+  - docker
+
+branches:
+  only:
+    - master
+
+jobs:
+  include:
+    - env: TARGET=opendmp-dataflow
+    - env: TARGET=opendmp-processor
+
+script: mvn clean test --file $TARGET/pom.xml
+
+
