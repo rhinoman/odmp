@@ -12,11 +12,11 @@ branches:
 jobs:
   include:
     - env: TARGET=opendmp-dataflow
-    - env: TARGET=opendmp-processor
+    - env: TARGET=opendmp-processor;MVN_OPTS=-Dtest=!TestPythonExecutor
       python: "3.8"
       install: pip install jep
 
 before_script: mvn install --file opendmp-common/pom.xml
-script: mvn clean test --file $TARGET/pom.xml -Dtest=!TestPythonExecutor
+script: mvn clean test --file $TARGET/pom.xml $MVN_OPTS
 
 
