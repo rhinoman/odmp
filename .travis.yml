@@ -1,4 +1,5 @@
 language: java
+dist: bionic
 jdk:
   - openjdk11
 services:
@@ -11,7 +12,7 @@ branches:
 jobs:
   include:
     - env: TARGET=opendmp-dataflow
-    - env: TARGET=opendmp-processor; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/jep
+    - env: TARGET=opendmp-processor
       python: "3.8"
       install: pip install jep
 
