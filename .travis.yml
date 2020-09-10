@@ -13,6 +13,7 @@ jobs:
     - env: TARGET=opendmp-dataflow
     - env: TARGET=opendmp-processor
 
+before_script: mvn install --file opendmp-common/pom.xml
 script: mvn clean test --file $TARGET/pom.xml
 
 
