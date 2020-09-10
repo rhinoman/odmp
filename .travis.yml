@@ -11,6 +11,7 @@ branches:
 jobs:
   include:
     - env: TARGET=opendmp-dataflow
+      language: python
     - env: TARGET=opendmp-processor
 
 before_script: mvn install --file opendmp-common/pom.xml

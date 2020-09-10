@@ -23,5 +23,4 @@ data class ProcessorRunStateModel(@Indexed(name = "processor_run_state_id_index"
                                   val processorId: String,
                                   val health: HealthModel = HealthModel(HealthState.OK),
                                   val state: RunState = RunState.IDLE,
-                                  val dataLocation: DataLocationType,
                                   val locationKey: String? = null) {}
