@@ -1,5 +1,7 @@
 # Open Data Management Platform
 
+[![Build Status](https://travis-ci.org/rhinoman/odmp.svg?branch=master)](https://travis-ci.org/rhinoman/odmp)
+
 See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data-management-thing/) introducing the project
 
 ## Rationale:
