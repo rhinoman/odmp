@@ -13,7 +13,7 @@ jobs:
     - env: TARGET=opendmp-dataflow
     - env: TARGET=opendmp-processor
       language: python
-      install: pip install jep --user
+      install: pip install jep; find / -name libjep.so
 
 before_script: mvn install --file opendmp-common/pom.xml
 script: mvn clean test --file $TARGET/pom.xml
