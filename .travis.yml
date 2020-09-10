@@ -11,9 +11,8 @@ branches:
 jobs:
   include:
     - env: TARGET=opendmp-dataflow
-    - env: TARGET=opendmp-processor
-      language: python
-      install: pip install jep; find / -name libjep.so
+    - env: TARGET=opendmp-processor; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/jep
+      install: pip install jep
 
 before_script: mvn install --file opendmp-common/pom.xml
 script: mvn clean test --file $TARGET/pom.xml
