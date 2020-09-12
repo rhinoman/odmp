@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,38 +17,35 @@
 package io.opendmp.processor.run.processors
 
 import io.opendmp.common.exception.ProcessorDefinitionException
-import io.opendmp.common.exception.ScriptExecutionException
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorRunModel
-import io.opendmp.common.model.properties.ScriptLanguage
 import io.opendmp.processor.domain.DataEnvelope
-import io.opendmp.processor.executors.ClojureExecutor
-import io.opendmp.processor.executors.PythonExecutor
 import org.apache.camel.Exchange
+import java.util.concurrent.TimeUnit
 
-class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
+class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
     override fun process(exchange: Exchange?) {
         val props = processor.properties!!
-        val language = ScriptLanguage.valueOf(props["language"].toString())
-        val code = props["code"].toString()
+        val command = props["command"].toString()
 
         val envelope = exchange?.getIn()?.getBody(DataEnvelope::class.java)
                 ?: throw ProcessorDefinitionException("Data Envelope not found")
 
-        val result: ByteArray = when(language) {
-            ScriptLanguage.CLOJURE ->
-                ClojureExecutor().executeScript(code, envelope.data)
-            ScriptLanguage.PYTHON ->
-                PythonExecutor().executeScript(code, envelope.data)
-            else -> throw ScriptExecutionException("Script language $language is unsupported")
-        }
-        envelope.data = result
+
+        val proc = ProcessBuilder(command)
+                .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                .redirectError(ProcessBuilder.Redirect.PIPE)
+                .start()
+        proc.waitFor(60, TimeUnit.MINUTES)
+        proc.outputStream.write(envelope.data)
+        envelope.data = proc.inputStream.readBytes()
         envelope.history.add(DataEvent(
                 dataTag = envelope.tag,
                 eventType = DataEventType.TRANSFORMED,
                 processorId = processor.id,
-                processorName = processor.name))
+                processorName = processor.name,
+                description = "Executed Command: $command"))
 
         exchange.getIn().body = envelope
     }
