@@ -28,17 +28,21 @@ class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(proces
     override fun process(exchange: Exchange?) {
         val props = processor.properties!!
         val command = props["command"].toString()
-
+        val timeoutSeconds = props["timeout"].toString().toLong()
         val envelope = exchange?.getIn()?.getBody(DataEnvelope::class.java)
                 ?: throw ProcessorDefinitionException("Data Envelope not found")
-
-
-        val proc = ProcessBuilder(command)
+        val proc = ProcessBuilder(command.split(" "))
                 .redirectOutput(ProcessBuilder.Redirect.PIPE)
                 .redirectError(ProcessBuilder.Redirect.PIPE)
                 .start()
-        proc.waitFor(60, TimeUnit.MINUTES)
         proc.outputStream.write(envelope.data)
+        proc.outputStream.flush()
+        proc.outputStream.close()
+
+        //Wait up to timeoutSeconds for proecess to complete
+        proc.waitFor(timeoutSeconds, TimeUnit.SECONDS)
+
+        //Get the data from the pipe
         envelope.data = proc.inputStream.readBytes()
         envelope.history.add(DataEvent(
                 dataTag = envelope.tag,

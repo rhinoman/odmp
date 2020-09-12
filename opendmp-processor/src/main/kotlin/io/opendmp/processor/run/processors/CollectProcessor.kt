@@ -67,9 +67,10 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
 
         envelope.history.add(
                 DataEvent(dataTag = envelope.tag,
-                          eventType = DataEventType.COLLECTED,
-                          processorId = processor.id,
-                          processorName = processor.name))
+                        eventType = DataEventType.COLLECTED,
+                        processorId = processor.id,
+                        processorName = processor.name,
+                        description = "Exported data to $destinationType"))
 
         val time: Instant = Instant.now()
         val recordId = UUID.randomUUID().toString().replace("-", "")

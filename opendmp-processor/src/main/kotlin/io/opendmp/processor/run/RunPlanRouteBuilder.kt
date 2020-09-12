@@ -21,10 +21,7 @@ import io.opendmp.common.exception.UnsupportedProcessorTypeException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.processor.domain.RunPlan
-import io.opendmp.processor.run.processors.CollectProcessor
-import io.opendmp.processor.run.processors.CompletionProcessor
-import io.opendmp.processor.run.processors.DataWrapper
-import io.opendmp.processor.run.processors.ScriptProcessor
+import io.opendmp.processor.run.processors.*
 import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.RouteBuilder
 
@@ -116,6 +113,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 runPlan.processorDependencyMap[curProc.id]?.map { runPlan.processors[it] } ?: listOf()
         val proc = when(curProc.type){
             ProcessorType.SCRIPT -> ScriptProcessor(curProc)
+            ProcessorType.EXTERNAL -> ExternalProcessor(curProc)
             ProcessorType.COLLECT -> CollectProcessor(curProc)
             else -> throw UnsupportedProcessorTypeException("The processor type ${curProc.type} is not supported")
         }
