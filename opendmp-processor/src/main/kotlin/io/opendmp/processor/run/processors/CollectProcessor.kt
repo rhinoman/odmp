@@ -16,32 +16,24 @@
 
 package io.opendmp.processor.run.processors
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.exception.CollectProcessorException
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
-import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.Result
+import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.DataEnvelope
 import io.opendmp.processor.messaging.RunPlanStatusDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
-import org.apache.camel.component.aws2.s3.AWS2S3Constants
-import org.apache.camel.spring.SpringCamelContext
-import org.apache.camel.spring.boot.SpringBootCamelContext
+import org.apache.camel.component.aws.s3.S3Constants
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowire
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Configurable
 import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
@@ -53,6 +45,10 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
 
     private val log = LoggerFactory.getLogger(javaClass)
 
+    private val fmt = DateTimeFormatter
+            .ofPattern("yyyyDDDHHmmss.S")
+            .withZone(ZoneId.systemDefault())
+
     override fun process(exchange: Exchange?) {
 
         val props = processor.properties!!
@@ -60,11 +56,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
         val collectionId = props["collection"].toString()
         val prefix: String? = props["prefix"]?.toString()
 
-        val envelope = exchange?.getIn()?.getBody(DataEnvelope::class.java)
-                ?: throw CollectProcessorException("Data Envelope not found")
-
-        val payload = envelope.data
-
+        val envelope = exchange?.getProperty("dataEnvelope") as DataEnvelope
         envelope.history.add(
                 DataEvent(dataTag = envelope.tag,
                         eventType = DataEventType.COLLECTED,
@@ -74,8 +66,8 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
 
         val time: Instant = Instant.now()
         val recordId = UUID.randomUUID().toString().replace("-", "")
-        var endpoint: String = ""
-        var location: String = ""
+        var endpoint = ""
+        var location = ""
 
         var result: Result = Result.SUCCESS
         var error: String? = null
@@ -85,18 +77,25 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                     val folderLocation = props["location"].toString()
                     endpoint = "file://$folderLocation"
                     location = "$folderLocation/$recordId"
-                    producerTemplate.sendBodyAndHeader(endpoint, payload, Exchange.FILE_NAME, recordId)
+                    producerTemplate.sendBodyAndHeader(endpoint,
+                            exchange.getIn().body,
+                            Exchange.FILE_NAME, recordId)
                 }
                 DestinationType.S3 -> {
                     val bucket = props["bucket"].toString()
                     val s3key = props["key"].toString()
                     val mimeType = props["mimeType"]?.toString() ?: "application/octet-stream"
                     location = "$bucket:$s3key/$recordId"
-                    endpoint = "aws2-s3://$bucket"
+                    endpoint = "aws-s3://$bucket"
+                    val fname = "$prefix-${fmt.format(time)}"
                     val headers = mapOf(
-                            Pair(AWS2S3Constants.KEY, "$s3key/$recordId"),
-                            Pair(AWS2S3Constants.CONTENT_TYPE, mimeType))
-                    producerTemplate.sendBodyAndHeaders(endpoint, payload, headers)
+                            S3Constants.KEY to "$s3key/$recordId",
+                            S3Constants.CONTENT_TYPE to mimeType,
+                            S3Constants.CONTENT_DISPOSITION to "attachment;filename=\"$fname\""
+                    )
+                    producerTemplate.sendBodyAndHeaders(endpoint,
+                            exchange.getIn().body,
+                            headers)
                 }
                 else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
             }
@@ -123,6 +122,6 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
 
         runPlanStatusDispatcher.sendCollectionComplete(msg)
 
-        exchange.getIn().body = envelope
+        exchange.setProperty("dataEnvelope", envelope)
     }
 }

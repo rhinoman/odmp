@@ -16,6 +16,7 @@
 
 package io.opendmp.dataflow.config
 
+import io.opendmp.dataflow.api.exception.BadRequestException
 import io.opendmp.dataflow.api.exception.ResourceConflictException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -40,6 +41,18 @@ class ExceptionHandlers {
         return mapOf(
                 Pair("message", "There were errors validating your request"),
                 Pair("errors", errors))
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BadRequestException::class)
+    fun handleSimpleBadRequest(ex: BadRequestException) : Map<String, Any> {
+        log.warn(ex.toString())
+        return mapOf(
+                "status" to 400,
+                "error" to "Bad Request",
+                "timestamp" to LocalDateTime.now(),
+                "message" to (ex.message ?: "Invalid Request")
+        )
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)

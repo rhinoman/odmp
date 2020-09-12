@@ -16,14 +16,22 @@
 
 package io.opendmp.processor.run
 
+import com.amazonaws.client.builder.AwsClientBuilder
+import io.opendmp.common.exception.NotImplementedException
+import io.opendmp.common.exception.ProcessorDefinitionException
 import io.opendmp.common.exception.RunPlanLogicException
 import io.opendmp.common.exception.UnsupportedProcessorTypeException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
+import io.opendmp.common.model.SourceModel
+import io.opendmp.common.model.SourceType
+import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.*
 import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.RouteBuilder
+import org.apache.camel.component.aws.s3.S3Constants
+import org.apache.camel.model.RouteDefinition
 
 /**
  * RunPlanRouteBuilder - takes a Run Plan and builds camel routes to set up a data pipeline
@@ -31,6 +39,25 @@ import org.apache.camel.builder.RouteBuilder
  */
 class RunPlanRouteBuilder(private val runPlan: RunPlan,
                           private val numRetries: Int = 5): RouteBuilder() {
+
+    private fun generateIngestEndpoint(source: SourceModel) : RouteDefinition {
+        return when(source.sourceType) {
+            SourceType.INGEST_FILE_DROP ->
+                from("file://${source.sourceLocation!!}?readLock=changed")
+            SourceType.INGEST_FTP ->
+                from("ftp://${source.sourceLocation!!}?binary=true")
+            SourceType.INGEST_S3 -> {
+                val bucket = source.additionalProperties?.get("bucket")
+                        ?: throw ProcessorDefinitionException("Bucket must be specified for S3 ingest")
+                val keyPrefix = source.sourceLocation
+                        ?: throw ProcessorDefinitionException("No S3 key prefix provided!")
+                from("aws-s3://$bucket?prefix=$keyPrefix")
+                        .setHeader(S3Constants.CONTENT_TYPE, constant("application/octet-stream"))
+            }
+            else -> throw NotImplementedException("SourceType ${source.sourceType} not supported")
+        }
+
+    }
 
     override fun configure() {
         //Set up error handling
@@ -65,7 +92,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         val source = sp.inputs.first()
         val sourceEp = when(sp.type) {
             ProcessorType.INGEST ->
-                Utils.generateIngestEndpoint(source)
+                generateIngestEndpoint(source)
             else ->
                 throw UnsupportedProcessorTypeException("The processor type ${sp.type} is not supported as a starting processor")
         }
@@ -76,7 +103,8 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         when {
             deps.size == 1 -> {
                 val dest = "direct:${runPlan.id}-${deps.first()!!.id}"
-                from(sourceEp)
+                sourceEp
+                        .convertBodyTo(ByteArray::class.java)
                         .routeId(routeId)
                         .startupOrder(Utils.getNextStartupOrder())
                         .process(DataWrapper(sp))
@@ -87,9 +115,10 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 // do a multicast
                 val dest = deps.map { d -> "direct:${runPlan.id}-${d!!.id}"}
 
-                from(sourceEp)
+                sourceEp
                         // Set a routeId to make finding this route in the Camel Context easier later
                         .routeId(routeId)
+                        .convertBodyTo(ByteArray::class.java)
                         .startupOrder(Utils.getNextStartupOrder())
                         .process(DataWrapper(sp))
                         .multicast()

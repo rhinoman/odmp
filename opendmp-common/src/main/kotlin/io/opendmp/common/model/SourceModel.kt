@@ -32,4 +32,4 @@ import io.opendmp.common.model.SourceType
 open class SourceModel(
         val sourceType: SourceType? = SourceType.NONE,
         val sourceLocation: String? = null,
-        val additionalProperties: Map<String, String> = mapOf()) {}
+        val additionalProperties: Map<String, String>? = mapOf()) {}

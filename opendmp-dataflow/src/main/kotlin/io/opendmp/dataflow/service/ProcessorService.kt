@@ -125,7 +125,15 @@ class ProcessorService (private val mongoTemplate: ReactiveMongoTemplate) {
      */
     fun deleteProcessor(id: String) : Mono<DeleteResult> {
         val query = Query(Criteria.where("id").isEqualTo(id))
-        return mongoTemplate.remove<ProcessorModel>(query)
+
+        return getDetail(id).switchIfEmpty{ throw NotFoundException() }
+                .handle{ d, sink ->
+            if(d.dataflow.enabled) {
+                sink.error(BadRequestException("Dataflow is enabled!"))
+            } else {
+                sink.next(mongoTemplate.remove<ProcessorModel>(query).block()!!)
+            }
+        }
     }
 
 }

@@ -18,6 +18,7 @@ package io.opendmp.processor.run.processors
 
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
+import io.opendmp.processor.TestUtils
 import io.opendmp.processor.config.RedisConfig
 import io.opendmp.processor.domain.DataEnvelope
 import io.opendmp.processor.handler.RunPlanRequestHandler
@@ -67,10 +68,9 @@ class TestExternalProcessor @Autowired constructor(
         val exchange = DefaultExchange(testCamelContext)
         val properties: Map<String, Any> = mapOf(
                 "command" to "wc -c",
-                "timeout" to 10)
-        exchange.getIn().body = DataEnvelope(
-                data = "I'm Data!".toByteArray(Charsets.UTF_8))
-
+                "timeout" to "10")
+        exchange.getIn().body = "I'm Data!"
+        exchange.setProperty("dataEnvelope", TestUtils.createDataEnvelope())
         val processor = ProcessorRunModel(
                 id = UUID.randomUUID().toString(),
                 flowId = UUID.randomUUID().toString(),
@@ -82,12 +82,12 @@ class TestExternalProcessor @Autowired constructor(
         val externalProcessor = ExternalProcessor(processor)
         externalProcessor.process(exchange)
 
-        val envelopeOut = exchange.getIn().body as DataEnvelope
-        val data = envelopeOut.data
+        val envelopeOut = exchange.getProperty("dataEnvelope") as DataEnvelope
+        val data = exchange.getIn().getBody(ByteArray::class.java)
         val str = data.decodeToString().trim()
         assertNotNull(data)
         assertEquals(9, Integer.parseInt(str))
-        assertEquals(1, envelopeOut.history.size)
+        assertEquals(2, envelopeOut.history.size)
     }
 
 }

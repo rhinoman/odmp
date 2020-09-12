@@ -30,15 +30,13 @@ import org.apache.camel.Processor
 class DataWrapper(val sp: ProcessorRunModel) : Processor {
 
     override fun process(exchange: Exchange?) {
-        val data = exchange?.getIn()?.getBody(ByteArray::class.java)
-                ?: throw RuntimeException("No data to process")
-        val dataEnvelope = DataEnvelope(data = data)
+        val dataEnvelope = DataEnvelope()
         dataEnvelope.history.add(
                 DataEvent(dataTag = dataEnvelope.tag,
                           eventType = DataEventType.INGESTED,
                           processorId = sp.id,
                           processorName = sp.name))
+        exchange?.setProperty("dataEnvelope", dataEnvelope)
 
-        exchange.getIn().body = dataEnvelope
     }
 }

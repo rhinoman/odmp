@@ -20,6 +20,7 @@ import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.dataflow.model.TriggerType
 import javax.validation.constraints.Min
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 

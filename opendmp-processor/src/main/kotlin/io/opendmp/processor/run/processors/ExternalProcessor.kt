@@ -16,34 +16,45 @@
 
 package io.opendmp.processor.run.processors
 
+import io.opendmp.common.exception.CommandExecutionException
 import io.opendmp.common.exception.ProcessorDefinitionException
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.processor.domain.DataEnvelope
+import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
+import org.slf4j.LoggerFactory
+import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
 class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
     override fun process(exchange: Exchange?) {
         val props = processor.properties!!
         val command = props["command"].toString()
-        val timeoutSeconds = props["timeout"].toString().toLong()
-        val envelope = exchange?.getIn()?.getBody(DataEnvelope::class.java)
-                ?: throw ProcessorDefinitionException("Data Envelope not found")
-        val proc = ProcessBuilder(command.split(" "))
-                .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                .redirectError(ProcessBuilder.Redirect.PIPE)
-                .start()
-        proc.outputStream.write(envelope.data)
+        val timeoutSeconds =
+                if(props.containsKey("timeout")) {
+                    props["timeout"].toString().toLong()
+                } else {
+                    10L
+                }
+        val envelope: DataEnvelope = exchange?.getProperty("dataEnvelope") as DataEnvelope
+        log.info("Running $command")
+        val proc = ProcessBuilder(command.split(" ")).start()
+        proc.outputStream.write(exchange.getIn().getBody(ByteArray::class.java))
         proc.outputStream.flush()
         proc.outputStream.close()
 
-        //Wait up to timeoutSeconds for proecess to complete
+        //Wait up to timeoutSeconds for process to complete
+        log.info("Waiting up to $timeoutSeconds seconds for $command to finish")
         proc.waitFor(timeoutSeconds, TimeUnit.SECONDS)
 
+
         //Get the data from the pipe
-        envelope.data = proc.inputStream.readBytes()
+        exchange.getIn().body = proc.inputStream.readBytes()
         envelope.history.add(DataEvent(
                 dataTag = envelope.tag,
                 eventType = DataEventType.TRANSFORMED,
@@ -51,6 +62,6 @@ class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(proces
                 processorName = processor.name,
                 description = "Executed Command: $command"))
 
-        exchange.getIn().body = envelope
+        exchange.setProperty("dataEnvelope", envelope)
     }
 }

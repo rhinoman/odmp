@@ -32,9 +32,7 @@ data class DataEnvelope(
         // History should be logged by each processor in the flow
         var history: MutableList<DataEvent> = mutableListOf(),
         // After an aggregation, need to keep track of the different history "paths"
-        var paths: MutableList<List<DataEvent>> = mutableListOf(),
-        // The data itself
-        var data: ByteArray) {
+        var paths: MutableList<List<DataEvent>> = mutableListOf()) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -16,11 +16,9 @@
 
 package io.opendmp.processor
 
-import io.opendmp.common.model.ProcessorRunModel
-import io.opendmp.common.model.ProcessorType
-import io.opendmp.common.model.SourceModel
-import io.opendmp.common.model.SourceType
+import io.opendmp.common.model.*
 import io.opendmp.common.model.properties.ScriptLanguage
+import io.opendmp.processor.domain.DataEnvelope
 import java.util.*
 
 object TestUtils {
@@ -53,5 +51,16 @@ object TestUtils {
                 inputProcs.map{ SourceModel(SourceType.PROCESSOR, it)},
                 properties = mapOf("language" to ScriptLanguage.CLOJURE.toString(), "code" to code)
         )
+    }
+
+    fun createDataEnvelope() : DataEnvelope {
+        val tag = UUID.randomUUID().toString()
+        return DataEnvelope(
+                tag = tag,
+                history = mutableListOf(DataEvent(
+                        dataTag = tag,
+                        eventType = DataEventType.INGESTED,
+                        processorName = "INGESTER",
+                        processorId = UUID.randomUUID().toString())))
     }
 }

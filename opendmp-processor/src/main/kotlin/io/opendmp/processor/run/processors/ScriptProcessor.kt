@@ -33,23 +33,22 @@ class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processo
         val language = ScriptLanguage.valueOf(props["language"].toString())
         val code = props["code"].toString()
 
-        val envelope = exchange?.getIn()?.getBody(DataEnvelope::class.java)
-                ?: throw ProcessorDefinitionException("Data Envelope not found")
+        val envelope = exchange?.getProperty("dataEnvelope") as DataEnvelope
 
-        val result: ByteArray = when(language) {
+        val result = when(language) {
             ScriptLanguage.CLOJURE ->
-                ClojureExecutor().executeScript(code, envelope.data)
+                ClojureExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
             ScriptLanguage.PYTHON ->
-                PythonExecutor().executeScript(code, envelope.data)
+                PythonExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
             else -> throw ScriptExecutionException("Script language $language is unsupported")
         }
-        envelope.data = result
         envelope.history.add(DataEvent(
                 dataTag = envelope.tag,
                 eventType = DataEventType.TRANSFORMED,
                 processorId = processor.id,
                 processorName = processor.name))
 
-        exchange.getIn().body = envelope
+        exchange.setProperty("dataEnvelope", envelope)
+        exchange.getIn().body = result
     }
 }

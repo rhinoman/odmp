@@ -98,7 +98,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>
-			<artifactId>camel-aws2-s3-starter</artifactId>
+			<artifactId>camel-aws-s3-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
 
