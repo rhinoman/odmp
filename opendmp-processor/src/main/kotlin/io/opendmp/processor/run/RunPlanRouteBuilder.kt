@@ -17,10 +17,7 @@
 package io.opendmp.processor.run
 
 import com.amazonaws.client.builder.AwsClientBuilder
-import io.opendmp.common.exception.NotImplementedException
-import io.opendmp.common.exception.ProcessorDefinitionException
-import io.opendmp.common.exception.RunPlanLogicException
-import io.opendmp.common.exception.UnsupportedProcessorTypeException
+import io.opendmp.common.exception.*
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
@@ -29,6 +26,8 @@ import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.*
 import org.apache.camel.LoggingLevel
+import org.apache.camel.builder.DeadLetterChannelBuilder
+import org.apache.camel.builder.DefaultErrorHandlerBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.component.aws.s3.S3Constants
 import org.apache.camel.model.RouteDefinition
@@ -38,7 +37,7 @@ import org.apache.camel.model.RouteDefinition
  * This is kind of the heart of the whole system right here
  */
 class RunPlanRouteBuilder(private val runPlan: RunPlan,
-                          private val numRetries: Int = 5): RouteBuilder() {
+                          private val numRetries: Int = 2): RouteBuilder() {
 
     private fun generateIngestEndpoint(source: SourceModel) : RouteDefinition {
         return when(source.sourceType) {
@@ -63,9 +62,9 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         //Set up error handling
         errorHandler(deadLetterChannel("direct:${runPlan.id}-dead")
                 .retryAttemptedLogLevel(LoggingLevel.WARN)
+                .allowRedeliveryWhileStopping(false)
                 .maximumRedeliveries(numRetries)
-                .backOffMultiplier(2.0)
-                .useExponentialBackOff())
+                .redeliveryDelay(1000L))
 
         from("direct:${runPlan.id}-dead")
                 .setHeader("runPlan", constant(runPlan.id))
@@ -79,6 +78,21 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
 
             startRoute(sp)
         }
+    }
+
+    fun getErrorHandlerForType(ptype: ProcessorType) : DefaultErrorHandlerBuilder {
+        val deadLetterUri = "direct:${runPlan.id}-dead"
+        return when(ptype) {
+            ProcessorType.COLLECT ->
+                deadLetterChannel(deadLetterUri)
+                        .maximumRedeliveries(2)
+                        .allowRedeliveryWhileStopping(false)
+                        .redeliveryDelay(1500L)
+            else ->
+                deadLetterChannel(deadLetterUri)
+                        .maximumRedeliveries(0)
+        }
+
     }
 
     /**
@@ -151,6 +165,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             deps.size == 1 ->
                 from(sourceEp)
                         .routeId(routeId)
+                        .errorHandler(getErrorHandlerForType(curProc.type))
                         .startupOrder(Utils.getNextStartupOrder())
                         .setHeader("processor", constant(curProc.id))
                         .process(proc).id(curProc.id)
@@ -159,6 +174,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 val dest = deps.map { d -> "direct:${runPlan.id}-${d!!.id}"}
                 from(sourceEp)
                         .routeId(routeId)
+                        .errorHandler(getErrorHandlerForType(curProc.type))
                         .startupOrder(Utils.getNextStartupOrder())
                         .setHeader("processor", constant(curProc.id))
                         .process(proc).id(curProc.id)
@@ -170,6 +186,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 val completionId = "${runPlan.id}-${curProc.id}-complete"
                 from(sourceEp)
                         .routeId(routeId)
+                        .errorHandler(getErrorHandlerForType(curProc.type))
                         .startupOrder(Utils.getNextStartupOrder())
                         .setHeader("processor", constant(curProc.id))
                         .process(proc).id(curProc.id)

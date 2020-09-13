@@ -22,20 +22,26 @@ import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.processor.domain.DataEnvelope
+import kotlinx.coroutines.*
 import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
 import org.slf4j.LoggerFactory
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import java.io.BufferedWriter
-import java.io.ByteArrayOutputStream
+import java.io.*
 import java.nio.charset.Charset
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
 
     private val log = LoggerFactory.getLogger(javaClass)
+    private val coroutineContext = Dispatchers.IO + SupervisorJob()
+
+    suspend fun streamGobble(bis: BufferedInputStream): ByteArray {
+        val bytes = bis.readAllBytes()
+        bis.close()
+        return bytes
+    }
 
     override fun process(exchange: Exchange?) {
         val props = processor.properties!!
@@ -50,28 +56,39 @@ class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(proces
         log.info("Running $command")
         val proc = ProcessBuilder(command.split(" ")).start()
 
-        val bos = BufferedOutputStream(proc.outputStream)
-        // Write the data to stdin in a separate thread
-        thread {
-            bos.write(exchange.getIn().getBody(ByteArray::class.java))
-            bos.close()
+        // Write the data to stdin async
+        CoroutineScope(coroutineContext).launch {
+            val outputStream = BufferedOutputStream(proc.outputStream)
+            outputStream.write(exchange.getIn().getBody(ByteArray::class.java))
+            outputStream.close()
         }
-        println(proc.errorStream.available())
-
+        // Careful of these two
+        val inputBytes = CoroutineScope(coroutineContext).async {
+            streamGobble(BufferedInputStream(proc.inputStream))
+        }
+        val errorBytes = CoroutineScope(coroutineContext).async {
+            streamGobble(BufferedInputStream(proc.errorStream))
+        }
         //Get the data from the pipe
         //Wait up to timeoutSeconds for process to complete
-        //log.info("Waiting up to $timeoutSeconds seconds for $command to finish")
-        val bis = BufferedInputStream(proc.inputStream)
-        exchange.getIn().body = bis.readAllBytes()
+        log.info("Waiting up to $timeoutSeconds seconds for $command to finish")
         proc.waitFor(timeoutSeconds, TimeUnit.SECONDS)
-        bis.close()
-        envelope.history.add(DataEvent(
-                dataTag = envelope.tag,
-                eventType = DataEventType.TRANSFORMED,
-                processorId = processor.id,
-                processorName = processor.name,
-                description = "Executed Command: $command"))
+        runBlocking {
+            if (proc.exitValue() != 0) {
+                val err = errorBytes.await().decodeToString()
+                val msg = "Error occurred executing $command: $err"
+                throw CommandExecutionException(msg)
+            } else {
+                exchange.getIn().body = inputBytes.await()
+                envelope.history.add(DataEvent(
+                        dataTag = envelope.tag,
+                        eventType = DataEventType.TRANSFORMED,
+                        processorId = processor.id,
+                        processorName = processor.name,
+                        description = "Executed Command: $command"))
 
-        exchange.setProperty("dataEnvelope", envelope)
+                exchange.setProperty("dataEnvelope", envelope)
+            }
+        }
     }
 }

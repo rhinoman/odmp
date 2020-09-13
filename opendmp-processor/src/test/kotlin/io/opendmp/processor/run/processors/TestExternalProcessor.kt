@@ -16,6 +16,8 @@
 
 package io.opendmp.processor.run.processors
 
+import io.opendmp.common.exception.CommandExecutionException
+import io.opendmp.common.exception.NotImplementedException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.processor.TestUtils
@@ -28,9 +30,11 @@ import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.support.DefaultExchange
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest
+import org.junit.Assert.assertThrows
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -89,5 +93,30 @@ class TestExternalProcessor @Autowired constructor(
         assertEquals(9, Integer.parseInt(str))
         assertEquals(2, envelopeOut.history.size)
     }
+
+    @Test
+    fun `external processor should handle errors!`(){
+        val exchange = DefaultExchange(testCamelContext)
+        val properties: Map<String, Any> = mapOf(
+                "command" to "wc -foobar",
+                "timeout" to "10")
+
+        exchange.getIn().body = "I'm Data!"
+        exchange.setProperty("dataEnvelope", TestUtils.createDataEnvelope())
+        val processor = ProcessorRunModel(
+                id = UUID.randomUUID().toString(),
+                flowId = UUID.randomUUID().toString(),
+                inputs = listOf(),
+                name = "Test External Processor",
+                type = ProcessorType.EXTERNAL,
+                properties = properties)
+
+        val externalProcessor = ExternalProcessor(processor)
+        assertThrows(CommandExecutionException::class.java) {
+            externalProcessor.process(exchange)
+        }
+
+    }
+
 
 }
