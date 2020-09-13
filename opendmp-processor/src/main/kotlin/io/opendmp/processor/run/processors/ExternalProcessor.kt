@@ -25,8 +25,13 @@ import io.opendmp.processor.domain.DataEnvelope
 import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
 import org.slf4j.LoggerFactory
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.BufferedWriter
+import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 
 class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
 
@@ -44,17 +49,22 @@ class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(proces
         val envelope: DataEnvelope = exchange?.getProperty("dataEnvelope") as DataEnvelope
         log.info("Running $command")
         val proc = ProcessBuilder(command.split(" ")).start()
-        proc.outputStream.write(exchange.getIn().getBody(ByteArray::class.java))
-        proc.outputStream.flush()
-        proc.outputStream.close()
 
-        //Wait up to timeoutSeconds for process to complete
-        log.info("Waiting up to $timeoutSeconds seconds for $command to finish")
-        proc.waitFor(timeoutSeconds, TimeUnit.SECONDS)
-
+        val bos = BufferedOutputStream(proc.outputStream)
+        // Write the data to stdin in a separate thread
+        thread {
+            bos.write(exchange.getIn().getBody(ByteArray::class.java))
+            bos.close()
+        }
+        println(proc.errorStream.available())
 
         //Get the data from the pipe
-        exchange.getIn().body = proc.inputStream.readBytes()
+        //Wait up to timeoutSeconds for process to complete
+        //log.info("Waiting up to $timeoutSeconds seconds for $command to finish")
+        val bis = BufferedInputStream(proc.inputStream)
+        exchange.getIn().body = bis.readAllBytes()
+        proc.waitFor(timeoutSeconds, TimeUnit.SECONDS)
+        bis.close()
         envelope.history.add(DataEvent(
                 dataTag = envelope.tag,
                 eventType = DataEventType.TRANSFORMED,
