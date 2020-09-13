@@ -111,7 +111,7 @@ class RunPlanStatusHandlerTest @Autowired constructor(
         val jsonString = mapper.writeValueAsString(ccm)
         runBlocking {
             val ds = runPlanStatusHandler.receiveCollectStatus(jsonString)
-            while(!ds!!.isDisposed) { Thread.sleep(100) }
+            while(!ds!!.isDisposed) { Thread.sleep(300) }
         }
 
         val dataset = mongoTemplate.find<DatasetModel>(
@@ -143,7 +143,7 @@ class RunPlanStatusHandlerTest @Autowired constructor(
         val jsonString = mapper.writeValueAsString(fm)
         runBlocking {
             val ds = runPlanStatusHandler.receiveFailureStatus(jsonString)
-            while(!ds!!.isDisposed) { Thread.sleep(100) }
+            while(!ds!!.isDisposed) { Thread.sleep(300) }
         }
 
         val updatedRunPlan = mongoTemplate.findById<RunPlanModel>(runPlan.id).block()

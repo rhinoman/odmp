@@ -81,6 +81,7 @@
        [topbar]
        [sidebar]
        [:div {:class [(:mainContent classes)]
+              :id "main-content-area"
               :style {:border "none"
                       :padding-top (+ topbar-height 10)}}
         
