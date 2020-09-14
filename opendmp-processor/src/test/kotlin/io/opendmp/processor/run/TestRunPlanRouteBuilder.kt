@@ -78,7 +78,7 @@ class TestRunPlanRouteBuilder @Autowired constructor(
 
     fun basicRunPlan() : RunPlan {
         val scriptCode = """
-            (fn [xs]
+            (defn process [xs]
              (clojure.string/upper-case (slurp xs)))
         """.trimIndent()
         val iProc = TestUtils.createFileIngestProcessor("fileIn")
@@ -97,7 +97,7 @@ class TestRunPlanRouteBuilder @Autowired constructor(
     fun badRunPlan() : RunPlan {
         // This scriptCode has deliberate errors to trigger an exception
         val scriptCode = """
-            (fn [xs]
+            (defn process [xs]
              (clojure.string/upper-case (slurpy xs)])
         """.trimIndent()
         val iProc = TestUtils.createFileIngestProcessor("fileIn")

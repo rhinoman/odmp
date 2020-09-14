@@ -17,6 +17,11 @@
            #(rf/dispatch [::resized js/window.innerWidth js/window.innerHeight])
            resize-debounce-ms)))
 
+(defn trigger-resize
+  "Manually trigger resize event"
+  []
+  #(rf/dispatch-sync [::resized (inc js/window.innerWidth) (inc js/window.innerHeight)]))
+
 (rf/reg-fx
  ::on-resize
  (fn [db [_ _]]

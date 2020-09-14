@@ -41,7 +41,7 @@
 
 (defn starter-code [ace-mode]
   (case ace-mode
-    "clojure" "(fn [xs])"
+    "clojure" "(defn process [xs])"
     "python" "def process(data):"
     "Select a scripting language"))
 
@@ -73,7 +73,7 @@
        [:> Typography {:variant :subtitle2} "Enter Your script below"]
        [:> Typography
         {:variant :body2}
-        "Note: Your script function  must take a byte array as input and return a byte array as output"]
+        "Note: Your script must contain a function named \"process\" that takes a byte array as input and returns a byte array as output"]
        [:> FormControl {:variant :filled :required true :margin :dense :fullWidth true}
         [:> InputLabel {:id "INPUT_LANGUAGE_LABEL"} "Language"]
         [:> Select {:labelid "INPUT_LANGUAGE_LABEL"

@@ -19,13 +19,10 @@
 (ns io.opendmp.processor.clj-runner
   (:require [cheshire.core :as cheshire]))
 
-(defn local-eval [x]
-  (binding [*ns* (find-ns 'io.opendmp.processor.clj-runner)
-            *read-eval* false]
-    (eval x)))
-
 (defn execute
   "Executes a block of clojure code and returns the result as a byte array"
   #^bytes [^String code #^bytes data]
-  (let [code-fn (local-eval (read-string code))]
-    (into-array Byte/TYPE (code-fn data))))
+  (binding [*ns* (find-ns 'io.opendmp.processor.clj-runner)]
+    (load-string code)
+    (let [proc-fun (resolve (symbol "process"))]
+      (into-array Byte/TYPE (proc-fun data)))))
