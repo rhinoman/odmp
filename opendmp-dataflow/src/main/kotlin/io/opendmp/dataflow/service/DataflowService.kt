@@ -119,16 +119,17 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
         return mongoTemplate.findById<DataflowModel>(id)
                 .switchIfEmpty { throw NotFoundException() }
                 .flatMap { df ->
-            if(df.enabled) {
-                Mono.error(ResourceConflictException("Dataflow cannot be deleted while running!"))
-            } else {
-                // And now we delete all of the processors in this dataflow
-                log.info("Deleted dataflow $id and all associated processors")
-                val query2 = Query(Criteria.where("flowId").isEqualTo(id))
-                mongoTemplate.remove<ProcessorModel>(query2)
-                mongoTemplate.remove(df)
-            }
-        }
+                    if(df.enabled) {
+                        Mono.error(ResourceConflictException("Dataflow cannot be deleted while running!"))
+                    } else {
+                        log.info("Deleted dataflow $id and all associated processors")
+                        mongoTemplate.remove(df)
+                    }
+                }.flatMap {
+                    // And now we delete all of the processors in this dataflow
+                    val query2 = Query(Criteria.where("flowId").isEqualTo(id))
+                    mongoTemplate.remove<ProcessorModel>(query2)
+                }
     }
 
     fun getProcessors(id: String, phase: Int?) : Flow<ProcessorModel> {

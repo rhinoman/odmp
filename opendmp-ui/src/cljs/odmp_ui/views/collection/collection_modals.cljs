@@ -59,6 +59,28 @@
  (fn [db _]
    (get-in db [:request-errors :post-collection])))
 
+(rf/reg-sub
+ ::delete-collection-dialog-open
+ (fn [db _]
+   (:delete-collection-dialog-open db)))
+
+(rf/reg-sub
+ ::deleting-collection
+ (fn [db _]
+   (get-in db [:loading :delete-collection])))
+
+(rf/reg-sub
+ ::deleting-collection-errors
+ (fn [db _]
+   (get-in db [:request-errors :delete-collection])))
+
+(rf/reg-event-db
+ ::toggle-delete-collection-dialog
+ (fn [db [_ _]]
+   (-> db
+       (assoc :delete-collection-dialog-open
+              (not (:delete-collection-dialog-open db))))))
+
 (defn modal-styles [^js/Mui.Theme theme]
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
         p-type (keyword (:type palette))]
@@ -70,8 +92,23 @@
         description-field-value (rf/subscribe [::create-collection-description])]
     (.preventDefault e)
     (rf/dispatch [::events/post-collection {:name @name-field-value
-                                            :description @description-field-value}])
-    ))
+                                            :description @description-field-value}])))
+
+;; DELETE COLLECTION
+(defn confirm-delete-collection
+  "Shows a confirmation dialog when deleting a collection"
+  [collection]
+  (let [open (rf/subscribe [::delete-collection-dialog-open])
+        is-deleting (rf/subscribe [::deleting-collection])
+        errors (rf/subscribe [::deleting-collection-errors])]
+    (confirm-dialog open {:question "Confirm Collection Deletion"
+                          :text (str "Are you sure you wish to delete the Collection " (:name collection) "?"
+                                     " All associated dataset records will also be deleted!")
+                          :confirm-action (fn [_]
+                                            (rf/dispatch [::events/delete-collection (:id collection)]) 
+                                            (rf/dispatch [::toggle-delete-collection-dialog]))
+                          :cancel-action #(rf/dispatch [::toggle-delete-collection-dialog])})))
+
 
 (defn create-collection-dialog
   "This is a dialog for creating new Collections"

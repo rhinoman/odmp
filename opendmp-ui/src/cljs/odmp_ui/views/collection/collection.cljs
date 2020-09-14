@@ -21,10 +21,13 @@
             [odmp-ui.util.styles :as style]
             [odmp-ui.util.ui :refer [upper-case]]
             [odmp-ui.components.common :as tcom]
+            [odmp-ui.views.collection.collection-modals :as c-modals]
             ["@material-ui/core/Box" :default Box]
             ["@material-ui/core/Link" :default Link]
             ["@material-ui/core/Grid" :default Grid]
             ["@material-ui/core/Button" :default Button]
+            ["@material-ui/core/IconButton" :default IconButton]
+            ["@material-ui/core/Tooltip" :default Tooltip]
             ["@material-ui/core/Paper" :default Paper]
             ["@material-ui/core/Toolbar" :default Toolbar]
             ["@material-ui/icons/DeleteTwoTone" :default DeleteIcon]
@@ -42,7 +45,8 @@
 (defn collection-styles [^js/Mui.Theme theme]
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
         p-type (keyword (:type palette))]
-    {}))
+    {:delete-collection-wrapper {:float :right
+                               :margin-top 0}}))
 
 (defn fetch-dataset-page [page-state]
   (let [collection (rf/subscribe [::subs/current-collection])
@@ -110,28 +114,38 @@
   []
   (let [collection (rf/subscribe [::subs/current-collection])
         datasets   (rf/subscribe [::subs/current-collection-datasets])
+        delete-dialog? (rf/subscribe [::c-modals/delete-collection-dialog-open])
         num-datasets (rf/subscribe [::subs/current-collection-dataset-count])
         page-state {:page (r/atom 0) :maxPerPage (r/atom 10) :sortBy (r/atom nil) :sortDir (r/atom nil)}]
     (fn [] (style/let [classes collection-styles]
        [:<>
+        (if @delete-dialog? (c-modals/confirm-delete-collection @collection))
         [:> Box [tcom/breadcrumbs (list {:href "#/collections" :text "Collection Index"}
                                         {:href (str "#/collections/" (:id @collection)) :text (:name @collection)})]
-         [tcom/full-content-ui
-          {:title (:name @collection)}
-          (if (nil? @collection) [tcom/loading-backdrop])
-          [:iframe {:style {:display :none} :id "downloaderIframe"}]
-          [:> Paper
-           (if (nil? @datasets) [tcom/loading-backdrop])
-           [:> TableContainer
-            [:> Table
-             [table-header page-state]
-             [:> TableBody
-              (if (> (count @datasets) 0)
-                (map #(dataset-row % classes) @datasets)
-                [:> TableRow
-                 [:> TableCell "No Datasets to Display"]])]]]
-           (if (some? @num-datasets)
-             [pagination @num-datasets page-state classes])]]]]))))
+
+         [:div {:class (:delete-collection-wrapper classes)}
+          [:> Tooltip {:title "Delete this collection" :placement :left-end}
+           [:> IconButton {:color :secondary
+                           :onClick #(rf/dispatch [::c-modals/toggle-delete-collection-dialog])
+                           :size :small}
+            [:> DeleteIcon]]]]]
+         
+        [tcom/full-content-ui
+         {:title (:name @collection)}
+         (if (nil? @collection) [tcom/loading-backdrop])
+         [:iframe {:style {:display :none} :id "downloaderIframe"}]
+         [:> Paper
+          (if (nil? @datasets) [tcom/loading-backdrop])
+          [:> TableContainer
+           [:> Table
+            [table-header page-state]
+            [:> TableBody
+             (if (> (count @datasets) 0)
+               (map #(dataset-row % classes) @datasets)
+               [:> TableRow
+                [:> TableCell "No Datasets to Display"]])]]]
+          (if (some? @num-datasets)
+            [pagination @num-datasets page-state classes])]]]))))
 
 
 (defn collection

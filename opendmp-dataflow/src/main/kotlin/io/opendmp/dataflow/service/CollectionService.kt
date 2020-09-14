@@ -18,10 +18,13 @@ package io.opendmp.dataflow.service
 
 import com.mongodb.client.result.DeleteResult
 import io.opendmp.dataflow.Util
+import io.opendmp.dataflow.api.exception.NotFoundException
+import io.opendmp.dataflow.api.exception.ResourceConflictException
 import io.opendmp.dataflow.api.request.CreateCollectionRequest
 import io.opendmp.dataflow.api.response.CountResponse
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DatasetModel
+import io.opendmp.dataflow.model.ProcessorModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import org.slf4j.LoggerFactory
@@ -33,6 +36,7 @@ import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Service
 class CollectionService (private val mongoTemplate: ReactiveMongoTemplate) {
@@ -83,8 +87,23 @@ class CollectionService (private val mongoTemplate: ReactiveMongoTemplate) {
     }
 
     fun delete(id: String) : Mono<DeleteResult> {
-        val query = Query(Criteria.where("id").isEqualTo(id))
-        return mongoTemplate.remove<CollectionModel>(query)
+
+        return mongoTemplate.findById<CollectionModel>(id)
+                .switchIfEmpty { throw NotFoundException() }
+                .flatMap {
+                    val query = Query(Criteria.where("properties.collection").isEqualTo(id))
+                    mongoTemplate.count<ProcessorModel>(query)
+                }.flatMap { num ->
+                    if(num > 0) {
+                        val prefix = if(num == 1L) "One processor is" else "$num processors are"
+                        Mono.error(ResourceConflictException("$prefix still referencing this collection!"))
+                    } else {
+                        mongoTemplate.remove<CollectionModel>(Query(Criteria.where("id").isEqualTo(id)))
+                    }
+                }.flatMap {
+                        mongoTemplate.remove<DatasetModel>(Query(Criteria.where("collectionId").isEqualTo(id)))
+                }
+
     }
 
 }

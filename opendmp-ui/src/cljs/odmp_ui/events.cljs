@@ -358,6 +358,21 @@
                  :on-success         [::success-post-collection]
                  :on-failure         [::http-request-failure :post-collection]}}))
 
+;;; DELETE a collection
+(re-frame/reg-event-fx
+ ::delete-collection
+ (fn [{:keys [db]} [_ id]]
+   {:db (-> db
+            (assoc-in [:loading :delete-collection] true))
+    :http-xhrio {:method          :delete
+                 :uri             (str "/dataflow_api/collection/" id)
+                 :timeout         5000
+                 :headers         (basic-headers db)
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::success-delete-collection]
+                 :on-failure      [::http-request-failure :delete-collection]}}))
+
 ;;; GET a collection's datasets
 (re-frame/reg-event-fx
  ::fetch-collection-datasets
@@ -563,6 +578,15 @@
    (-> db
        (assoc-in [:loading :post-collection] false)
        (assoc-in [:request-errors :post-collection] nil))))
+
+(re-frame/reg-event-db
+ ::success-delete-collection
+ (fn [db [_ result]]
+   (navigate "/collections")
+   (re-frame/dispatch [::set-snackbar "success" "Collection Deleted"])
+   (-> db
+       (assoc-in [:loading :delete-cllection] false)
+       (assoc-in [:request-errors :delete-collection] nil))))
 
 (re-frame/reg-event-db
  ::fetch-collection-datasets-success
