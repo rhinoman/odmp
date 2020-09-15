@@ -410,6 +410,18 @@
                  :on-success         [::request-dataset-download-success]
                  :on-failure         [::http-request-failure ::request-dataset-download]}}))
 
+;; GET a dataset record
+(re-frame/reg-event-fx
+ ::fetch-dataset
+ (fn [{:keys [db]} [_ id]]
+   {:http-xhrio {:method             :get
+                 :uri                (str "/dataflow_api/dataset/" id)
+                 :timeout            3000
+                 :response-format    (ajax/json-response-format {:keywords? true})
+                 :headers            (basic-headers db)
+                 :on-success         [::fetch-dataset-success]
+                 :on-failure         [::http-request-failure ::fetch-dataset]}}))
+
 ;; LOOKUPS
 (re-frame/reg-event-fx
  ::lookup-processor-types
@@ -585,8 +597,14 @@
    (navigate "/collections")
    (re-frame/dispatch [::set-snackbar "success" "Collection Deleted"])
    (-> db
-       (assoc-in [:loading :delete-cllection] false)
+       (assoc-in [:loading :delete-collection] false)
        (assoc-in [:request-errors :delete-collection] nil))))
+
+(re-frame/reg-event-db
+ ::fetch-dataset-success
+ (fn [db [_ result]]
+   (-> db
+       (assoc :current-dataset result))))
 
 (re-frame/reg-event-db
  ::fetch-collection-datasets-success
