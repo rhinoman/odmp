@@ -29,6 +29,7 @@
    [odmp-ui.views.processor.edit :refer [processor-editor]]
    [odmp-ui.views.collection.index :refer [collection-index]]
    [odmp-ui.views.collection.collection :refer [collection]]
+   [odmp-ui.views.collection.dataset :refer [dataset]]
    [odmp-ui.util.styles :as style]
    ["@material-ui/core" :refer [createMuiTheme
                                 useTheme
@@ -62,6 +63,7 @@
     :processor-item-panel [processor-editor resource-id]
     :collection-index-panel [collection-index]
     :collection-item-panel [collection resource-id]
+    :dataset-item-panel [dataset resource-id]
     [:div]))
 
 (defn show-panel [panel-name resource-id]

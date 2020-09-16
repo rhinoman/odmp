@@ -79,6 +79,10 @@
     (re-frame/dispatch [::events/set-active-panel :collection-item-panel (unscrew-id id)])
     (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
 
+  (defroute "/datasets/:id" [id]
+    (re-frame/dispatch [::events/set-active-panel :dataset-item-panel (unscrew-id id)])
+    (re-frame/dispatch [::events/set-active-sidebar-link :collections]))
+
 
   ;; --------------------
   (hook-browser-navigation!))

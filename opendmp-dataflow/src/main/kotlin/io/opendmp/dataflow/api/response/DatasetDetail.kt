@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.dataflow.api.response
 
-enum class ProcessorType {
-    INGEST, COLLECT, SCRIPT, EXTERNAL
-}
+import io.opendmp.dataflow.model.CollectionModel
+import io.opendmp.dataflow.model.DatasetModel
+
+data class DatasetDetail(val dataset: DatasetModel,
+                         val collection: CollectionModel) {}

@@ -16,6 +16,8 @@
 
 package io.opendmp.dataflow.api.controller
 
+import com.mongodb.client.result.DeleteResult
+import io.opendmp.dataflow.api.response.DatasetDetail
 import io.opendmp.dataflow.api.response.DownloadRequestResponse
 import io.opendmp.dataflow.service.DatasetService
 import org.springframework.core.io.InputStreamResource
@@ -26,6 +28,16 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/dataflow_api/dataset")
 class DatasetController(private val datasetService: DatasetService) {
+
+    @GetMapping("/{id}")
+    fun getDetail(@PathVariable("id") id: String) : Mono<DatasetDetail> {
+        return datasetService.getDetail(id)
+    }
+
+    @DeleteMapping("/{id}")
+    fun delete(@PathVariable("id") id: String) : Mono<DeleteResult> {
+        return datasetService.delete(id)
+    }
 
     /**
      * Return a one time use link for downloading a file

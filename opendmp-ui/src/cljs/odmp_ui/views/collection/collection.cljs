@@ -90,7 +90,8 @@
 (defn dataset-row [dataset classes]
   ^{:key (:id dataset)}
   [:> TableRow {:hover true :tabIndex -1}
-   [:> TableCell {:width "25%"} (:name dataset)]
+   [:> TableCell {:width "25%"}
+    [:> Link {:href (str "#/datasets/" (:id dataset))} (:name dataset)]]
    [:> TableCell {:width "5%"} 
     [:> Tooltip {:title (or (:dataTag dataset) "No Tag")}
      [:span (take 8 (:dataTag dataset))]]]

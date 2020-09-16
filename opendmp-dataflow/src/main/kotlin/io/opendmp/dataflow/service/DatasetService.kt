@@ -29,7 +29,11 @@ import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.common.util.MessageUtil.mapper
 import io.opendmp.dataflow.api.exception.BadRequestException
 import io.opendmp.dataflow.api.exception.PermissionDeniedException
+import io.opendmp.dataflow.api.response.DatasetDetail
 import io.opendmp.dataflow.api.response.DownloadRequestResponse
+import io.opendmp.dataflow.api.response.ProcessorDetail
+import io.opendmp.dataflow.model.CollectionModel
+import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.DatasetModel
 import org.apache.tika.Tika
 import org.apache.tika.io.TikaInputStream
@@ -102,6 +106,14 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
 
     fun get(id: String) : Mono<DatasetModel> {
         return mongoTemplate.findById(id)
+    }
+
+    fun getDetail(id: String) : Mono<DatasetDetail> {
+        return get(id).flatMap { ds ->
+            mongoTemplate.findById<CollectionModel>(ds.collectionId).flatMap<DatasetDetail> { coll ->
+                Mono.just(DatasetDetail(dataset = ds, collection = coll))
+            }
+        }
     }
 
     fun delete(id: String) : Mono<DeleteResult> {

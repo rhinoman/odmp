@@ -19,15 +19,19 @@ package io.opendmp.dataflow.api.controller
 import com.amazonaws.services.s3.AmazonS3
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
 import com.c4_soft.springaddons.security.oauth2.test.webflux.OidcIdAuthenticationTokenWebTestClientConfigurer.oidcId
+import com.mongodb.client.result.DeleteResult
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.properties.DestinationType
+import io.opendmp.dataflow.api.response.DatasetDetail
 import io.opendmp.dataflow.api.response.DownloadRequestResponse
 import io.opendmp.dataflow.config.MongoConfig
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
+import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.service.DatasetService
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -42,6 +46,7 @@ import org.springframework.data.mongodb.core.findAllAndRemove
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.http.MediaType
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
+import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -65,6 +70,7 @@ class DatasetControllerTest @Autowired constructor(
 ) {
     fun cleanUp() {
         mongoTemplate.findAllAndRemove<DatasetModel>(Query()).blockLast()
+        mongoTemplate.findAllAndRemove<CollectionModel>(Query()).blockLast()
     }
 
     @MockBean
@@ -99,6 +105,47 @@ class DatasetControllerTest @Autowired constructor(
                 dataTag = tag,
                 history = history)
         return mongoTemplate.save(datasetModel).block()!!
+    }
+
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should return a dataset`(){
+        val dataset = createBasicDataset("FOOBAR", DestinationType.FOLDER, "earth")
+        val collection = CollectionModel(
+                id = dataset.collectionId,
+                name = "FOOBAR",
+                creator = "user",
+                group = null)
+        mongoTemplate.save(collection).block()
+        val response = client.get()
+                .uri("$baseUri/${dataset.id}")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<DatasetDetail>()
+                .returnResult()
+
+        val dd = response.responseBody
+        assertNotNull(dd)
+        assertNotNull(dd!!.collection)
+        assertNotNull(dd.dataset)
+    }
+
+    @Test
+    @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
+    fun `should delete a dataset`(){
+        val dataset = createBasicDataset("FOOBAR", DestinationType.FOLDER, "earth")
+        val response = client.mutateWith(csrf())
+                .delete()
+                .uri("$baseUri/${dataset.id}")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().is2xxSuccessful
+                .expectBody<Any>()
+                .returnResult()
+        val result = response.responseBody as LinkedHashMap<*, *>
+        assertNotNull(result)
+        assertEquals(1, result["deletedCount"])
     }
 
     @Test

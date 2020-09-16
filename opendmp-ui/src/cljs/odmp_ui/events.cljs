@@ -422,6 +422,19 @@
                  :on-success         [::fetch-dataset-success]
                  :on-failure         [::http-request-failure ::fetch-dataset]}}))
 
+;; DELETE a dataset record
+(re-frame/reg-event-fx
+ ::delete-dataset
+ (fn [{:keys [db]} [_ id parent-id]]
+   {:http-xhrio {:method             :delete
+                 :uri                (str "/dataflow_api/dataset/" id)
+                 :timeout            5000
+                 :format             (ajax/json-request-format)
+                 :response-format    (ajax/json-response-format {:keywords? true})
+                 :headers            (basic-headers db)
+                 :on-success         [::success-delete-dataset parent-id]
+                 :on-failure         [::http-request-failure ::delete-dataset]}}))
+
 ;; LOOKUPS
 (re-frame/reg-event-fx
  ::lookup-processor-types
@@ -604,7 +617,18 @@
  ::fetch-dataset-success
  (fn [db [_ result]]
    (-> db
-       (assoc :current-dataset result))))
+       (assoc-in [:loading :dataset] false)
+       (assoc :current-dataset (:dataset result))
+       (assoc :current-collection (:collection result)))))
+
+(re-frame/reg-event-db
+ ::success-delete-dataset
+ (fn [db [_ parent-id result]]
+   (navigate (str "/collections/" parent-id))
+   (re-frame/dispatch [::set-snackbar "success" "Dataset Deleted"])
+   (-> db
+       (assoc-in [:loading :delete-dataset] false)
+       (assoc-in [:request-errors :delete-dataset] nil))))
 
 (re-frame/reg-event-db
  ::fetch-collection-datasets-success
@@ -694,6 +718,7 @@
  (fn [db [_ _]]
    (-> db
        (assoc :current-collection nil)
+       (assoc :current-dataset nil)
        (assoc :collections nil)
        (assoc :current-collection-datasets nil)
        (assoc :current-collection-dataset-count nil))))

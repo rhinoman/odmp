@@ -74,12 +74,35 @@
  (fn [db _]
    (get-in db [:request-errors :delete-collection])))
 
+(rf/reg-sub
+ ::delete-dataset-dialog-open
+ (fn [db _]
+   (:delete-dataset-dialog-open db)))
+
+(rf/reg-sub
+ ::deleting-dataset
+ (fn [db _]
+   (get-in db [:loading :delete-dataset])))
+
+(rf/reg-sub
+ ::deleting-dataset-errors
+ (fn [db _]
+   (get-in db [:request-errors :delete-dataset])))
+
 (rf/reg-event-db
  ::toggle-delete-collection-dialog
  (fn [db [_ _]]
    (-> db
        (assoc :delete-collection-dialog-open
               (not (:delete-collection-dialog-open db))))))
+
+(rf/reg-event-db
+ ::toggle-delete-dataset-dialog
+ (fn [db [_ _]]
+   (-> db
+       (assoc :delete-dataset-dialog-open
+              (not (:delete-dataset-dialog-open db))))))
+
 
 (defn modal-styles [^js/Mui.Theme theme]
   (let [palette (js->clj (.. theme -palette) :keywordize-keys true)
@@ -108,6 +131,20 @@
                                             (rf/dispatch [::events/delete-collection (:id collection)]) 
                                             (rf/dispatch [::toggle-delete-collection-dialog]))
                           :cancel-action #(rf/dispatch [::toggle-delete-collection-dialog])})))
+
+;; DELETE DATASET
+(defn confirm-delete-dataset
+  "Shows a confirmation dialog when deleting a dataset"
+  [dataset collection-id]
+  (let [open (rf/subscribe [::delete-dataset-dialog-open])
+        is-deleting (rf/subscribe [::deleting-dataset])
+        errors (rf/subscribe [::deleting-dataset-errors])]
+    (confirm-dialog open {:question "Confirm Dataset Deletion"
+                          :text (str "Are you sure you wish to delete the Dataset " (:name dataset) "?")
+                          :confirm-action (fn [_]
+                                            (rf/dispatch [::events/delete-dataset (:id dataset) collection-id]) 
+                                            (rf/dispatch [::toggle-delete-dataset-dialog]))
+                          :cancel-action #(rf/dispatch [::toggle-delete-dataset-dialog])})))
 
 
 (defn create-collection-dialog

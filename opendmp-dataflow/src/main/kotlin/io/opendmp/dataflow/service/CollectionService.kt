@@ -86,6 +86,11 @@ class CollectionService (private val mongoTemplate: ReactiveMongoTemplate) {
                 Query(Criteria.where("collectionId").isEqualTo(collectionId))).map { CountResponse(it) }
     }
 
+    /**
+     * Deletes a Collection
+     * If any processors are referring to the collection, this will fail
+     * @param id The Collection Id
+     */
     fun delete(id: String) : Mono<DeleteResult> {
 
         return mongoTemplate.findById<CollectionModel>(id)
