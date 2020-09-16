@@ -15,6 +15,7 @@
                  [ns-tracker "0.4.0"]
                  [re-pressed "0.3.1"]
                  [breaking-point "0.1.2"]
+                 [com.andrewmcveigh/cljs-time "0.5.2"]
                  [cider/cider-nrepl "0.24.0"]]
 
   :scm {:dir ".."}

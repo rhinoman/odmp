@@ -19,7 +19,7 @@
             [odmp-ui.events :as events]
             [odmp-ui.util.network :as net]
             [odmp-ui.util.styles :as style]
-            [odmp-ui.util.ui :refer [upper-case]]
+            [odmp-ui.util.ui :refer [upper-case format-time]]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.views.collection.collection-modals :as c-modals]
             ["@material-ui/core/Box" :default Box]
@@ -63,7 +63,7 @@
 
 (defn event-row [event]
   [:> TableRow {:hover true :tabIndex -1}
-   [:> TableCell {:width "40%"} (:timestamp event)]
+   [:> TableCell {:width "40%"} (format-time (:timestamp event))]
    [:> TableCell {:width "20%"} (:eventType event)]
    [:> TableCell
     [:> Link {:href (str "#/processors/" (:processorId event))}
@@ -88,7 +88,7 @@
      [:> TableRow
       [:> TableCell "Data Tag"] [:> TableCell (:dataTag @dataset)]]
      [:> TableRow
-      [:> TableCell "Created"] [:> TableCell (:createdOn @dataset)]]
+      [:> TableCell "Created"] [:> TableCell (format-time (:createdOn @dataset))]]
      [:> TableRow
       [:> TableCell "Data Destination"] [:> TableCell (:destinationType @dataset)]]
      [:> TableRow

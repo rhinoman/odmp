@@ -19,7 +19,7 @@
             [odmp-ui.events :as events]
             [odmp-ui.util.network :as net]
             [odmp-ui.util.styles :as style]
-            [odmp-ui.util.ui :refer [upper-case]]
+            [odmp-ui.util.ui :refer [upper-case format-time]]
             [odmp-ui.components.common :as tcom]
             [odmp-ui.views.collection.collection-modals :as c-modals]
             ["@material-ui/core/Box" :default Box]
@@ -95,7 +95,7 @@
    [:> TableCell {:width "5%"} 
     [:> Tooltip {:title (or (:dataTag dataset) "No Tag")}
      [:span (take 8 (:dataTag dataset))]]]
-   [:> TableCell {:width "20%"} (:createdOn dataset)]
+   [:> TableCell {:width "20%"} (format-time (:createdOn dataset))]
    [:> TableCell {:width "10%"} (:destinationType dataset)]
    [:> TableCell [:> Link {:href "#"
                            :onClick #(request-download % dataset)}
