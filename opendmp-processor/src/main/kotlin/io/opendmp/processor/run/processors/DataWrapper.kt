@@ -41,6 +41,5 @@ class DataWrapper(val sp: ProcessorRunModel) : Processor {
                           processorId = sp.id,
                           processorName = sp.name))
         exchange?.setProperty("dataEnvelope", dataEnvelope)
-
     }
 }

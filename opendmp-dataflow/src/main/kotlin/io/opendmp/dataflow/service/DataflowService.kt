@@ -94,8 +94,12 @@ class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,
         }
     }
 
-    suspend fun getList() : Flow<DataflowListItem> {
-        val dataflows = mongoTemplate.findAll<DataflowModel>()
+    suspend fun getList(enabled: Boolean? = null) : Flow<DataflowListItem> {
+        val query = Query()
+        if(enabled != null) {
+            query.addCriteria(Criteria.where("enabled").isEqualTo(enabled))
+        }
+        val dataflows = mongoTemplate.find<DataflowModel>(query)
         return dataflows.asFlow().map { df ->
             val runPlan = runPlanService.getForDataflow(df.id).asFlow().firstOrNull()
             val health = if(runPlan?.errors != null && runPlan.errors.isNotEmpty()) {

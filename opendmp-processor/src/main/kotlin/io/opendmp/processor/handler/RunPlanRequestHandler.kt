@@ -20,11 +20,13 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.opendmp.common.exception.RunPlanConflictException
+import io.opendmp.common.message.RunPlanStartFailureMessage
 import io.opendmp.common.message.StartRunPlanRequestMessage
 import io.opendmp.common.message.StopFlowRequestMessage
 import io.opendmp.common.message.StopRunPlanRequestMessage
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.domain.RunPlanRecord
+import io.opendmp.processor.messaging.RunPlanStatusDispatcher
 import io.opendmp.processor.run.RunPlanRouteBuilder
 import io.opendmp.processor.run.RunningDataflows
 import kotlinx.coroutines.*
@@ -35,6 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.redis.core.RedisTemplate
 
 import org.springframework.stereotype.Component
+import java.time.Instant
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.suspendCoroutine
@@ -42,6 +46,7 @@ import kotlin.coroutines.suspendCoroutine
 @Component
 class RunPlanRequestHandler(
         @Autowired private val camelContext: CamelContext,
+        @Autowired private val runPlanStatusDispatcher: RunPlanStatusDispatcher,
         @Autowired private val rpTemplate: RedisTemplate<String, RunPlanRecord>) {
 
     private val log = LoggerFactory.getLogger(RunPlanRequestHandler::class.java)
@@ -54,8 +59,9 @@ class RunPlanRequestHandler(
 
     suspend fun receiveStartRequest(data: String) {
         log.debug("Received START message")
+        var msg: StartRunPlanRequestMessage? = null
         try {
-            val msg = mapper.readValue<StartRunPlanRequestMessage>(data)
+            msg = mapper.readValue<StartRunPlanRequestMessage>(data)
             //stash runplan in redis
             log.info("Received Run Plan: ${msg.requestId}")
             //Check if Run plan is already loaded
@@ -72,12 +78,16 @@ class RunPlanRequestHandler(
 
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)
-        } catch (rpce: RunPlanConflictException) {
-          log.warn(rpce.localizedMessage)
         } catch (ex: Exception) {
             log.error("Error building run plan", ex)
-        } finally {
-                //TODO: Send a response message here
+            runPlanStatusDispatcher.sendStartRunPlanFailureMessage(
+                    RunPlanStartFailureMessage(
+                            requestId = UUID.randomUUID().toString(),
+                            runPlanId = msg!!.requestId,
+                            errorMessage = "Could not start Run Plan: ${ex.localizedMessage}",
+                            time = Instant.now()))
+            // Delete the run plan from redis if it's there
+            rpTemplate.delete(msg.flowId)
         }
     }
 

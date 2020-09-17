@@ -157,13 +157,14 @@
 ;;; Fetch Dataflow list
 (re-frame/reg-event-fx
   ::fetch-dataflow-list
-  (fn [{:keys [db]} _]
+  (fn [{:keys [db]} [_ query-params]]
     {:db (-> db
              (assoc-in [:loading :dataflows] true))
      :http-xhrio {:method            :get
                   :uri               "/dataflow_api/dataflow"
                   :timeout           5000
                   :response-format   (ajax/json-response-format {:keywords? true})
+                  :params            query-params
                   :headers (basic-headers db)
                   :on-success [::fetch-dataflow-list-success]
                   :on-failure [::http-request-failure :dataflows]}}))
@@ -321,12 +322,13 @@
 ;;; LIST Collections
 (re-frame/reg-event-fx
   ::fetch-collection-list
-  (fn [{:keys [db]} _]
+  (fn [{:keys [db]} [_ query-params]]
     {:http-xhrio {:method            :get
                   :uri               "/dataflow_api/collection"
                   :timeout           5000
                   :response-format   (ajax/json-response-format {:keywords? true})
                   :headers           (basic-headers db)
+                  :params            query-params
                   :on-success        [::fetch-collection-list-success]
                   :on-failure        [::http-request-failure :collections]}}))
 

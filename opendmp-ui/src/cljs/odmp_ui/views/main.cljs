@@ -23,7 +23,7 @@
    [odmp-ui.views.topbar :refer [topbar]]
    [odmp-ui.views.sidebar :refer [sidebar]]
    [odmp-ui.components.common :as tcom]
-   [odmp-ui.views.home :refer [home-panel]]
+   [odmp-ui.views.dashboard.home :refer [home-panel]]
    [odmp-ui.views.dataflow.index :refer [dataflow-index]]
    [odmp-ui.views.dataflow.flow :refer [flow]]
    [odmp-ui.views.processor.edit :refer [processor-editor]]

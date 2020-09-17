@@ -40,8 +40,8 @@ class DataflowController(private val dataflowService: DataflowService,
                          private val runPlanService: RunPlanService) {
 
     @GetMapping
-    suspend fun findAll() : Flow<DataflowListItem> {
-        return dataflowService.getList()
+    suspend fun findAll(@RequestParam(required = false) enabled: Boolean?) : Flow<DataflowListItem> {
+        return dataflowService.getList(enabled)
     }
 
     @GetMapping("/{id}")

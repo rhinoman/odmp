@@ -114,6 +114,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         val deps: List<ProcessorRunModel?> =
                 runPlan.processorDependencyMap[sp.id]?.map { runPlan.processors[it] } ?: listOf()
         val routeId = "${runPlan.id}-${sp.id}"
+        var multi = false
         when {
             deps.size == 1 -> {
                 val dest = "direct:${runPlan.id}-${deps.first()!!.id}"
@@ -127,8 +128,8 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             deps.size > 1 -> {
                 // If we have more than 1 processor expecting output from this processor,
                 // do a multicast
-                val dest = deps.map { d -> "direct:${runPlan.id}-${d!!.id}"}
-
+                val dest = deps.map { d -> "seda:${runPlan.id}-${d!!.id}"}
+                multi = true
                 sourceEp
                         // Set a routeId to make finding this route in the Camel Context easier later
                         .routeId(routeId)
@@ -144,14 +145,20 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             }
         }
         // Continue building with the dependencies
-        deps.forEach { this.continueRoute(it!!) }
+        deps.forEach { this.continueRoute(it!!, multi) }
     }
 
     /**
      * continueRoute - for the processors from the middle of a chain to the end
+     * @param curProc The processor to execute
+     * @param multi - If the source is from a multicast or single (direct)
      */
-    private fun continueRoute(curProc: ProcessorRunModel) {
-        val sourceEp = "direct:${runPlan.id}-${curProc.id}"
+    private fun continueRoute(curProc: ProcessorRunModel, multi: Boolean = false) {
+        val sourceEp = if(multi) {
+            "seda:${runPlan.id}-${curProc.id}"
+        } else {
+            "direct:${runPlan.id}-${curProc.id}"
+        }
         val deps: List<ProcessorRunModel?> =
                 runPlan.processorDependencyMap[curProc.id]?.map { runPlan.processors[it] } ?: listOf()
         val proc = when(curProc.type){
@@ -161,6 +168,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             else -> throw UnsupportedProcessorTypeException("The processor type ${curProc.type} is not supported")
         }
         val routeId = "${runPlan.id}-${curProc.id}"
+        var nextMulti = false
         when {
             deps.size == 1 ->
                 from(sourceEp)
@@ -171,7 +179,8 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                         .process(proc).id(curProc.id)
                         .to("direct:${runPlan.id}-${deps.first()!!.id}").end()
             deps.size > 1 -> {
-                val dest = deps.map { d -> "direct:${runPlan.id}-${d!!.id}"}
+                val dest = deps.map { d -> "seda:${runPlan.id}-${d!!.id}"}
+                nextMulti = true
                 from(sourceEp)
                         .routeId(routeId)
                         .errorHandler(getErrorHandlerForType(curProc.type))
@@ -195,7 +204,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                         .end()
             }
         }
-        deps.forEach { continueRoute(it!!) }
+        deps.forEach { continueRoute(it!!, nextMulti) }
     }
 
 }

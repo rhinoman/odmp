@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.message.RunPlanFailureMessage
+import io.opendmp.common.message.RunPlanStartFailureMessage
 import org.apache.camel.ProducerTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,6 +50,8 @@ class RunPlanStatusDispatcher @Autowired constructor(
 
     fun failureEndPoint(): String =
             "pulsar:persistent://$pulsarNamespace/runplan_failure?producerName=odmpProducer"
+    fun startFailureEndPointUrl() : String =
+            "pulsar:persistent://$pulsarNamespace/runplan_start_failure"
 
     private fun sendMessage(msg: Any, endpoint: String) {
         try {
@@ -59,6 +62,10 @@ class RunPlanStatusDispatcher @Autowired constructor(
         } catch (ex: Exception) {
             log.error("Error sending message", ex)
         }
+    }
+
+    fun sendStartRunPlanFailureMessage(msg: RunPlanStartFailureMessage) {
+        sendMessage(msg, startFailureEndPointUrl())
     }
 
     fun sendCollectionComplete(msg: CollectionCompleteMessage) {

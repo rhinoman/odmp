@@ -20,12 +20,14 @@ import com.amazonaws.services.s3.AmazonS3
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.message.RunPlanFailureMessage
+import io.opendmp.common.message.RunPlanStartFailureMessage
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.Result
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.dataflow.TestUtils
+import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.DatasetModel
@@ -33,8 +35,7 @@ import io.opendmp.dataflow.model.runplan.RunPlanModel
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -67,6 +68,9 @@ class RunPlanStatusHandlerTest @Autowired constructor(
 
     @MockBean
     lateinit var s3Client: AmazonS3
+
+    @MockBean
+    lateinit var runPlanDispatcher: RunPlanDispatcher
 
     @AfterEach
     fun cleanUp() {
@@ -114,8 +118,7 @@ class RunPlanStatusHandlerTest @Autowired constructor(
             while (!ds!!.isDisposed) {
                 Thread.sleep(300)
             }
-
-
+            Thread.sleep(300)
             val dataset = mongoTemplate.find<DatasetModel>(
                     Query(Criteria.where("collectionId").isEqualTo(collection.id))
             ).blockLast()
@@ -149,6 +152,7 @@ class RunPlanStatusHandlerTest @Autowired constructor(
             while (!ds!!.isDisposed) {
                 Thread.sleep(300)
             }
+            Thread.sleep(300)
             val updatedRunPlan = mongoTemplate.findById<RunPlanModel>(runPlan.id).block()
             assertNotNull(updatedRunPlan!!.errors)
             assertEquals(1, updatedRunPlan.errors.size)
@@ -156,4 +160,34 @@ class RunPlanStatusHandlerTest @Autowired constructor(
             assertEquals("It done broke", error!!.errorMessage)
         }
     }
+
+    @Test
+    fun `should update Dataflow in response to a start failure`() {
+        val dataflow = TestUtils.createBasicDataflow("TheBigDataflow")
+        mongoTemplate.save(dataflow).block()
+        val processor = TestUtils.createBasicProcessor("Foobar", dataflow.id,1,1,ProcessorType.SCRIPT)
+
+        val runPlan = RunPlanModel.createRunPlan(dataflow, listOf(processor))
+        mongoTemplate.save(runPlan).block()
+
+        val fm = RunPlanStartFailureMessage(
+                requestId = UUID.randomUUID().toString(),
+                runPlanId = runPlan.id,
+                time = Instant.now(),
+                errorMessage = "It done broke."
+        )
+        val jsonString = mapper.writeValueAsString(fm)
+        runBlocking {
+            val ds = runPlanStatusHandler.receiveStartFailure(jsonString)
+            while (!ds!!.isDisposed) {
+                Thread.sleep(300)
+            }
+            Thread.sleep(300)
+            val rp = mongoTemplate.findById<RunPlanModel>(runPlan.id).block()
+            assertNull(rp)
+            val flow = mongoTemplate.findById<DataflowModel>(runPlan.flowId).block()
+            assertEquals(false, flow!!.enabled)
+        }
+    }
+
 }

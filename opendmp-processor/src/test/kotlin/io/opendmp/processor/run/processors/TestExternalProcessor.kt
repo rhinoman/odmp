@@ -17,7 +17,6 @@
 package io.opendmp.processor.run.processors
 
 import io.opendmp.common.exception.CommandExecutionException
-import io.opendmp.common.exception.NotImplementedException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.processor.TestUtils
@@ -34,7 +33,6 @@ import org.junit.Assert.assertThrows
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

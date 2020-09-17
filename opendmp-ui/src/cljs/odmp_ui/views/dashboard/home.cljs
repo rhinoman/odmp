@@ -12,23 +12,41 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
-(ns odmp-ui.views.home
+(ns odmp-ui.views.dashboard.home
   (:require
-   [re-frame.core :as re-frame]
+   [re-frame.core :as rf]
+   [reagent.core :as r]
    [breaking-point.core :as bp]
    [odmp-ui.subs :as subs]
+   [odmp-ui.events :as events]
    [odmp-ui.components.common :as tcom]
+   [odmp-ui.util.network :as net]
+   [odmp-ui.views.dataflow.index :refer [dataflow-table]]
    ["@material-ui/core/Button" :default Button]
+   ["@material-ui/core/Grid" :default Grid]
+   ["@material-ui/core/Paper" :default Paper]
    ["@material-ui/core/Typography" :default Typography]))
 
-(defn home-panel []
-  (let [name (re-frame/subscribe [::subs/name])]
+(defn home-panel* []
+  (let [name (rf/subscribe [::subs/name])
+        dataflows (rf/subscribe [::subs/dataflows])]
     (tcom/full-content-ui {:title "Dashboard"}
      [:div
       [:> Typography {:variant "h3"} "Open Data Management Platform"]]
-     [:div
-      [:> Typography {:variant :subtitle1} "TODO: Snazzy charts and graphs go here"]
-      [:> Typography {:variant :subtitle1} "TODO: Need a real logo"]]
-     [:div
-      [:> Typography {:variant :body1}
-       "You're looking at an extremely early build of OpenDMP.  It doesn't do much yet."]])))
+     [:> Grid {:container true :spacing 2}
+      [:> Grid {:item true :xs 6 :style {:margin 5}}
+       [:> Typography {:variant :h5 :style {:margin-top 10}} "Active Dataflows"]
+       [:> Paper
+        [dataflow-table dataflows]]]
+      ]
+     [:div])))
+
+(defn home-panel []
+  (r/create-class
+   {:reagent-render home-panel*
+    :component-did-mount 
+    (fn []
+      (net/auth-dispatch [::events/fetch-dataflow-list {:enabled true}]))
+    :component-will-unmount
+    (fn []
+      (rf/dispatch-sync [::events/clear-dataflow-data]))}))

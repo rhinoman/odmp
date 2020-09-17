@@ -81,6 +81,16 @@
                  :class (:right classes)}
       [:> AddIcon] "Create"]]]])
 
+(defn dataflow-table [dataflows]
+  (style/let [classes dataflow-index-styles]
+    [:> TableContainer
+     [:> Table
+      [table-header]
+      [:> TableBody
+       (if (empty? @dataflows)
+         [:> TableRow [:> TableCell "No Dataflows to display"]]
+         (map #(dataflow-row % classes) @dataflows))]]]))
+
 
 (defn dataflow-index* []
   (let [dataflows (rf/subscribe [::subs/dataflows])
@@ -95,11 +105,7 @@
          (toolbar classes)
          [:> Paper
           (if (nil? @dataflows) [tcom/loading-backdrop])
-          [:> TableContainer
-           [:> Table
-            (table-header)
-            [:> TableBody
-             (map #(dataflow-row % classes) @dataflows)]]]]]]])))
+          [dataflow-table dataflows]]]]])))
 
 (defn dataflow-index
   []

@@ -18,6 +18,7 @@ package io.opendmp.dataflow.handler
 
 import io.opendmp.common.message.CollectionCompleteMessage
 import io.opendmp.common.message.RunPlanFailureMessage
+import io.opendmp.common.message.RunPlanStartFailureMessage
 import io.opendmp.common.util.MessageUtil
 import io.opendmp.dataflow.model.runplan.RunError
 import io.opendmp.dataflow.service.DatasetService
@@ -69,6 +70,19 @@ class RunPlanStatusHandler(
                         time = msg.time)
                 rp.errors[err.id] = err
                 runPlanService.updateRunPlan(rp).block()
+            }
+        } catch (ex: Exception) {
+            log.error("Error processing failure message", ex)
+            return null
+        }
+    }
+
+    suspend fun receiveStartFailure(data: String): Disposable? {
+        log.warn("Received START FAILURE for RunPlan")
+        try {
+            val msg = MessageUtil.extractMessageFromString<RunPlanStartFailureMessage>(data) ?: return null
+            return runPlanService.get(msg.runPlanId).subscribe {rp ->
+                runPlanService.stopDataflow(rp.flowId)
             }
         } catch (ex: Exception) {
             log.error("Error processing failure message", ex)

@@ -19,6 +19,7 @@ package io.opendmp.processor.executors
 import io.opendmp.processor.config.RedisConfig
 import io.opendmp.processor.handler.RunPlanRequestHandler
 import io.opendmp.processor.messaging.RunPlanRequestRouter
+import io.opendmp.processor.messaging.RunPlanStatusDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -39,6 +40,9 @@ class TestPythonExecutor {
 
     @MockBean
     lateinit var runPlanRequestRouter: RunPlanRequestRouter
+
+    @MockBean
+    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
 
     @Test
     fun `Python executor should return result as byte array`() {
