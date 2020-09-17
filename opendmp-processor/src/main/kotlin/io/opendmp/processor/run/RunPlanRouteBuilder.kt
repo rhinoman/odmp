@@ -135,7 +135,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                         .convertBodyTo(ByteArray::class.java)
                         .startupOrder(Utils.getNextStartupOrder())
                         .process(DataWrapper(sp))
-                        .multicast()
+                        .multicast().onPrepare(MultiPrepareProcessor())
                         .parallelProcessing()
                         .to(*dest.toTypedArray())
             }
@@ -178,7 +178,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                         .startupOrder(Utils.getNextStartupOrder())
                         .setHeader("processor", constant(curProc.id))
                         .process(proc).id(curProc.id)
-                        .multicast()
+                        .multicast().onPrepare(MultiPrepareProcessor())
                         .parallelProcessing()
                         .to(*dest.toTypedArray())
             }

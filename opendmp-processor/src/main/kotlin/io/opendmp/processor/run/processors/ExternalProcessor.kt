@@ -87,6 +87,7 @@ class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(proces
                         processorName = processor.name,
                         description = "Executed Command: $command"))
 
+
                 exchange.setProperty("dataEnvelope", envelope)
             }
         }

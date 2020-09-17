@@ -46,6 +46,13 @@ data class DataEnvelope(
         return true
     }
 
+    fun copy() : DataEnvelope {
+        val tag = this.tag
+        val history = this.history.map { it.copy(tag) }.toMutableList()
+        val paths = this.paths.map{path -> path.map {it.copy(tag)}}.toMutableList()
+        return DataEnvelope(tag = tag, history = history, paths = paths)
+    }
+
     override fun hashCode(): Int {
         var result = tag.hashCode()
         result = 31 * result + history.hashCode()

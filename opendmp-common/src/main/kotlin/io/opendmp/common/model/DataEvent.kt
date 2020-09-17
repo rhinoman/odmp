@@ -24,4 +24,16 @@ data class DataEvent(
         val eventType: DataEventType,
         val processorId: String,
         val processorName: String,
-        val description: String? = null) {}
+        val description: String? = null) {
+
+    fun copy(tag: String): DataEvent {
+        return DataEvent(
+                dataTag = tag,
+                eventType = this.eventType,
+                processorId = this.processorId,
+                processorName  = this.processorName,
+                timestamp = this.timestamp,
+                description = this.description)
+    }
+
+}

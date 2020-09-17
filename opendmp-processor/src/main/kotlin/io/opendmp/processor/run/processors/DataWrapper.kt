@@ -22,6 +22,7 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.processor.domain.DataEnvelope
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
+import org.slf4j.LoggerFactory
 
 /**
  * Takes in raw data that has just been ingested,
@@ -29,8 +30,11 @@ import org.apache.camel.Processor
  */
 class DataWrapper(val sp: ProcessorRunModel) : Processor {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     override fun process(exchange: Exchange?) {
         val dataEnvelope = DataEnvelope()
+        log.info("Received new data from ingestor ${sp.name} with id ${sp.id}, tagging with id ${dataEnvelope.tag}")
         dataEnvelope.history.add(
                 DataEvent(dataTag = dataEnvelope.tag,
                           eventType = DataEventType.INGESTED,
