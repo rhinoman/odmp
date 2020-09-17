@@ -133,8 +133,8 @@ class TestRunPlanRouteBuilder @Autowired constructor(
             a.weaveById<AdviceWithDefinition>(compId).replace().to("mock:a")
         }
         val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
-
         start.sendBody(text)
+        Thread.sleep(300)
         mockA.expectedMessageCount(1)
         mockA.expectedBodiesReceived(text.toUpperCase().toByteArray())
         MockEndpoint.assertIsSatisfied(testCamelContext)
@@ -158,6 +158,7 @@ class TestRunPlanRouteBuilder @Autowired constructor(
         }
         val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
         start.sendBody(text)
+        Thread.sleep(300)
         mockA.expectedMessageCount(1)
 
     }
