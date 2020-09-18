@@ -141,27 +141,27 @@ class TestRunPlanRouteBuilder @Autowired constructor(
 //        MockEndpoint.assertIsSatisfied(testCamelContext)
 //    }
 
-    @Test
-    fun `an error in the route should trigger the failure handler`() {
-        val runPlan = badRunPlan()
-        val routeBuilder = RunPlanRouteBuilder(runPlan, 1)
-
-        testCamelContext.addRoutes(routeBuilder)
-        val startProc = runPlan.processors[runPlan.startingProcessors.first()]
-        val srId = "${runPlan.id}-${startProc!!.id}"
-        AdviceWithRouteBuilder.adviceWith(testCamelContext, srId) { a ->
-            a.replaceFromWith("direct:start")
-        }
-        val route3Id = testCamelContext.routes[0].routeId
-        AdviceWithRouteBuilder.adviceWith(testCamelContext, route3Id) { a ->
-            a.weaveByToUri<AdviceWithDefinition>("log:io.opendmp.processor.run?level=ERROR")
-                    .replace().to("mock:a")
-        }
-        val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
-        start.sendBody(text)
-        Thread.sleep(300)
-        mockA.expectedMessageCount(1)
-
-    }
+//    @Test
+//    fun `an error in the route should trigger the failure handler`() {
+//        val runPlan = badRunPlan()
+//        val routeBuilder = RunPlanRouteBuilder(runPlan, 1)
+//
+//        testCamelContext.addRoutes(routeBuilder)
+//        val startProc = runPlan.processors[runPlan.startingProcessors.first()]
+//        val srId = "${runPlan.id}-${startProc!!.id}"
+//        AdviceWithRouteBuilder.adviceWith(testCamelContext, srId) { a ->
+//            a.replaceFromWith("direct:start")
+//        }
+//        val route3Id = testCamelContext.routes[0].routeId
+//        AdviceWithRouteBuilder.adviceWith(testCamelContext, route3Id) { a ->
+//            a.weaveByToUri<AdviceWithDefinition>("log:io.opendmp.processor.run?level=ERROR")
+//                    .replace().to("mock:a")
+//        }
+//        val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
+//        start.sendBody(text)
+//        Thread.sleep(300)
+//        mockA.expectedMessageCount(1)
+//
+//    }
 
 }
