@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.opendmp</groupId>
 	<artifactId>opendmp-processor</artifactId>
-	<version>0.2.0</version>
+	<version>0.3.0</version>
 	<name>processor</name>
 	<description>Processor Management Service for the Open Data Management  Platform</description>
 	<packaging>clojure</packaging>

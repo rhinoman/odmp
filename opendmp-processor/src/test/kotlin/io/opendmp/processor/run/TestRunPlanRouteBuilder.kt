@@ -33,6 +33,7 @@ import org.apache.camel.component.mock.MockEndpoint
 import org.apache.camel.model.AdviceWithDefinition
 import org.apache.camel.processor.errorhandler.DeadLetterChannel
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest
+import org.junit.Ignore
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -134,7 +135,6 @@ class TestRunPlanRouteBuilder @Autowired constructor(
         }
         val text = "In wine there is wisdom, in beer there is Freedom, in water there is bacteria"
         start.sendBody(text)
-        Thread.sleep(300)
         mockA.expectedMessageCount(1)
         mockA.expectedBodiesReceived(text.toUpperCase().toByteArray())
         MockEndpoint.assertIsSatisfied(testCamelContext)
