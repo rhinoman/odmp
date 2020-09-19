@@ -17,17 +17,6 @@ services:
       - ./mongo-data:/docker-entrypoint-initdb.d
       - mongo_dev_data:/data/db
     
-  mongo-express:
-    image: mongo-express:0.54
-    ports:
-      - 8082:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
-      ME_CONFIG_MONGODB_SERVER: mongodb
-    depends_on:
-      - mongodb
-
   keycloak:
     image: jboss/keycloak:10.0.2
     container_name: odmp_keycloak
@@ -47,6 +36,7 @@ services:
       DB_USER: keycloak
       DB_PASSWORD: secret
       DB_VENDOR: "POSTGRES"
+      KEYCLOAK_IMPORT: /tmp/odmp_realm.json -Dkeycloak.profile.feature.upload_scripts=enabled
 
   auth-postgres:
     image: 'postgres'
@@ -60,7 +50,7 @@ services:
       - keycloak-net
 
   pulsar:
-    image: apachepulsar/pulsar:2.6.0
+    image: apachepulsar/pulsar:2.6.1
     restart: unless-stopped
     volumes:
       - pulsar_data:/pulsar/data
@@ -71,24 +61,24 @@ services:
       - 6650:6650
     command: bin/pulsar standalone
 
-  pulsar-manager:
-    image: apachepulsar/pulsar-manager:v0.1.0
-    ports:
-      - "9527:9527"
-    depends_on:
-      - pulsar
-    links:
-      - pulsar
-    volumes:
-      - pulsar_data:/data
-    environment:
-      REDIRECT_HOST: "http://127.0.0.1"
-      REDIRECT_PORT: "9527"
-      DRIVER_CLASS_NAME: "org.postgresql.Driver"
-      URL: "jdbc:postgresql://127.0.0.1:5432/pulsar_manager"
-      USERNAME: "pulsar"
-      PASSWORD: "pulsar"
-      LOG_LEVEL: "DEBUG"
+  # pulsar-manager:
+  #   image: apachepulsar/pulsar-manager:v0.1.0
+  #   ports:
+  #     - "9527:9527"
+  #   depends_on:
+  #     - pulsar
+  #   links:
+  #     - pulsar
+  #   volumes:
+  #     - pulsar_data:/data
+  #   environment:
+  #     REDIRECT_HOST: "http://127.0.0.1"
+  #     REDIRECT_PORT: "9527"
+  #     DRIVER_CLASS_NAME: "org.postgresql.Driver"
+  #     URL: "jdbc:postgresql://127.0.0.1:5432/pulsar_manager"
+  #     USERNAME: "pulsar"
+  #     PASSWORD: "pulsar"
+  #     LOG_LEVEL: "DEBUG"
 
   redis:
     image: 'redis:6-alpine'
