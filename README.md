@@ -6,7 +6,7 @@ See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data
 
 ## Rationale:
 
-- Eliminate bespoke data management systems being implemented for every organization/program/project and concomitant duplication of effort.
+- Eliminate/Reduce bespoke data management systems being implemented for every organization/program/project and concomitant duplication of effort.
 
 - It would be cool.
 
@@ -21,8 +21,6 @@ See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data
 - The core system should be open source.
 
 - Mostly the core services define interfaces and serve to manage the execution of user defined algorithms, processes, and tools.
-
-- There are some commercial, closed-source solutions out there, most of which are very expensive.  But I’m unaware of any similar open-source solution.
 
 
 ## Architecture
