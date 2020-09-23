@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-parent</artifactId>
+      <version>2.3.4.RELEASE</version>
+      <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+ 
+    <groupId>io.opendmp</groupId>
+    <artifactId>opendmp-parent</artifactId>
+    <version>0.4.0</version>
+    <packaging>pom</packaging>
+ 
+    <name>OpenDMP Parent</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+      <opendmp.version>0.4.0</opendmp.version>
+      <java.version>11</java.version>
+      <kotlin.version>1.4.0</kotlin.version>
+      <camel.version>3.5.0</camel.version>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <spring.cloud.version>2.2.4.RELEASE</spring.cloud.version>
+    </properties>
+ 
+    <dependencies>
+         
+    </dependencies>
+</project>

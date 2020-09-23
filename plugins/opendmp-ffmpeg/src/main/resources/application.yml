@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: opendmp-plugin-ffmpeg
+  cloud:
+    consul:
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-path: /health-check
