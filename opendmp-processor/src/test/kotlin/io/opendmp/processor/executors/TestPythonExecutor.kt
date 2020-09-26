@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
@@ -43,6 +44,9 @@ class TestPythonExecutor {
 
     @MockBean
     lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
+
+    @MockBean
+    lateinit var consulAutoServiceRegistration: ConsulAutoServiceRegistration
 
     @Test
     fun `Python executor should return result as byte array`() {

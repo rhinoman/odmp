@@ -39,6 +39,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
+import org.springframework.cloud.consul.serviceregistry.ConsulRegistration
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -68,6 +70,9 @@ class TestCollectProcessor @Autowired constructor(
 
     @MockBean
     lateinit var producerTemplate: ProducerTemplate
+
+    @MockBean
+    lateinit var consulAutoServiceRegistration: ConsulAutoServiceRegistration
 
     @EndpointInject("mock:a")
     protected val mockA = MockEndpoint()

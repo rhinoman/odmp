@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
+ * Copyright (c) 2020. The Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model.plugin
+package io.opendmp.processor.plugin
 
-import io.opendmp.common.model.ProcessorType
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.junit.jupiter.EnabledIf
 
-data class PluginConfiguration(
-    val serviceName: String,
-    val displayName: String,
-    val type: ProcessorType,
-    val fields: Map<String, FieldType>
-) {
+@SpringBootTest
+@EnabledIf(expression = "\${odmp.integration-tests.enabled}", loadContext = true)
+class TestPluginServiceCall {
 }

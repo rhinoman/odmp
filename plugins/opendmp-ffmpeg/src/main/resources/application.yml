@@ -1,8 +1,25 @@
-spring:
-  application:
-    name: opendmp-plugin-ffmpeg
+odmp:
+  plugin:
+    name: "opendmp-ffmpeg-plugin"
+  consul:
+    url: ${consul_url:http://localhost:8500}
+
+
+odmp-ffmpeg:
+  receive-topic: "opendmp-ffmpeg"
+
+
+camel:
+  rest:
+    api-host: 0.0.0.0:8004
   cloud:
+    service-registry:
+      service-host: localhost
+  health:
+    enabled: true
+  component:
     consul:
-      discovery:
-        instance-id: ${spring.application.name}:${random.value}
-        health-check-path: /health-check
+      service-registry:
+        url: http://localhost:8500
+        service-host: 0.0.0.0
+        override-service-host: true

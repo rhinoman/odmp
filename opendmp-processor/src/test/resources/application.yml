@@ -13,6 +13,15 @@ odmp:
   processor:
     instance-type: ${odmp_processor_service_instance_type:GENERAL}
 
+#  integration-tests:
+#    enabled: ${integration_tests:false}
+
 spring:
   profiles:
     active: test
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        instance-id: opendmp-processor-service:${random.value}
+        register: false

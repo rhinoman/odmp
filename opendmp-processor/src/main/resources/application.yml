@@ -19,6 +19,7 @@ odmp:
     access-key: ${aws_access_key:minio_access_key}
     secret-key: ${aws_secret_key:minio_secret_key}
 
+
 camel:
   threadpool:
     pool-size: 20
@@ -31,3 +32,15 @@ camel:
   component:
     aws-s3:
       amazon-s3-client: s3Client
+    consul:
+      cluster:
+        service:
+          url: ${consul_url:http://localhost:8500}
+spring:
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        instance-id: opendmp-processor-service:${random.value}
+        server-list-query-tags:
+          opendmp-processor-service: camel

@@ -3,15 +3,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.3.RELEASE</version>
+		<groupId>io.opendmp</groupId>
+		<artifactId>opendmp-parent</artifactId>
+		<version>0.4.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>io.opendmp</groupId>
 	<artifactId>opendmp-processor</artifactId>
-	<version>0.3.0</version>
-	<name>processor</name>
+	<version>${opendmp.version}</version>
+	<name>opendmp-processor</name>
 	<description>Processor Management Service for the Open Data Management  Platform</description>
 	<packaging>clojure</packaging>
 	<properties>
@@ -35,8 +34,18 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-netty-http-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-json</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-consul-discovery</artifactId>
+			<version>${spring.cloud.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.projectreactor.kotlin</groupId>
@@ -78,17 +87,27 @@
 		<!-- Camel adapters -->
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-consul-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-spring-cloud-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.apache.camel</groupId>-->
+<!--			<artifactId>camel-http</artifactId>-->
+<!--			<version>${camel.version}</version>-->
+<!--		</dependency>-->
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
 			<artifactId>camel-pulsar-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>
 			<artifactId>camel-file-starter</artifactId>
-			<version>${camel.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.camel.springboot</groupId>
-			<artifactId>camel-controlbus-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
 		<dependency>
