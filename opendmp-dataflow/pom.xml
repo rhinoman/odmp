@@ -3,30 +3,22 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.3.RELEASE</version>
+		<groupId>io.opendmp</groupId>
+		<artifactId>opendmp-parent</artifactId>
+		<version>0.4.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>io.opendmp</groupId>
 	<artifactId>opendmp-dataflow</artifactId>
-	<version>0.3.0</version>
+	<version>${opendmp.version}</version>
 	<name>dataflow</name>
 	<description>Dataflow Service for the Open Data Management Platform</description>
-
-	<properties>
-		<java.version>11</java.version>
-		<kotlin.version>1.4.0</kotlin.version>
-		<camel.version>3.5.0</camel.version>
-		<opendmp.common.version>0.2.0</opendmp.common.version>
-	</properties>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>io.opendmp</groupId>
 			<artifactId>opendmp-common</artifactId>
-			<version>${opendmp.common.version}</version>
+			<version>${opendmp.version}</version>
 		</dependency>
 
 		<dependency>
@@ -60,6 +52,16 @@
 			<artifactId>springdoc-openapi-webflux-ui</artifactId>
 			<version>1.4.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter</artifactId>
+			<version>${spring.cloud.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-consul-discovery</artifactId>
+			<version>${spring.cloud.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -82,6 +84,16 @@
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>
 			<artifactId>camel-spring-boot-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-service-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-netty-http-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
 		<dependency>
@@ -125,6 +137,17 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-consul-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-spring-cloud-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
@@ -134,14 +157,6 @@
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter</artifactId>
-			<version>2.2.3.RELEASE</version>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>

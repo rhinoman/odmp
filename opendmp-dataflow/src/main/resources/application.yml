@@ -14,6 +14,7 @@ odmp:
     secret-key: ${aws_secret_key:minio_secret_key}
     region: ${aws_region:us-east-1}
     endpoint: ${aws_s3_endpoint:#{null}}
+  plugins-enabled: ${odmp_plugins_enabled:}
 
 spring:
   data:
@@ -24,6 +25,13 @@ spring:
       password: ${mongo_password:secret}
       host: ${mongo_host:localhost}
       port: ${mongo_port:27027}
+
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        instance-id: opendmp-dataflow-service:${random.value}
+        register: false
 
   security:
     oauth2:

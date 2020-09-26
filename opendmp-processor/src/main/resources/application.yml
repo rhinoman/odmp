@@ -9,6 +9,7 @@ odmp:
   redis:
     host: ${redis_host:localhost}
     port: ${redis_port:6379}
+  plugins-enabled: ${odmp_plugins_enabled}
 
   processor:
     instance-type: ${odmp_processor_service_instance_type:GENERAL}
@@ -42,5 +43,5 @@ spring:
       discovery:
         enabled: true
         instance-id: opendmp-processor-service:${random.value}
-        server-list-query-tags:
-          opendmp-processor-service: camel
+        register: false
+

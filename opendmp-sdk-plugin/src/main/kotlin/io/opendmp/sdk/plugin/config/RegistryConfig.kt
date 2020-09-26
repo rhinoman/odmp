@@ -14,11 +14,14 @@ class RegistryConfig(@Autowired private val camelContext: CamelContext) {
     @Value("\${odmp.consul.url}")
     lateinit var consulUrl: String
 
+    @Value("\${odmp.service.host}")
+    lateinit var serviceHost: String
+
     @Bean
     fun serviceRegistry() : ServiceRegistry {
         val service = ConsulServiceRegistry()
         service.url = consulUrl
-        service.serviceHost = "localhost"
+        service.serviceHost = serviceHost
         camelContext.addService(service)
         return service
     }

@@ -3,7 +3,8 @@ odmp:
     name: "opendmp-ffmpeg-plugin"
   consul:
     url: ${consul_url:http://localhost:8500}
-
+  service:
+    host: ${odmp_service_host:localhost:80}
 
 odmp-ffmpeg:
   receive-topic: "opendmp-ffmpeg"
