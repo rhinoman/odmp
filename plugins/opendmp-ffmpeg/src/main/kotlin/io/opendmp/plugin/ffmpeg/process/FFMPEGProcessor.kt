@@ -5,10 +5,10 @@ import org.apache.camel.Exchange
 import org.springframework.stereotype.Component
 
 @Component
-class FFMPEGProcessor : OdmpProcessor() {
+class FFMPEGProcessor : OdmpProcessor {
 
-    override fun process(exchange: Exchange?) {
-        exchange?.getIn()?.body = "FOOBAR!"
+    override fun process(data:ByteArray): ByteArray {
+        return "FOOBAR".toByteArray(Charsets.UTF_8)
     }
 
 

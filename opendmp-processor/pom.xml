@@ -13,12 +13,6 @@
 	<name>opendmp-processor</name>
 	<description>Processor Management Service for the Open Data Management  Platform</description>
 	<packaging>clojure</packaging>
-	<properties>
-		<java.version>11</java.version>
-		<kotlin.version>1.4.0</kotlin.version>
-		<camel.version>3.5.0</camel.version>
-		<opendmp.common.version>0.2.0</opendmp.common.version>
-	</properties>
 
 	<!-- repo for clojure dependencies -->
 	<repositories>
@@ -91,7 +85,7 @@
 		<dependency>
 			<groupId>io.opendmp</groupId>
 			<artifactId>opendmp-common</artifactId>
-			<version>${opendmp.common.version}</version>
+			<version>${opendmp.version}</version>
 		</dependency>
 
 		<!-- Camel adapters -->
@@ -105,11 +99,7 @@
 			<artifactId>camel-spring-cloud-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.apache.camel</groupId>-->
-<!--			<artifactId>camel-http</artifactId>-->
-<!--			<version>${camel.version}</version>-->
-<!--		</dependency>-->
+
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>
 			<artifactId>camel-pulsar-starter</artifactId>

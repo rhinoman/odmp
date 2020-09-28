@@ -26,11 +26,13 @@ import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.*
 import org.apache.camel.LoggingLevel
+import org.apache.camel.Predicate
 import org.apache.camel.builder.DeadLetterChannelBuilder
 import org.apache.camel.builder.DefaultErrorHandlerBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.component.aws.s3.S3Constants
 import org.apache.camel.model.RouteDefinition
+import org.apache.camel.model.cloud.ServiceCallDefinition
 
 /**
  * RunPlanRouteBuilder - takes a Run Plan and builds camel routes to set up a data pipeline
@@ -114,28 +116,22 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         val deps: List<ProcessorRunModel?> =
                 runPlan.processorDependencyMap[sp.id]?.map { runPlan.processors[it] } ?: listOf()
         val routeId = "${runPlan.id}-${sp.id}"
-        var multi = false
+        sourceEp
+                .convertBodyTo(ByteArray::class.java)
+                // Set a routeId to make finding this route in the Camel Context easier later
+                .routeId(routeId)
+                .startupOrder(Utils.getNextStartupOrder())
+                .process(DataWrapper(sp))
         when {
             deps.size == 1 -> {
                 val dest = "direct:${runPlan.id}-${deps.first()!!.id}"
-                sourceEp
-                        .convertBodyTo(ByteArray::class.java)
-                        .routeId(routeId)
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .process(DataWrapper(sp))
-                        .to(dest)
+                sourceEp.to(dest)
             }
             deps.size > 1 -> {
                 // If we have more than 1 processor expecting output from this processor,
                 // do a multicast
                 val dest = deps.map { d -> "seda:${runPlan.id}-${d!!.id}"}
-                multi = true
                 sourceEp
-                        // Set a routeId to make finding this route in the Camel Context easier later
-                        .routeId(routeId)
-                        .convertBodyTo(ByteArray::class.java)
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .process(DataWrapper(sp))
                         .multicast().onPrepare(MultiPrepareProcessor())
                         .parallelProcessing()
                         .to(*dest.toTypedArray())
@@ -145,7 +141,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             }
         }
         // Continue building with the dependencies
-        deps.forEach { this.continueRoute(it!!, multi) }
+        deps.forEach { this.continueRoute(it!!, deps.size > 1) }
     }
 
     /**
@@ -165,46 +161,32 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             ProcessorType.SCRIPT -> ScriptProcessor(curProc)
             ProcessorType.EXTERNAL -> ExternalProcessor(curProc)
             ProcessorType.COLLECT -> CollectProcessor(curProc)
+            ProcessorType.PLUGIN -> PluginProcessor(curProc)
             else -> throw UnsupportedProcessorTypeException("The processor type ${curProc.type} is not supported")
         }
         val routeId = "${runPlan.id}-${curProc.id}"
-        var nextMulti = false
+
+        val contRoute = from(sourceEp)
+                .routeId(routeId)
+                .errorHandler(getErrorHandlerForType(curProc.type))
+                .startupOrder(Utils.getNextStartupOrder())
+                .setHeader("processor", constant(curProc.id))
+                .process(proc).id(curProc.id)
+
         when {
             deps.size == 1 ->
-                from(sourceEp)
-                        .routeId(routeId)
-                        .errorHandler(getErrorHandlerForType(curProc.type))
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .setHeader("processor", constant(curProc.id))
-                        .process(proc).id(curProc.id)
-                        .to("direct:${runPlan.id}-${deps.first()!!.id}").end()
-            deps.size > 1 -> {
-                val dest = deps.map { d -> "seda:${runPlan.id}-${d!!.id}"}
-                nextMulti = true
-                from(sourceEp)
-                        .routeId(routeId)
-                        .errorHandler(getErrorHandlerForType(curProc.type))
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .setHeader("processor", constant(curProc.id))
-                        .process(proc).id(curProc.id)
-                        .multicast().onPrepare(MultiPrepareProcessor())
+                contRoute
+                        .to("direct:${runPlan.id}-${deps.first()!!.id}")
+            deps.size > 1 ->
+                contRoute.multicast().onPrepare(MultiPrepareProcessor())
                         .parallelProcessing()
-                        .to(*dest.toTypedArray())
-            }
-            else -> { //End of the line
-                val completionId = "${runPlan.id}-${curProc.id}-complete"
-                from(sourceEp)
-                        .routeId(routeId)
-                        .errorHandler(getErrorHandlerForType(curProc.type))
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .setHeader("processor", constant(curProc.id))
-                        .process(proc).id(curProc.id)
-                        .process(CompletionProcessor())
-                        .id(completionId)
-                        .end()
-            }
+                        .to(*(deps.map{ d -> "seda:${runPlan.id}-${d!!.id}"}.toTypedArray()))
+            else ->
+                contRoute.process(CompletionProcessor())
+                    .id("${runPlan.id}-${curProc.id}-complete").end()
         }
-        deps.forEach { continueRoute(it!!, nextMulti) }
+        deps.forEach { continueRoute(it!!, deps.size > 1) }
     }
+
 
 }

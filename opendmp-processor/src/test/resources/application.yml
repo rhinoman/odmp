@@ -13,8 +13,8 @@ odmp:
   processor:
     instance-type: ${odmp_processor_service_instance_type:GENERAL}
 
-#  integration-tests:
-#    enabled: ${integration_tests:false}
+  integration-tests:
+    enabled: ${integration_tests:false}
 
 spring:
   profiles:

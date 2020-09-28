@@ -33,10 +33,7 @@ camel:
   component:
     aws-s3:
       amazon-s3-client: s3Client
-    consul:
-      cluster:
-        service:
-          url: ${consul_url:http://localhost:8500}
+
 spring:
   cloud:
     consul:
@@ -44,4 +41,7 @@ spring:
         enabled: true
         instance-id: opendmp-processor-service:${random.value}
         register: false
+      port: ${consul_port:8500}
+      host: ${consul_host:localhost}
+
 

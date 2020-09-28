@@ -16,18 +16,13 @@
 
 package io.opendmp.dataflow.service
 
-import com.ecwid.consul.v1.ConsulClient
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.opendmp.common.model.plugin.PluginConfiguration
 import io.opendmp.common.util.MessageUtil
-import org.apache.camel.Exchange
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.component.consul.ConsulClientConfiguration
-import org.apache.camel.component.consul.ConsulConfiguration
+import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
 @Component
@@ -49,9 +44,9 @@ class PluginService : RouteBuilder() {
         enabledPlugins.forEach {
             from("timer://runOnce?repeatCount=1")
                     .serviceCall()
+                      .serviceCallConfiguration("basicServiceCallConfiguration")
                       .name(it)
                       .uri("$it/config")
-                      .component("netty-http")
                       .end()
                     .bean(javaClass, "processConfig")
                     .log("Plugin configs loaded")

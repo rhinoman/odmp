@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
-package io.opendmp.common.model
+package io.opendmp.dataflow.config
 
-enum class ProcessorType {
-    INGEST, COLLECT, SCRIPT, EXTERNAL, PLUGIN
+import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+
+@Configuration
+class CamelConfig {
+
+    @Bean
+    fun basicServiceCallConfiguration() : ServiceCallConfigurationDefinition {
+        val conf = ServiceCallConfigurationDefinition()
+        conf.component = "netty-http"
+        return conf
+    }
 }
