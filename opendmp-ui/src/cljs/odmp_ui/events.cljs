@@ -482,6 +482,17 @@
                  :on-success      [::success-lookup :destination-types]
                  :on-failure      [::http-request-failure :lookup-destination-types]}}))
 
+(re-frame/reg-event-fx
+ ::fetch-plugin-config
+ (fn [{:keys [db]} [_]]
+   {:http-xhrio {:method          :get
+                 :uri             (str "/dataflow_api/plugin")
+                 :timeout         3000
+                 :headers         (basic-headers db)
+                 :response-format (ajax/json-response-format)
+                 :on-success      [::success-lookup :plugin-config]
+                 :on-failure      [::http-request-failure :fetch-plugin-config]}}))
+
 (re-frame/reg-event-db
  ::success-lookup
  (fn [db [_ loc result]]

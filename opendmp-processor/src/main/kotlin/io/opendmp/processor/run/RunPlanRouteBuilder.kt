@@ -171,7 +171,14 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 .errorHandler(getErrorHandlerForType(curProc.type))
                 .startupOrder(Utils.getNextStartupOrder())
                 .setHeader("processor", constant(curProc.id))
-                .process(proc).id(curProc.id)
+
+        // If this processor has a service name, we need to do an external service call
+        if(curProc.properties?.get("serviceName") != null) {
+            serviceCall(contRoute, curProc)
+        }
+
+        // Execute this processor
+        contRoute.process(proc).id(curProc.id)
 
         when {
             deps.size == 1 ->
@@ -188,5 +195,15 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         deps.forEach { continueRoute(it!!, deps.size > 1) }
     }
 
+    /**
+     * Make a service call!
+     */
+    private fun serviceCall(route: RouteDefinition, proc: ProcessorRunModel)  {
+        val service = proc.properties?.get("serviceName").toString()
+        route.serviceCall()
+                .serviceCallConfiguration("basicServiceCall")
+                .name(service)
+                .uri("$service/process")
+    }
 
 }

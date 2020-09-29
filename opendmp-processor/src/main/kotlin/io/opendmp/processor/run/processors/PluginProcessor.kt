@@ -27,12 +27,6 @@ import org.slf4j.LoggerFactory
 
 class PluginProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
 
-    private val producerTemplate: FluentProducerTemplate =
-            SpringContext.getBean(FluentProducerTemplate::class)
-
-    private val camelContext: CamelContext =
-            SpringContext.getBean(CamelContext::class)
-
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun process(exchange: Exchange?) {
