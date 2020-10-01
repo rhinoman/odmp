@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
+ * Copyright (c) 2020. The Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@
 
 package io.opendmp.common.model.plugin
 
-import io.opendmp.common.model.ProcessorType
-
-data class PluginConfiguration(
-    val serviceName: String,
-    val displayName: String,
-    val type: ProcessorType,
-    val fields: Map<String, FieldDescription>
-) {
-}
+data class FieldDescription(val type: FieldType,
+                            val required: Boolean = false,
+                            val helperText: String? = null) {}

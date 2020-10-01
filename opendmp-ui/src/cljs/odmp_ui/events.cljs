@@ -489,7 +489,7 @@
                  :uri             (str "/dataflow_api/plugin")
                  :timeout         3000
                  :headers         (basic-headers db)
-                 :response-format (ajax/json-response-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [::success-lookup :plugin-config]
                  :on-failure      [::http-request-failure :fetch-plugin-config]}}))
 

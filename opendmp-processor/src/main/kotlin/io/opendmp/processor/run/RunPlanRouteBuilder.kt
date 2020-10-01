@@ -16,23 +16,24 @@
 
 package io.opendmp.processor.run
 
-import com.amazonaws.client.builder.AwsClientBuilder
-import io.opendmp.common.exception.*
+import io.opendmp.common.exception.NotImplementedException
+import io.opendmp.common.exception.ProcessorDefinitionException
+import io.opendmp.common.exception.RunPlanLogicException
+import io.opendmp.common.exception.UnsupportedProcessorTypeException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
-import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.*
+import org.apache.camel.Exchange
 import org.apache.camel.LoggingLevel
-import org.apache.camel.Predicate
-import org.apache.camel.builder.DeadLetterChannelBuilder
 import org.apache.camel.builder.DefaultErrorHandlerBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.component.aws.s3.S3Constants
 import org.apache.camel.model.RouteDefinition
-import org.apache.camel.model.cloud.ServiceCallDefinition
+import org.apache.http.client.utils.URLEncodedUtils
+import org.apache.http.message.BasicNameValuePair
 
 /**
  * RunPlanRouteBuilder - takes a Run Plan and builds camel routes to set up a data pipeline
@@ -200,10 +201,16 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
      */
     private fun serviceCall(route: RouteDefinition, proc: ProcessorRunModel)  {
         val service = proc.properties?.get("serviceName").toString()
+
+        val nvp = proc.properties?.entries?.map { BasicNameValuePair(it.key, it.value.toString()) }
+        val queryParams = URLEncodedUtils.format(nvp, Charsets.UTF_8)
+
         route.serviceCall()
                 .serviceCallConfiguration("basicServiceCall")
                 .name(service)
+                .setHeader(Exchange.HTTP_QUERY, constant(queryParams))
                 .uri("$service/process")
+
     }
 
 }

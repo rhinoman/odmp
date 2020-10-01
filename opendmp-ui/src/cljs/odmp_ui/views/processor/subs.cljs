@@ -90,3 +90,8 @@
  ::edit-collect-record-prefix
  (fn [db _]
    (get-in db [:edit-processor-fields :properties :prefix])))
+
+(rf/reg-sub
+ ::edit-service-name
+ (fn [db _]
+   (get-in db [:edit-processor-fields :properties :serviceName])))

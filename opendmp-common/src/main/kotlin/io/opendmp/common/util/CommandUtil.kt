@@ -14,48 +14,34 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.run.processors
+package io.opendmp.common.util
 
 import io.opendmp.common.exception.CommandExecutionException
-import io.opendmp.common.model.DataEvent
-import io.opendmp.common.model.DataEventType
-import io.opendmp.common.model.ProcessorRunModel
-import io.opendmp.processor.domain.DataEnvelope
-import kotlinx.coroutines.*
-import org.apache.camel.Exchange
-import org.slf4j.LoggerFactory
 import java.io.BufferedInputStream
+import kotlinx.coroutines.*
+import org.slf4j.LoggerFactory
 import java.io.BufferedOutputStream
 import java.util.concurrent.TimeUnit
 
-class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
+object CommandUtil {
 
-    private val log = LoggerFactory.getLogger(javaClass)
     private val coroutineContext = Dispatchers.IO + SupervisorJob()
 
-    suspend fun streamGobble(bis: BufferedInputStream): ByteArray {
+    fun streamGobble(bis: BufferedInputStream): ByteArray {
         val bytes = bis.readAllBytes()
         bis.close()
         return bytes
     }
 
-    override fun process(exchange: Exchange?) {
-        val props = processor.properties!!
-        val command = props["command"].toString()
-        val timeoutSeconds =
-                if(props.containsKey("timeout")) {
-                    props["timeout"].toString().toLong()
-                } else {
-                    10L
-                }
-        val envelope: DataEnvelope = exchange?.getProperty("dataEnvelope") as DataEnvelope
-        log.info("Running $command")
+    fun runCommand(command: String, data: ByteArray, timeoutSeconds: Long = 10L): ByteArray {
+
+        val log = LoggerFactory.getLogger(javaClass)
         val proc = ProcessBuilder(command.split(" ")).start()
 
         // Write the data to stdin async
         CoroutineScope(coroutineContext).launch {
             val outputStream = BufferedOutputStream(proc.outputStream)
-            outputStream.write(exchange.getIn().getBody(ByteArray::class.java))
+            outputStream.write(data)
             outputStream.close()
         }
         // Careful of these two
@@ -65,27 +51,19 @@ class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(proces
         val errorBytes = CoroutineScope(coroutineContext).async {
             streamGobble(BufferedInputStream(proc.errorStream))
         }
-        //Get the data from the pipe
-        //Wait up to timeoutSeconds for process to complete
+        //Get the data from the pipe //Wait up to timeoutSeconds for process to complete
         log.info("Waiting up to $timeoutSeconds seconds for $command to finish")
         proc.waitFor(timeoutSeconds, TimeUnit.SECONDS)
-        runBlocking {
-            if (proc.exitValue() != 0) {
+        return runBlocking {
+            if(proc.exitValue() != 0) {
                 val err = errorBytes.await().decodeToString()
                 val msg = "Error occurred executing $command: $err"
                 throw CommandExecutionException(msg)
             } else {
-                exchange.getIn().body = inputBytes.await()
-                envelope.history.add(DataEvent(
-                        dataTag = envelope.tag,
-                        eventType = DataEventType.TRANSFORMED,
-                        processorId = processor.id,
-                        processorName = processor.name,
-                        description = "Executed Command: $command"))
-
-
-                exchange.setProperty("dataEnvelope", envelope)
+                inputBytes.await()
             }
         }
     }
+
+
 }

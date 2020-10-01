@@ -19,6 +19,7 @@ package io.opendmp.dataflow.service
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.opendmp.common.model.plugin.PluginConfiguration
 import io.opendmp.common.util.MessageUtil
+import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition
 import org.slf4j.LoggerFactory
@@ -37,19 +38,19 @@ class PluginService : RouteBuilder() {
     fun processConfig(data: String) {
         val pc: PluginConfiguration = mapper.readValue<PluginConfiguration>(data)
         add(pc.serviceName, pc)
-        log.info("Loaded config for plugin ${pc.displayName}")
+        log.debug("Loaded config for plugin ${pc.displayName}?level=DEBUG")
     }
 
     override fun configure() {
         enabledPlugins.forEach {
-            from("timer://runOnce?repeatCount=1")
+            from("timer://fixedRate?period=30000")
                     .serviceCall()
                       .serviceCallConfiguration("basicServiceCallConfiguration")
                       .name(it)
                       .uri("$it/config")
                       .end()
                     .bean(javaClass, "processConfig")
-                    .log("Plugin configs loaded")
+                    .log(LoggingLevel.DEBUG,"Plugin configs loaded")
         }
     }
     companion object {

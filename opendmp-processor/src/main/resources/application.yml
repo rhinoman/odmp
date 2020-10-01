@@ -33,6 +33,9 @@ camel:
   component:
     aws-s3:
       amazon-s3-client: s3Client
+    netty-http:
+      receive-buffer-size: 4
+      send-buffer-size: 
 
 spring:
   cloud:
