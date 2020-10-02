@@ -24,6 +24,7 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
+import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.*
 import org.apache.camel.Exchange
@@ -31,7 +32,8 @@ import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.DefaultErrorHandlerBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.component.aws.s3.S3Constants
-import org.apache.camel.model.RouteDefinition
+import org.apache.camel.model.*
+import org.apache.camel.spi.IdempotentRepository
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.http.message.BasicNameValuePair
 
@@ -42,19 +44,26 @@ import org.apache.http.message.BasicNameValuePair
 class RunPlanRouteBuilder(private val runPlan: RunPlan,
                           private val numRetries: Int = 2): RouteBuilder() {
 
-    private fun generateIngestEndpoint(source: SourceModel) : RouteDefinition {
+    private val repo = SpringContext.context.getBean("idempotentRepo", IdempotentRepository::class.java)
+
+    private fun generateIngestEndpoint(source: SourceModel) : ProcessorDefinition<*> {
         return when(source.sourceType) {
             SourceType.INGEST_FILE_DROP ->
-                from("file://${source.sourceLocation!!}?readLock=changed")
+                from("file://${source.sourceLocation!!}?readLock=changed&bridgeErrorHandler=true")
+                        .log("Ingesting from file \${header.CamelFileName}")
             SourceType.INGEST_FTP ->
-                from("ftp://${source.sourceLocation!!}?binary=true")
+                from("ftp://${source.sourceLocation!!}?binary=true&bridgeErrorHandler=true")
+                        .log("Ingesting from ftp host \${header.CamelFileHost} file: \${header.CamelFileName}")
             SourceType.INGEST_S3 -> {
                 val bucket = source.additionalProperties?.get("bucket")
                         ?: throw ProcessorDefinitionException("Bucket must be specified for S3 ingest")
                 val keyPrefix = source.sourceLocation
                         ?: throw ProcessorDefinitionException("No S3 key prefix provided!")
-                from("aws-s3://$bucket?prefix=$keyPrefix")
+                from("aws-s3://$bucket?prefix=$keyPrefix&bridgeErrorHandler=true")
                         .setHeader(S3Constants.CONTENT_TYPE, constant("application/octet-stream"))
+                        .setHeader(S3Constants.BUCKET_NAME, constant(bucket))
+                        .log("Ingesting from S3: \${header.CamelAWSS3Key}")
+                        .idempotentConsumer(header(S3Constants.KEY),repo)
             }
             else -> throw NotImplementedException("SourceType ${source.sourceType} not supported")
         }
@@ -118,6 +127,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 runPlan.processorDependencyMap[sp.id]?.map { runPlan.processors[it] } ?: listOf()
         val routeId = "${runPlan.id}-${sp.id}"
         sourceEp
+                .setHeader("processor", constant(sp.id))
                 .convertBodyTo(ByteArray::class.java)
                 // Set a routeId to make finding this route in the Camel Context easier later
                 .routeId(routeId)
@@ -205,11 +215,14 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         val nvp = proc.properties?.entries?.map { BasicNameValuePair(it.key, it.value.toString()) }
         val queryParams = URLEncodedUtils.format(nvp, Charsets.UTF_8)
 
-        route.serviceCall()
-                .serviceCallConfiguration("basicServiceCall")
-                .name(service)
-                .setHeader(Exchange.HTTP_QUERY, constant(queryParams))
-                .uri("$service/process")
+        route
+                .circuitBreaker().inheritErrorHandler(true)
+                  .serviceCall()
+                  .serviceCallConfiguration("basicServiceCall")
+                  .name(service)
+                  .setHeader(Exchange.HTTP_QUERY, constant(queryParams))
+                  .uri("$service/process")
+                .endCircuitBreaker()
 
     }
 

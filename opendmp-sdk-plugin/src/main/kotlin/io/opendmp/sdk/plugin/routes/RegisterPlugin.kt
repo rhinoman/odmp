@@ -24,13 +24,14 @@ class RegisterPlugin(
     lateinit var pluginName: String
 
     override fun configure() {
-        val id = UUID.randomUUID().toString()
-        from("service:$pluginName:netty-http:http://0.0.0.0:$port/config?service.id=$id")
+        val cid = UUID.randomUUID().toString()
+        val pid = UUID.randomUUID().toString()
+        from("service:$pluginName:undertow:http://$hostname:$port/config?service.id=$cid&service.tag=config&service.host=$hostname&service.port=$port")
                 .bean(pluginConfigurationProvider, "pluginConfiguration")
                 .marshal().json(JsonLibrary.Jackson)
                 .setHeader("Content-Type", constant("application/json"))
 
-        from("service:$pluginName:netty-http:http://0.0.0.0:$port/process?service.id=$id")
+        from("service:$pluginName:undertow:http://$hostname:$port/process?service.id=$pid&service.tag=process&service.host=$hostname&service.port=$port")
                 .bean(odmpProcessor, "process")
 
     }

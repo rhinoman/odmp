@@ -40,9 +40,14 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
-            <artifactId>camel-netty-http-starter</artifactId>
+            <artifactId>camel-undertow-starter</artifactId>
             <version>${camel.version}</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.camel.springboot</groupId>-->
+<!--            <artifactId>camel-netty-http-starter</artifactId>-->
+<!--            <version>${camel.version}</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>

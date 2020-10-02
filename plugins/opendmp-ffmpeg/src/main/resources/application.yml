@@ -1,6 +1,7 @@
 odmp:
   plugin:
     name: "opendmp-ffmpeg-plugin"
+    host: 0.0.0.0
   consul:
     url: ${consul_url:http://localhost:8500}
   service:
@@ -12,7 +13,7 @@ odmp-ffmpeg:
 
 camel:
   rest:
-    api-host: 0.0.0.0:8004
+    api-host: 0.0.0.0
   cloud:
     service-registry:
       service-host: localhost
@@ -24,3 +25,6 @@ camel:
         url: http://localhost:8500
         service-host: 0.0.0.0
         override-service-host: true
+spring:
+  main:
+    web-application-type: none

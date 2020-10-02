@@ -16,17 +16,27 @@
 
 package io.opendmp.processor.config
 
+import org.apache.camel.component.redis.processor.idempotent.RedisIdempotentRepository
 import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition
+import org.apache.camel.spi.IdempotentRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.core.RedisTemplate
 
 @Configuration
-class CamelConfig {
+class CamelConfig(private val camelConsumerRedisTemplate: RedisTemplate<String, String>) {
 
     @Bean
     fun basicServiceCall() : ServiceCallConfigurationDefinition {
         val conf = ServiceCallConfigurationDefinition()
-        conf.component = "netty-http"
+        conf.component = "undertow"
+
         return conf
     }
+
+    @Bean
+    fun idempotentRepo(): IdempotentRepository {
+        return RedisIdempotentRepository.redisIdempotentRepository(camelConsumerRedisTemplate,"camel-repo")
+    }
+
 }

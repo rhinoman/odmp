@@ -33,10 +33,7 @@ camel:
   component:
     aws-s3:
       amazon-s3-client: s3Client
-    netty-http:
-      receive-buffer-size: 4
-      send-buffer-size: 
-
+      bridge-error-handler: true
 spring:
   cloud:
     consul:
@@ -46,5 +43,10 @@ spring:
         register: false
       port: ${consul_port:8500}
       host: ${consul_host:localhost}
+  servlet:
+    multipart:
+      max-request-size: 2000MB
+  main:
+    web-application-type: none
 
 
