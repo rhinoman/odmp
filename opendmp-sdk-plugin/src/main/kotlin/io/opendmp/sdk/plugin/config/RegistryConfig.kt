@@ -10,20 +10,20 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class RegistryConfig(@Autowired private val camelContext: CamelContext) {
+//
+//    @Value("\${odmp.consul.url}")
+//    lateinit var consulUrl: String
+//
+//    @Value("\${odmp.service.host}")
+//    lateinit var serviceHost: String
 
-    @Value("\${odmp.consul.url}")
-    lateinit var consulUrl: String
-
-    @Value("\${odmp.service.host}")
-    lateinit var serviceHost: String
-
-    @Bean
-    fun serviceRegistry() : ServiceRegistry {
-        val service = ConsulServiceRegistry()
-        service.url = consulUrl
-        service.serviceHost = serviceHost
-        camelContext.addService(service)
-        return service
-    }
+//    @Bean
+//    fun serviceRegistry() : ServiceRegistry {
+//        val service = ConsulServiceRegistry()
+//        service.url = consulUrl
+//        service.serviceHost = serviceHost
+//        camelContext.addService(service)
+//        return service
+//    }
 
 }

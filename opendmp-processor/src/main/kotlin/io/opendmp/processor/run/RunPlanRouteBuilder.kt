@@ -206,22 +206,24 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         deps.forEach { continueRoute(it!!, deps.size > 1) }
     }
 
+    private fun getQueryParams(proc: ProcessorRunModel): String {
+        val nvp = proc.properties?.entries?.map { BasicNameValuePair(it.key, it.value.toString()) }
+        return URLEncodedUtils.format(nvp, Charsets.UTF_8)
+    }
+
     /**
      * Make a service call!
      */
     private fun serviceCall(route: RouteDefinition, proc: ProcessorRunModel)  {
         val service = proc.properties?.get("serviceName").toString()
-
-        val nvp = proc.properties?.entries?.map { BasicNameValuePair(it.key, it.value.toString()) }
-        val queryParams = URLEncodedUtils.format(nvp, Charsets.UTF_8)
-
+        val params = getQueryParams(proc)
         route
                 .circuitBreaker().inheritErrorHandler(true)
                   .serviceCall()
-                  .serviceCallConfiguration("basicServiceCall")
-                  .name(service)
-                  .setHeader(Exchange.HTTP_QUERY, constant(queryParams))
-                  .uri("$service/process")
+                    .serviceCallConfiguration("basicServiceCall")
+                    .name(service)
+                    .uri("http://$service/process?${getQueryParams(proc)}")
+                    .end()
                 .endCircuitBreaker()
 
     }

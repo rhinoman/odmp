@@ -30,7 +30,6 @@ class CamelConfig(private val camelConsumerRedisTemplate: RedisTemplate<String, 
     fun basicServiceCall() : ServiceCallConfigurationDefinition {
         val conf = ServiceCallConfigurationDefinition()
         conf.component = "undertow"
-
         return conf
     }
 

@@ -26,7 +26,7 @@ class CamelConfig {
     @Bean
     fun basicServiceCallConfiguration() : ServiceCallConfigurationDefinition {
         val conf = ServiceCallConfigurationDefinition()
-        conf.component = "undertow"
+        conf.component = "netty-http"
         return conf
     }
 }
