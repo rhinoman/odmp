@@ -17,5 +17,5 @@
 package io.opendmp.common.model
 
 enum class ProcessorType {
-    INGEST, COLLECT, SCRIPT, EXTERNAL
+    INGEST, COLLECT, SCRIPT, EXTERNAL, PLUGIN
 }

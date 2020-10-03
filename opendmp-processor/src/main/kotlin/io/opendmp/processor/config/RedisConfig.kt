@@ -52,4 +52,11 @@ class RedisConfig {
         return template
     }
 
+    @Bean
+    fun camelConsumerRedisTemplate() : RedisTemplate<String, String> {
+        val template = RedisTemplate<String, String>()
+        template.setConnectionFactory(redisConnectionFactory())
+        return template
+    }
+
 }

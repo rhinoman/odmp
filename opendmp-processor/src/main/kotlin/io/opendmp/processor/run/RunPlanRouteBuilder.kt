@@ -16,8 +16,10 @@
 
 package io.opendmp.processor.run
 
-import com.amazonaws.client.builder.AwsClientBuilder
-import io.opendmp.common.exception.*
+import io.opendmp.common.exception.NotImplementedException
+import io.opendmp.common.exception.ProcessorDefinitionException
+import io.opendmp.common.exception.RunPlanLogicException
+import io.opendmp.common.exception.UnsupportedProcessorTypeException
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
@@ -25,12 +27,15 @@ import io.opendmp.common.model.SourceType
 import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.*
+import org.apache.camel.Exchange
 import org.apache.camel.LoggingLevel
-import org.apache.camel.builder.DeadLetterChannelBuilder
 import org.apache.camel.builder.DefaultErrorHandlerBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.component.aws.s3.S3Constants
-import org.apache.camel.model.RouteDefinition
+import org.apache.camel.model.*
+import org.apache.camel.spi.IdempotentRepository
+import org.apache.http.client.utils.URLEncodedUtils
+import org.apache.http.message.BasicNameValuePair
 
 /**
  * RunPlanRouteBuilder - takes a Run Plan and builds camel routes to set up a data pipeline
@@ -39,19 +44,26 @@ import org.apache.camel.model.RouteDefinition
 class RunPlanRouteBuilder(private val runPlan: RunPlan,
                           private val numRetries: Int = 2): RouteBuilder() {
 
-    private fun generateIngestEndpoint(source: SourceModel) : RouteDefinition {
+    private val repo = SpringContext.context.getBean("idempotentRepo", IdempotentRepository::class.java)
+
+    private fun generateIngestEndpoint(source: SourceModel) : ProcessorDefinition<*> {
         return when(source.sourceType) {
             SourceType.INGEST_FILE_DROP ->
-                from("file://${source.sourceLocation!!}?readLock=changed")
+                from("file://${source.sourceLocation!!}?readLock=changed&bridgeErrorHandler=true")
+                        .log("Ingesting from file \${header.CamelFileName}")
             SourceType.INGEST_FTP ->
-                from("ftp://${source.sourceLocation!!}?binary=true")
+                from("ftp://${source.sourceLocation!!}?binary=true&bridgeErrorHandler=true")
+                        .log("Ingesting from ftp host \${header.CamelFileHost} file: \${header.CamelFileName}")
             SourceType.INGEST_S3 -> {
                 val bucket = source.additionalProperties?.get("bucket")
                         ?: throw ProcessorDefinitionException("Bucket must be specified for S3 ingest")
                 val keyPrefix = source.sourceLocation
                         ?: throw ProcessorDefinitionException("No S3 key prefix provided!")
-                from("aws-s3://$bucket?prefix=$keyPrefix")
+                from("aws-s3://$bucket?prefix=$keyPrefix&bridgeErrorHandler=true&deleteAfterRead=false")
                         .setHeader(S3Constants.CONTENT_TYPE, constant("application/octet-stream"))
+                        .setHeader(S3Constants.BUCKET_NAME, constant(bucket))
+                        .idempotentConsumer(header(S3Constants.KEY),repo).completionEager(true)
+                        .log("Ingesting from S3: \${header.CamelAWSS3Key}")
             }
             else -> throw NotImplementedException("SourceType ${source.sourceType} not supported")
         }
@@ -114,28 +126,23 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         val deps: List<ProcessorRunModel?> =
                 runPlan.processorDependencyMap[sp.id]?.map { runPlan.processors[it] } ?: listOf()
         val routeId = "${runPlan.id}-${sp.id}"
-        var multi = false
+        sourceEp
+                .setHeader("processor", constant(sp.id))
+                .convertBodyTo(ByteArray::class.java)
+                // Set a routeId to make finding this route in the Camel Context easier later
+                .routeId(routeId)
+                .startupOrder(Utils.getNextStartupOrder())
+                .process(DataWrapper(sp))
         when {
             deps.size == 1 -> {
                 val dest = "direct:${runPlan.id}-${deps.first()!!.id}"
-                sourceEp
-                        .convertBodyTo(ByteArray::class.java)
-                        .routeId(routeId)
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .process(DataWrapper(sp))
-                        .to(dest)
+                sourceEp.to(dest)
             }
             deps.size > 1 -> {
                 // If we have more than 1 processor expecting output from this processor,
                 // do a multicast
                 val dest = deps.map { d -> "seda:${runPlan.id}-${d!!.id}"}
-                multi = true
                 sourceEp
-                        // Set a routeId to make finding this route in the Camel Context easier later
-                        .routeId(routeId)
-                        .convertBodyTo(ByteArray::class.java)
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .process(DataWrapper(sp))
                         .multicast().onPrepare(MultiPrepareProcessor())
                         .parallelProcessing()
                         .to(*dest.toTypedArray())
@@ -145,7 +152,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             }
         }
         // Continue building with the dependencies
-        deps.forEach { this.continueRoute(it!!, multi) }
+        deps.forEach { this.continueRoute(it!!, deps.size > 1) }
     }
 
     /**
@@ -165,46 +172,62 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             ProcessorType.SCRIPT -> ScriptProcessor(curProc)
             ProcessorType.EXTERNAL -> ExternalProcessor(curProc)
             ProcessorType.COLLECT -> CollectProcessor(curProc)
+            ProcessorType.PLUGIN -> PluginProcessor(curProc)
             else -> throw UnsupportedProcessorTypeException("The processor type ${curProc.type} is not supported")
         }
         val routeId = "${runPlan.id}-${curProc.id}"
-        var nextMulti = false
+
+        val contRoute = from(sourceEp)
+                .routeId(routeId)
+                .errorHandler(getErrorHandlerForType(curProc.type))
+                .startupOrder(Utils.getNextStartupOrder())
+                .setHeader("processor", constant(curProc.id))
+
+        // If this processor has a service name, we need to do an external service call
+        if(curProc.properties?.get("serviceName") != null) {
+            serviceCall(contRoute, curProc)
+        }
+
+        // Execute this processor
+        contRoute.process(proc).id(curProc.id)
+
         when {
             deps.size == 1 ->
-                from(sourceEp)
-                        .routeId(routeId)
-                        .errorHandler(getErrorHandlerForType(curProc.type))
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .setHeader("processor", constant(curProc.id))
-                        .process(proc).id(curProc.id)
-                        .to("direct:${runPlan.id}-${deps.first()!!.id}").end()
-            deps.size > 1 -> {
-                val dest = deps.map { d -> "seda:${runPlan.id}-${d!!.id}"}
-                nextMulti = true
-                from(sourceEp)
-                        .routeId(routeId)
-                        .errorHandler(getErrorHandlerForType(curProc.type))
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .setHeader("processor", constant(curProc.id))
-                        .process(proc).id(curProc.id)
-                        .multicast().onPrepare(MultiPrepareProcessor())
+                contRoute
+                        .to("direct:${runPlan.id}-${deps.first()!!.id}")
+            deps.size > 1 ->
+                contRoute.multicast().onPrepare(MultiPrepareProcessor())
                         .parallelProcessing()
-                        .to(*dest.toTypedArray())
-            }
-            else -> { //End of the line
-                val completionId = "${runPlan.id}-${curProc.id}-complete"
-                from(sourceEp)
-                        .routeId(routeId)
-                        .errorHandler(getErrorHandlerForType(curProc.type))
-                        .startupOrder(Utils.getNextStartupOrder())
-                        .setHeader("processor", constant(curProc.id))
-                        .process(proc).id(curProc.id)
-                        .process(CompletionProcessor())
-                        .id(completionId)
-                        .end()
-            }
+                        .to(*(deps.map{ d -> "seda:${runPlan.id}-${d!!.id}"}.toTypedArray()))
+            else ->
+                contRoute.process(CompletionProcessor())
+                    .id("${runPlan.id}-${curProc.id}-complete").end()
         }
-        deps.forEach { continueRoute(it!!, nextMulti) }
+        deps.forEach { continueRoute(it!!, deps.size > 1) }
+    }
+
+    private fun getQueryParams(proc: ProcessorRunModel): String {
+        val nvp = proc.properties?.entries?.map { BasicNameValuePair(it.key, it.value.toString()) }
+        return URLEncodedUtils.format(nvp, Charsets.UTF_8)
+    }
+
+    /**
+     * Make a service call!
+     */
+    private fun serviceCall(route: RouteDefinition, proc: ProcessorRunModel)  {
+        val service = proc.properties?.get("serviceName").toString()
+        val params = getQueryParams(proc)
+        route
+                .log("Making call to $service")
+                .circuitBreaker().inheritErrorHandler(true)
+                  .serviceCall()
+                    .serviceCallConfiguration("basicServiceCall")
+                    .name(service)
+                    .uri("http://$service/process?${getQueryParams(proc)}")
+                    .end()
+                .endCircuitBreaker()
+                .log("completed call to $service")
+
     }
 
 }

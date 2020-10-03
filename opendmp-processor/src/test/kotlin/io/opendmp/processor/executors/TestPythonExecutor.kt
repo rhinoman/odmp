@@ -26,23 +26,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
 @ExtendWith(SpringExtension::class)
 class TestPythonExecutor {
-
-    @MockBean
-    lateinit var  redisConfig: RedisConfig
-
-    @MockBean
-    lateinit var runPlanRequestHandler: RunPlanRequestHandler
-
-    @MockBean
-    lateinit var runPlanRequestRouter: RunPlanRequestRouter
-
-    @MockBean
-    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
 
     @Test
     fun `Python executor should return result as byte array`() {

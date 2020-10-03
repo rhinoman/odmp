@@ -147,6 +147,11 @@
  (fn [db _]
    (get-in db [:user :info])))
 
+(re-frame/reg-sub
+  ::plugin-config
+  (fn [db _]
+    (get-in db [:lookup :plugin-config])))
+
 ;; snackbar for status updates
 (re-frame/reg-sub
  ::snackbar

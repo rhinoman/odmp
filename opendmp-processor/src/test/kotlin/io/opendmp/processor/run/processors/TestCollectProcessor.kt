@@ -39,6 +39,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
+import org.springframework.cloud.consul.serviceregistry.ConsulRegistration
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -53,21 +55,6 @@ import java.util.*
 class TestCollectProcessor @Autowired constructor(
         private val testCamelContext: CamelContext
 ) {
-
-    @MockBean
-    lateinit var  redisConfig: RedisConfig
-
-    @MockBean
-    lateinit var runPlanRequestHandler: RunPlanRequestHandler
-
-    @MockBean
-    lateinit var runPlanRequestRouter: RunPlanRequestRouter
-
-    @MockBean
-    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
-
-    @MockBean
-    lateinit var producerTemplate: ProducerTemplate
 
     @EndpointInject("mock:a")
     protected val mockA = MockEndpoint()

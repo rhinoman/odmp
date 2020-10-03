@@ -19,6 +19,7 @@
             ["@material-ui/icons/CloudUploadTwoTone" :default UploadIcon]
             ["@material-ui/icons/CodeTwoTone" :default CodeIcon]
             ["@material-ui/icons/TransformTwoTone" :default TransformIcon]
+            ["@material-ui/icons/ExtensionTwoTone" :default ExtensionIcon]
             ["@material-ui/icons/WorkTwoTone" :default WorkIcon]
             ["@material-ui/icons/MergeTypeTwoTone" :default MergeIcon]
             ["@material-ui/icons/HelpTwoTone" :default HelpIcon]))
@@ -28,6 +29,7 @@
     "INGEST" [:> InputIcon]
     "COLLECT" [:> UploadIcon]
     ;"TRANSFORM" [:> TransformIcon]
+    "PLUGIN" [:> ExtensionIcon]
     "SCRIPT" [:> CodeIcon]
     "AGGREGATE" [:> MergeIcon]
     "EXTERNAL" [:> WorkIcon]

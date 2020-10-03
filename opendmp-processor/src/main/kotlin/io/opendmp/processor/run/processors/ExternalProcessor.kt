@@ -17,20 +17,16 @@
 package io.opendmp.processor.run.processors
 
 import io.opendmp.common.exception.CommandExecutionException
-import io.opendmp.common.exception.ProcessorDefinitionException
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.processor.domain.DataEnvelope
 import kotlinx.coroutines.*
-import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
 import org.slf4j.LoggerFactory
-import java.io.*
-import java.nio.charset.Charset
-import java.util.concurrent.Future
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
 
 class ExternalProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
 

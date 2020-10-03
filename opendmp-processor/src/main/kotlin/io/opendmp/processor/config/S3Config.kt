@@ -51,7 +51,6 @@ class S3Config {
         } else {
             builder.region = region
         }
-
         builder.credentials = AWSStaticCredentialsProvider(BasicAWSCredentials(accessKey, secretKey))
         return builder
     }

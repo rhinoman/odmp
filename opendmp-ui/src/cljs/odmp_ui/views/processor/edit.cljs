@@ -27,6 +27,7 @@
             [odmp-ui.views.processor.script-fields :refer [script-fields]]
             [odmp-ui.views.processor.collect-fields :refer [collect-fields]]
             [odmp-ui.views.processor.external-fields :refer [external-fields]]
+            [odmp-ui.views.processor.plugin-fields :refer [plugin-fields]]
             [odmp-ui.views.processor.styles :refer [proc-styles]]
             [clojure.string :as str]
             ["@material-ui/core/Box" :default Box]
@@ -184,6 +185,7 @@
                    "SCRIPT" [script-fields processor]
                    "COLLECT" [collect-fields processor]
                    "EXTERNAL" [external-fields processor]
+                   "PLUGIN" [plugin-fields processor]
                    [:<>])]
                 ]))]]])))
 

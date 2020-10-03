@@ -9,6 +9,7 @@ odmp:
   redis:
     host: ${redis_host:localhost}
     port: ${redis_port:6379}
+  plugins-enabled: ${odmp_plugins_enabled}
 
   processor:
     instance-type: ${odmp_processor_service_instance_type:GENERAL}
@@ -18,6 +19,7 @@ odmp:
     region: ${aws_region:US_EAST_1}
     access-key: ${aws_access_key:minio_access_key}
     secret-key: ${aws_secret_key:minio_secret_key}
+
 
 camel:
   threadpool:
@@ -31,3 +33,20 @@ camel:
   component:
     aws-s3:
       amazon-s3-client: s3Client
+      bridge-error-handler: true
+spring:
+  cloud:
+    consul:
+      discovery:
+        enabled: true
+        instance-id: opendmp-processor-service:${random.value}
+        register: false
+      port: ${consul_port:8500}
+      host: ${consul_host:localhost}
+  servlet:
+    multipart:
+      max-request-size: 2000MB
+  main:
+    web-application-type: none
+
+

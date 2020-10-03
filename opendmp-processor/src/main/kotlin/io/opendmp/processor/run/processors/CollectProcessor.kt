@@ -66,7 +66,6 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
 
         val time: Instant = Instant.now()
         val recordId = UUID.randomUUID().toString().replace("-", "")
-        var endpoint = ""
         var location = ""
 
         var result: Result = Result.SUCCESS
@@ -75,7 +74,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
             when(destinationType) {
                 DestinationType.FOLDER -> {
                     val folderLocation = props["location"].toString()
-                    endpoint = "file://$folderLocation"
+                    val endpoint = "file://$folderLocation"
                     location = "$folderLocation/$recordId"
                     producerTemplate.sendBodyAndHeader(endpoint,
                             exchange.getIn().body,
@@ -86,7 +85,7 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                     val s3key = props["key"].toString()
                     val mimeType = props["mimeType"]?.toString() ?: "application/octet-stream"
                     location = "$bucket:$s3key/$recordId"
-                    endpoint = "aws-s3://$bucket"
+                    val endpoint = "aws-s3://$bucket"
                     val fname = "$prefix-${fmt.format(time)}"
                     val headers = mapOf(
                             S3Constants.KEY to "$s3key/$recordId",
