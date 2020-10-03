@@ -59,11 +59,11 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                         ?: throw ProcessorDefinitionException("Bucket must be specified for S3 ingest")
                 val keyPrefix = source.sourceLocation
                         ?: throw ProcessorDefinitionException("No S3 key prefix provided!")
-                from("aws-s3://$bucket?prefix=$keyPrefix&bridgeErrorHandler=true")
+                from("aws-s3://$bucket?prefix=$keyPrefix&bridgeErrorHandler=true&deleteAfterRead=false")
                         .setHeader(S3Constants.CONTENT_TYPE, constant("application/octet-stream"))
                         .setHeader(S3Constants.BUCKET_NAME, constant(bucket))
+                        .idempotentConsumer(header(S3Constants.KEY),repo).completionEager(true)
                         .log("Ingesting from S3: \${header.CamelAWSS3Key}")
-                        .idempotentConsumer(header(S3Constants.KEY),repo)
             }
             else -> throw NotImplementedException("SourceType ${source.sourceType} not supported")
         }
@@ -218,6 +218,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
         val service = proc.properties?.get("serviceName").toString()
         val params = getQueryParams(proc)
         route
+                .log("Making call to $service")
                 .circuitBreaker().inheritErrorHandler(true)
                   .serviceCall()
                     .serviceCallConfiguration("basicServiceCall")
@@ -225,6 +226,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                     .uri("http://$service/process?${getQueryParams(proc)}")
                     .end()
                 .endCircuitBreaker()
+                .log("completed call to $service")
 
     }
 
