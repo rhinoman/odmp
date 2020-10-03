@@ -24,9 +24,11 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
+@Profile("!test")
 class PluginService : RouteBuilder() {
 
     private val mapper = MessageUtil.mapper

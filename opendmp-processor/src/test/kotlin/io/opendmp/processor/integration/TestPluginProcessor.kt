@@ -57,18 +57,6 @@ class TestPluginProcessor @Autowired constructor (
         val camelContext: CamelContext,
         val producerTemplate: FluentProducerTemplate){
 
-    @MockBean
-    lateinit var  redisConfig: RedisConfig
-
-    @MockBean
-    lateinit var runPlanRequestHandler: RunPlanRequestHandler
-
-    @MockBean
-    lateinit var runPlanRequestRouter: RunPlanRequestRouter
-
-    @MockBean
-    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
-
 
     @Test
     fun testPluginProcessor(){

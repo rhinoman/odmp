@@ -21,3 +21,10 @@ spring:
   profiles:
     active: test
 
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        enabled: false
+        instance-id: opendmp-dataflow-service:${random.value}
+        register: false

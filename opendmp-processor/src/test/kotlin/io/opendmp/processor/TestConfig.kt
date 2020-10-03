@@ -14,38 +14,39 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.executors
+package io.opendmp.processor
 
 import io.opendmp.processor.config.RedisConfig
 import io.opendmp.processor.handler.RunPlanRequestHandler
 import io.opendmp.processor.messaging.RunPlanRequestRouter
 import io.opendmp.processor.messaging.RunPlanStatusDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.boot.test.context.SpringBootTest
+import org.apache.camel.ProducerTemplate
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
-import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.core.RedisTemplate
 
-@SpringBootTest
-@ExtendWith(SpringExtension::class)
-class TestPythonExecutor {
+@Configuration
+class TestConfig {
+    @MockBean
+    lateinit var  redisConfig: RedisConfig
 
-    @Test
-    fun `Python executor should return result as byte array`() {
-        val pyEx = PythonExecutor()
-        val script = """
-            def process(data):
-              result = map(lambda x: x * 2, data)
-              return array("b", result)
-        """.trimIndent()
-        val data = listOf(1, 2, 3, 4, 5).map{it.toByte()}.toByteArray()
-        val result = pyEx.executeScript(script, data)
-        assertNotNull(result)
-        val resultInts = result.toList().map { it.toInt() }
-        assertEquals(listOf(2, 4, 6, 8, 10), resultInts)
-    }
+    @MockBean
+    lateinit var runPlanRequestHandler: RunPlanRequestHandler
+
+    @MockBean
+    lateinit var runPlanRequestRouter: RunPlanRequestRouter
+
+    @MockBean
+    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
+
+    @MockBean
+    lateinit var producerTemplate: ProducerTemplate
+
+    @MockBean
+    lateinit var consulAutoServiceRegistration: ConsulAutoServiceRegistration
+
+    @MockBean
+    lateinit var redisTemplate: RedisTemplate<String, String>
 
 }

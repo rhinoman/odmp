@@ -34,21 +34,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ExtendWith(SpringExtension::class)
 class TestClojureExecutor {
 
-    @MockBean
-    lateinit var  redisConfig: RedisConfig
-
-    @MockBean
-    lateinit var runPlanRequestHandler: RunPlanRequestHandler
-
-    @MockBean
-    lateinit var runPlanRequestRouter: RunPlanRequestRouter
-
-    @MockBean
-    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
-
-    @MockBean
-    lateinit var consulAutoServiceRegistration: ConsulAutoServiceRegistration
-
     @Test
     fun `Clojure executor should return result as byte array`(){
         val cljEx = ClojureExecutor()

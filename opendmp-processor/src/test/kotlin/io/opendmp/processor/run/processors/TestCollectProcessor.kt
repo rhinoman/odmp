@@ -56,24 +56,6 @@ class TestCollectProcessor @Autowired constructor(
         private val testCamelContext: CamelContext
 ) {
 
-    @MockBean
-    lateinit var  redisConfig: RedisConfig
-
-    @MockBean
-    lateinit var runPlanRequestHandler: RunPlanRequestHandler
-
-    @MockBean
-    lateinit var runPlanRequestRouter: RunPlanRequestRouter
-
-    @MockBean
-    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
-
-    @MockBean
-    lateinit var producerTemplate: ProducerTemplate
-
-    @MockBean
-    lateinit var consulAutoServiceRegistration: ConsulAutoServiceRegistration
-
     @EndpointInject("mock:a")
     protected val mockA = MockEndpoint()
 
