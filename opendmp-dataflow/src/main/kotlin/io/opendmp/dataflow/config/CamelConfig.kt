@@ -16,17 +16,30 @@
 
 package io.opendmp.dataflow.config
 
+import org.apache.camel.component.ribbon.RibbonConfiguration
+import org.apache.camel.component.ribbon.cloud.RibbonServiceLoadBalancer
 import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class CamelConfig {
+class CamelConfig() {
 
     @Bean
     fun basicServiceCallConfiguration() : ServiceCallConfigurationDefinition {
         val conf = ServiceCallConfigurationDefinition()
-        conf.component = "netty-http"
+        val rc = RibbonConfiguration()
+        rc.addProperty("MaxAutoRetries", "0")
+        rc.addProperty("MaxAutoRetriesNextServer", "1")
+        rc.addProperty("ReadTimeout", "1000")
+        conf
+                .component("netty-http")
+                .loadBalancer(RibbonServiceLoadBalancer(rc))
+                .consulServiceDiscovery()
+                .blockSeconds(5)
+                .connectTimeoutMillis(1000)
+                .readTimeoutMillis(1000)
+                .writeTimeoutMillis(1000)
         return conf
     }
 }

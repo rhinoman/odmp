@@ -20,7 +20,6 @@ odmp:
     access-key: ${aws_access_key:minio_access_key}
     secret-key: ${aws_secret_key:minio_secret_key}
 
-
 camel:
   threadpool:
     pool-size: 20
@@ -48,5 +47,16 @@ spring:
       max-request-size: 2000MB
   main:
     web-application-type: none
-
+  application:
+    name: opendmp-processor-service
+logging:
+  level:
+    org:
+      springframework:
+        web: WARN
+    com:
+      amazonaws:
+        # Longstanding issue with camel S3 component sometimes causes the AWS S3Client
+        # to spam the logs with warnings, so raise the log level to ERROR
+        services.s3.internal: ERROR
 

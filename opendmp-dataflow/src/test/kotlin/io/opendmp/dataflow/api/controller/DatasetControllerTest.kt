@@ -23,6 +23,7 @@ import com.mongodb.client.result.DeleteResult
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.properties.DestinationType
+import io.opendmp.dataflow.TestConfig
 import io.opendmp.dataflow.api.response.DatasetDetail
 import io.opendmp.dataflow.api.response.DownloadRequestResponse
 import io.opendmp.dataflow.config.MongoConfig
@@ -61,7 +62,7 @@ import java.util.*
     "io.opendmp.dataflow.messaging",
     "import com.c4_soft.springaddons.security.oauth2.test.webflux"
 ])
-@ContextConfiguration(classes = [MongoConfig::class, DatasetController::class])
+@ContextConfiguration(classes = [MongoConfig::class, DatasetController::class, TestConfig::class])
 @EnableConfigurationProperties(MongoProperties::class)
 class DatasetControllerTest @Autowired constructor(
         private val client: WebTestClient,
@@ -72,18 +73,6 @@ class DatasetControllerTest @Autowired constructor(
         mongoTemplate.findAllAndRemove<DatasetModel>(Query()).blockLast()
         mongoTemplate.findAllAndRemove<CollectionModel>(Query()).blockLast()
     }
-
-    @MockBean
-    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
-
-    @MockBean
-    lateinit var runPlanDispatcher: RunPlanDispatcher
-
-    @MockBean
-    lateinit var processRequester: ProcessRequester
-
-    @MockBean
-    lateinit var s3Client: AmazonS3
 
     private val baseUri : String = "/dataflow_api/dataset"
 

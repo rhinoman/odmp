@@ -27,6 +27,7 @@ import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.Result
 import io.opendmp.common.model.properties.DestinationType
 import io.opendmp.dataflow.TestUtils
+import io.opendmp.dataflow.api.controller.PluginController
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DataflowModel
@@ -62,15 +63,6 @@ class RunPlanStatusHandlerTest @Autowired constructor(
         private val runPlanStatusHandler: RunPlanStatusHandler,
         private val mongoTemplate: ReactiveMongoTemplate
 ) {
-
-    @MockBean
-    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
-
-    @MockBean
-    lateinit var s3Client: AmazonS3
-
-    @MockBean
-    lateinit var runPlanDispatcher: RunPlanDispatcher
 
     @AfterEach
     fun cleanUp() {

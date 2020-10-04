@@ -25,8 +25,10 @@ spring:
       password: ${mongo_password:secret}
       host: ${mongo_host:localhost}
       port: ${mongo_port:27027}
-
   cloud:
+    loadbalancer:
+      ribbon:
+        enabled: true
     consul:
       discovery:
         enabled: true
@@ -68,3 +70,10 @@ springdoc:
 
 server:
   port: ${odmp_dataflow_port:8080}
+camel:
+  cloud:
+    ribbon:
+      load-balancer:
+        properties:
+          ServerListRefreshInterval: 250
+

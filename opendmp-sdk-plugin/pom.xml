@@ -47,16 +47,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.camel.springboot</groupId>-->
-<!--            <artifactId>camel-undertow-starter</artifactId>-->
-<!--            <version>${camel.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.camel.springboot</groupId>-->
-<!--            <artifactId>camel-netty-http-starter</artifactId>-->
-<!--            <version>${camel.version}</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
@@ -112,10 +102,7 @@
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.springframework.boot</groupId>-->
-<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--            </plugin>-->
+
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>

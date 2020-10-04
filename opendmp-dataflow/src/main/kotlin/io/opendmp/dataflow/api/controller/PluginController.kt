@@ -24,11 +24,11 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/dataflow_api/plugin")
-class PluginController {
+class PluginController(private val pluginService: PluginService) {
 
     @GetMapping
-    fun getPlugins(): Map<String, PluginConfiguration> {
-        return PluginService.get()
+    fun getPlugins(): Map<String, PluginConfiguration?> {
+        return pluginService.getConfigs()
     }
 
 }

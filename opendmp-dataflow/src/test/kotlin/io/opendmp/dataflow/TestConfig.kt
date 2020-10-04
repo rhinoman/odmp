@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
+ * Copyright (c) 2020. The Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,41 +14,40 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor
+package io.opendmp.dataflow
 
-import io.opendmp.processor.config.RedisConfig
-import io.opendmp.processor.handler.RunPlanRequestHandler
-import io.opendmp.processor.messaging.RunPlanRequestRouter
-import io.opendmp.processor.messaging.RunPlanStatusDispatcher
+import com.amazonaws.services.s3.AmazonS3
+import io.opendmp.dataflow.api.controller.PluginController
+import io.opendmp.dataflow.config.S3Config
+import io.opendmp.dataflow.messaging.ProcessRequester
+import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import org.apache.camel.ProducerTemplate
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 
 @Configuration
 @Profile("test")
 class TestConfig {
     @MockBean
-    lateinit var  redisConfig: RedisConfig
+    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
 
     @MockBean
-    lateinit var runPlanRequestHandler: RunPlanRequestHandler
+    lateinit var runPlanDispatcher: RunPlanDispatcher
 
     @MockBean
-    lateinit var runPlanRequestRouter: RunPlanRequestRouter
+    lateinit var processRequester: ProcessRequester
 
     @MockBean
-    lateinit var runPlanStatusDispatcher: RunPlanStatusDispatcher
+    lateinit var s3Client: AmazonS3
+
+    @MockBean
+    lateinit var s3Config: S3Config
 
     @MockBean
     lateinit var producerTemplate: ProducerTemplate
 
     @MockBean
-    lateinit var consulAutoServiceRegistration: ConsulAutoServiceRegistration
-
-    @MockBean
-    lateinit var redisTemplate: RedisTemplate<String, String>
-
+    lateinit var pluginController: PluginController
 }

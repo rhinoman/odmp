@@ -19,6 +19,7 @@ package io.opendmp.dataflow.api.controller
 import com.amazonaws.services.s3.AmazonS3
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
 import io.opendmp.common.model.ProcessorType
+import io.opendmp.dataflow.TestConfig
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateDataflowRequest
 import io.opendmp.dataflow.api.response.DataflowListItem
@@ -64,7 +65,7 @@ import org.springframework.test.web.reactive.server.expectBody
     "io.opendmp.dataflow.messaging",
     "import com.c4_soft.springaddons.security.oauth2.test.webflux"
 ])
-@ContextConfiguration(classes = [MongoConfig::class, DataflowController::class])
+@ContextConfiguration(classes = [MongoConfig::class, DataflowController::class, TestConfig::class])
 @EnableConfigurationProperties(MongoProperties::class)
 class DataflowControllerTest(
         @Autowired val dataflowService: DataflowService,
@@ -73,24 +74,13 @@ class DataflowControllerTest(
 ) {
     private val baseUri : String = "/dataflow_api/dataflow"
 
+
     @AfterEach
     fun cleanUp() {
         mongoTemplate.findAllAndRemove<DataflowModel>(Query()).blockLast()
         mongoTemplate.findAllAndRemove<ProcessorModel>(Query()).blockLast()
         mongoTemplate.findAllAndRemove<RunPlanModel>(Query()).blockLast()
     }
-
-    @MockBean
-    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
-
-    @MockBean
-    lateinit var runPlanDispatcher: RunPlanDispatcher
-
-    @MockBean
-    lateinit var processRequester: ProcessRequester
-
-    @MockBean
-    lateinit var s3Client: AmazonS3
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])

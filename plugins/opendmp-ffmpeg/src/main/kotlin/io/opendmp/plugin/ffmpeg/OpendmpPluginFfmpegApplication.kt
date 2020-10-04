@@ -2,7 +2,6 @@ package io.opendmp.plugin.ffmpeg
 
 import io.opendmp.sdk.plugin.config.RegistryConfig
 import io.opendmp.sdk.plugin.routes.RegisterPlugin
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient

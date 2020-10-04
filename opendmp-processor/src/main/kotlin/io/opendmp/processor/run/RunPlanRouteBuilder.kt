@@ -227,6 +227,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                     .end()
                 .endCircuitBreaker()
                 .log("completed call to $service")
+                .removeHeaders("CamelServiceCall*")
 
     }
 

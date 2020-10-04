@@ -47,12 +47,6 @@ class RunPlanServiceTest @Autowired constructor(
         private val mongoTemplate: ReactiveMongoTemplate
 ) {
 
-    @MockBean
-    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
-
-    @MockBean
-    lateinit var s3Client: AmazonS3
-
     @AfterEach
     fun cleanUp() {
         mongoTemplate.findAllAndRemove<DataflowModel>(Query())

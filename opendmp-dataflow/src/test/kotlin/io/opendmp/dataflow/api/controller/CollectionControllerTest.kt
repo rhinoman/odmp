@@ -19,6 +19,7 @@ package io.opendmp.dataflow.api.controller
 import com.amazonaws.services.s3.AmazonS3
 import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthentication
 import com.mongodb.client.result.DeleteResult
+import io.opendmp.dataflow.TestConfig
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateCollectionRequest
 import io.opendmp.dataflow.config.MongoConfig
@@ -27,6 +28,7 @@ import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import io.opendmp.dataflow.model.CollectionModel
 import io.opendmp.dataflow.model.DatasetModel
 import io.opendmp.dataflow.service.CollectionService
+import io.opendmp.dataflow.service.RunPlanService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -56,7 +58,7 @@ import org.springframework.test.web.reactive.server.expectBody
     "io.opendmp.dataflow.messaging",
     "import com.c4_soft.springaddons.security.oauth2.test.webflux"
 ])
-@ContextConfiguration(classes = [MongoConfig::class, CollectionController::class])
+@ContextConfiguration(classes = [MongoConfig::class, CollectionController::class, TestConfig::class])
 @EnableConfigurationProperties(MongoProperties::class)
 class CollectionControllerTest @Autowired constructor(
         val collectionService: CollectionService,
@@ -70,18 +72,6 @@ class CollectionControllerTest @Autowired constructor(
     fun cleanUp() {
         mongoTemplate.findAllAndRemove<CollectionModel>(Query()).blockLast()
     }
-
-    @MockBean
-    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
-
-    @MockBean
-    lateinit var runPlanDispatcher: RunPlanDispatcher
-
-    @MockBean
-    lateinit var processRequester: ProcessRequester
-
-    @MockBean
-    lateinit var s3Client: AmazonS3
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])

@@ -41,8 +41,6 @@ class LookupControllerTest(
 ) {
     private val baseUri: String = "/dataflow_api/lookup"
 
-    @MockBean
-    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])

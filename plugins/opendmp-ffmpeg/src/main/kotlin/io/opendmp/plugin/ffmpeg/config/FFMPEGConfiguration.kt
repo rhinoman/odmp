@@ -5,13 +5,9 @@ import io.opendmp.common.model.plugin.FieldDescription
 import io.opendmp.common.model.plugin.FieldType
 import io.opendmp.common.model.plugin.PluginConfiguration
 import io.opendmp.sdk.plugin.config.PluginConfigurationProvider
-import io.opendmp.sdk.plugin.config.RegistryConfig
 import org.apache.camel.CamelContext
-import org.apache.camel.cloud.ServiceRegistry
-import org.apache.camel.component.consul.cloud.ConsulServiceRegistry
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
@@ -25,7 +21,7 @@ class FFMPEGConfiguration(@Autowired private val camelContext: CamelContext) : P
             "timeout" to FieldDescription(
                     type = FieldType.NUMBER,
                     required = false,
-                    helperText = "The amount of time (in milliseconds) to wait for FFMPEG to complete"))
+                    helperText = "The amount of time (in seconds) to wait for FFMPEG to complete"))
 
     @Value("\${odmp.plugin.name}")
     lateinit var pluginName: String

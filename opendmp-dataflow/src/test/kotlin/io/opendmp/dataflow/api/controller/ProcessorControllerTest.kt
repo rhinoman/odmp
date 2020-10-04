@@ -21,6 +21,7 @@ import com.c4_soft.springaddons.security.oauth2.test.annotations.WithMockAuthent
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
+import io.opendmp.dataflow.TestConfig
 import io.opendmp.dataflow.TestUtils
 import io.opendmp.dataflow.api.request.CreateProcessorRequest
 import io.opendmp.dataflow.api.request.UpdateProcessorRequest
@@ -58,7 +59,7 @@ import org.springframework.test.web.reactive.server.expectBody
     "io.opendmp.dataflow.service",
     "import com.c4_soft.springaddons.security.oauth2.test.webflux"
 ])
-@ContextConfiguration(classes = [MongoConfig::class, ProcessorController::class])
+@ContextConfiguration(classes = [MongoConfig::class, ProcessorController::class, TestConfig::class])
 @EnableConfigurationProperties(MongoProperties::class)
 class ProcessorControllerTest(
         @Autowired val processorService: ProcessorService,
@@ -74,17 +75,7 @@ class ProcessorControllerTest(
         mongoTemplate.remove<DataflowModel>()
     }
 
-    @MockBean
-    lateinit var reactiveJwtDecoder: ReactiveJwtDecoder
 
-    @MockBean
-    lateinit var runPlanDispatcher: RunPlanDispatcher
-
-    @MockBean
-    lateinit var processRequester: ProcessRequester
-
-    @MockBean
-    lateinit var s3Client: AmazonS3
 
     @Test
     @WithMockAuthentication(name = "odmp-user", authorities = ["user"])
