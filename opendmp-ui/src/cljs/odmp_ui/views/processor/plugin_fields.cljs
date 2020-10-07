@@ -22,7 +22,9 @@
    [odmp-ui.util.styles :as style]
    [odmp-ui.views.processor.events :as proc-events]
    [odmp-ui.views.processor.subs :as proc-subs]
+   ["react-ace" :default AceEditor]
    ["@material-ui/core/Box" :default Box]
+   ["@material-ui/core/FormHelperText" :default FormHelperText]
    ["@material-ui/core/TextField" :default TextField]
    ["@material-ui/core/Grid" :default Grid]
    ["@material-ui/core/FormGroup" :default FormGroup]
@@ -32,10 +34,13 @@
    ["@material-ui/core/InputLabel" :default InputLabel]
    ["@material-ui/core/Select" :default Select]
    ["@material-ui/core/Typography" :default Typography]
+   ["@material-ui/core/Switch" :default Switch]
    ["@material-ui/core/MenuItem" :default MenuItem]))
 
 
-(defn text-field [name field value]
+(defn text-field
+  "A simple text input field"
+  [name field value]
   [:> TextField {:type :text
                  :variant :filled
                  :margin :dense
@@ -46,7 +51,9 @@
                  :onBlur #(rf/dispatch [::proc-events/set-processor-property name (-> % .-target .-value)])
                  :label name}])
 
-(defn number-field [name field value]
+(defn number-field
+  "A numerical input"
+  [name field value]
   [:> TextField {:type :number
                  :variant :filled
                  :margin :dense
@@ -56,9 +63,48 @@
                  :onBlur #(rf/dispatch [::proc-events/set-processor-property name (-> % .-target .-value)])
                  :label name}])
 
+(defn code-field
+  "An input field that displays a code editor"
+  [name field value]
+  (let [editor-contents (r/atom (or value
+                                    ""))]
+    (fn [ace-mode]
+      [:> AceEditor {:mode ace-mode
+                     :theme "monokai"
+                     :name (str "INPUT_" name)
+                     :width "100%"
+                     :showPrintMargin false
+                     :focus true
+                     :fontSize 14
+                     :value @editor-contents
+                     :onChange #((rf/dispatch [::proc-events/set-processor-property name %])
+                                 (reset! editor-contents %))}])))
+
 (defn boolean-field [name field value]
-  [:> FormGroup
-   [:> FormControlLabel {:label name}]])
+  (let [value* (if (= value "") false value)
+        switch-state (r/atom (or value*) false)]
+   [:> FormControl {:component "fieldset"}
+    [:> FormGroup
+     [:> FormControlLabel {:label name
+                           :control (r/as-element
+                                     [:> Switch {:name name
+                                                 :checked @switch-state
+                                                 :onChange (fn [e] (swap! switch-state not)
+                                                             (rf/dispatch [::proc-events/set-processor-property name @switch-state]))
+                                                 :color :primary}])}]
+     [:> FormHelperText (:helperText field)]]]))
+
+(defn enum-field [name field value]
+  [:> Box
+   [:> FormControl {:variant :filled :required true :margin :dense :fullWidth true}
+    [:> InputLabel {:id (str "INPUT_PLUGIN_" name "_LABEL")} name]
+    [:> Select {:labelid (str "INPUT_PLUGIN_" name "_LABEL")
+                :value value
+                :onChange #(rf/dispatch [::proc-events/set-processor-property name (-> % .-target .-value)])}
+     [:> MenuItem {:value ""} [:em "NONE"]]
+     (map (fn [o] ^{:key (str "INPUT_" o "_ITEM")}
+            [:> MenuItem {:value o} o]) (:options field))]
+    [:> FormHelperText (:helperText field)]]])
 
 (defn plugin-field [name field processor]  
   (let [type (:type field)
@@ -69,6 +115,9 @@
     (case type
      "STRING" [text-field name field field-disp-value]
      "NUMBER" [number-field name field field-disp-value]
+     "CODE" [code-field name field field-disp-value]
+     "BOOLEAN" [boolean-field name field field-disp-value]
+     "ENUM" [enum-field name field field-disp-value]
      nil)))
 
 (defn plugin-fields* [processor]

@@ -18,6 +18,13 @@ package io.opendmp.common.model.plugin
 
 import io.opendmp.common.model.ProcessorType
 
+/**
+ * Plugin Configuration
+ * @param serviceName The name of the plugin service that will be registered
+ * @param displayName A nice name to display to the user
+ * @param type The basic category this plugin belongs to
+ * @param fields List of input fields this processor needs from the user
+ */
 data class PluginConfiguration(
     val serviceName: String,
     val displayName: String,

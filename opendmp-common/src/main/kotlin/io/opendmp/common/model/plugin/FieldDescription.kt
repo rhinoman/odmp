@@ -16,6 +16,14 @@
 
 package io.opendmp.common.model.plugin
 
+/**
+ * Field Description - Configuration for a single plugin input field
+ * @param type The basic data type of the field
+ * @param required Whether or not the field must be populated
+ * @param helperText Text to display with the input
+ * @param options Options for Enum types
+ */
 data class FieldDescription(val type: FieldType,
                             val required: Boolean = false,
-                            val helperText: String? = null) {}
+                            val helperText: String? = null,
+                            val options: List<String>? = null) {}
