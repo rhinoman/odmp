@@ -63,36 +63,44 @@
                  :onBlur #(rf/dispatch [::proc-events/set-processor-property name (-> % .-target .-value)])
                  :label name}])
 
+(defn code-field-changed [name value atm]
+  (rf/dispatch [::proc-events/set-processor-property name value])
+  (reset! atm value))
+
 (defn code-field
   "An input field that displays a code editor"
   [name field value]
   (let [editor-contents (r/atom (or value
                                     ""))]
     (fn [ace-mode]
-      [:> AceEditor {:mode ace-mode
-                     :theme "monokai"
-                     :name (str "INPUT_" name)
-                     :width "100%"
-                     :showPrintMargin false
-                     :focus true
-                     :fontSize 14
-                     :value @editor-contents
-                     :onChange #((rf/dispatch [::proc-events/set-processor-property name %])
-                                 (reset! editor-contents %))}])))
+      [:> Box
+       [:> AceEditor {:mode (get-in field [:properties :language])
+                      :theme "monokai"
+                      :name (str "INPUT_" name)
+                      :width "100%"
+                      :showPrintMargin false
+                      :focus true
+                      :fontSize 14
+                      :value @editor-contents
+                      :onChange #(code-field-changed name % editor-contents)}]
+       [:> FormHelperText (:helperText field)]])))
 
 (defn boolean-field [name field value]
   (let [value* (if (= value "") false value)
         switch-state (r/atom (or value*) false)]
-   [:> FormControl {:component "fieldset"}
-    [:> FormGroup
-     [:> FormControlLabel {:label name
-                           :control (r/as-element
-                                     [:> Switch {:name name
-                                                 :checked @switch-state
-                                                 :onChange (fn [e] (swap! switch-state not)
-                                                             (rf/dispatch [::proc-events/set-processor-property name @switch-state]))
-                                                 :color :primary}])}]
-     [:> FormHelperText (:helperText field)]]]))
+   (fn []
+     [:> FormControl {:component "fieldset"}
+      [:> FormGroup
+       [:> FormControlLabel
+        {:label name
+         :control
+         (r/as-element
+          [:> Switch {:name name
+                      :checked @switch-state
+                      :onChange (fn [e] (swap! switch-state not)
+                                  (rf/dispatch [::proc-events/set-processor-property name @switch-state]))
+                      :color :primary}])}]
+       [:> FormHelperText (:helperText field)]]])))
 
 (defn enum-field [name field value]
   [:> Box
@@ -112,13 +120,14 @@
         field-disp-value (or field-value
                              (get-in @processor [:properties name])
                              "")]
-    (case type
-     "STRING" [text-field name field field-disp-value]
-     "NUMBER" [number-field name field field-disp-value]
-     "CODE" [code-field name field field-disp-value]
-     "BOOLEAN" [boolean-field name field field-disp-value]
-     "ENUM" [enum-field name field field-disp-value]
-     nil)))
+    [:> Box {:style {:margin-bottom 5 :margin-top 5}}
+     (case type
+       "STRING" [text-field name field field-disp-value]
+       "NUMBER" [number-field name field field-disp-value]
+       "CODE" [code-field name field field-disp-value]
+       "BOOLEAN" [boolean-field name field field-disp-value]
+       "ENUM" [enum-field name field field-disp-value]
+       nil)]))
 
 (defn plugin-fields* [processor]
   (let [config-map (rf/subscribe [::subs/plugin-config])
@@ -130,7 +139,7 @@
         plugin-selected (get @config-map (keyword service-name-value))]
     [:<>
      (when configs
-       [:> Box
+       [:> Box {:style {:padding-bottom 10}}
         [:> FormControl {:variant :filled :required true :margin :dense :fullWidth true}
          [:> InputLabel {:id "INPUT_PLUGIN_LABEL"} "Plugin"]
          [:> Select {:labelid "INPUT_PLUGIN_LABEL"

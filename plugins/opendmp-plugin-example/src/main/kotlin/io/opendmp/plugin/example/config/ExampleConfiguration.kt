@@ -27,6 +27,12 @@ class ExampleConfiguration(@Autowired private val camelContext: CamelContext) : 
                     type = FieldType.STRING,
                     required = false,
                     helperText = "Additional arguments to pass to the command"),
+            "code" to FieldDescription(
+                    type = FieldType.CODE,
+                    required = false,
+                    helperText = "Some code that will not be evaluated",
+                    properties = mapOf("language" to "python")
+            ),
             "timeout" to FieldDescription(
                     type = FieldType.NUMBER,
                     required = false,
