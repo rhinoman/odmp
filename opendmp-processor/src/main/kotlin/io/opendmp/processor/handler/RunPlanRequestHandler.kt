@@ -78,6 +78,8 @@ class RunPlanRequestHandler(
 
         } catch (jpe: JsonProcessingException) {
             log.error("Error extracting message", jpe)
+        } catch (rpce: RunPlanConflictException) {
+            log.warn(rpce.localizedMessage)
         } catch (ex: Exception) {
             log.error("Error building run plan", ex)
             runPlanStatusDispatcher.sendStartRunPlanFailureMessage(
