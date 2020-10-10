@@ -102,7 +102,7 @@ services:
       timeout: 20s
       retries: 3
 
-  consul-server-1:
+  consul-server:
     image: 'consul:1.8.4'
     ports:
       - "8400:8400"
@@ -113,7 +113,15 @@ services:
 
   consul-agent-1:
     image: 'consul:1.8.4'
-    command: "agent -retry-join consul-server-1 -client 0.0.0.0"
+    command: "agent -retry-join consul-server -client 0.0.0.0"
+
+  ffmpeg-plugin:
+    image: opendmp/opendmp-plugin-ffmpeg:0.4.0
+    environment:
+      PLUGIN_PORT: 8004
+      CONSUL_HOST: consul-server
+    ports:
+      - "8004:8004"
     
 
   haproxy:

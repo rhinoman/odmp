@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.opendmp.plugin</groupId>
     <artifactId>ffmpeg</artifactId>
-    <version>${odmp.version}</version>
+    <version>${opendmp.version}</version>
     <name>opendmp-plugin-ffmpeg</name>
     <description>FFMPEG Plugin for OpenDMP</description>
 
@@ -49,6 +49,18 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>opendmp-plugin-ffmpeg</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+
             </plugin>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -68,6 +80,26 @@
                         <version>${kotlin.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.4.12</version>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repository>opendmp/opendmp-plugin-ffmpeg</repository>
+                    <tag>${project.version}</tag>
+                    <buildArgs>
+                        <JAR_FILE>opendmp-plugin-ffmpeg.jar</JAR_FILE>
+                    </buildArgs>
+                </configuration>
             </plugin>
         </plugins>
     </build>

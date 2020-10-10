@@ -16,6 +16,7 @@
 
 package io.opendmp.processor.run
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.opendmp.common.exception.NotImplementedException
 import io.opendmp.common.exception.ProcessorDefinitionException
 import io.opendmp.common.exception.RunPlanLogicException
@@ -24,6 +25,7 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
+import io.opendmp.common.util.MessageUtil
 import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
 import io.opendmp.processor.run.processors.*
@@ -36,6 +38,7 @@ import org.apache.camel.model.*
 import org.apache.camel.spi.IdempotentRepository
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.http.message.BasicNameValuePair
+import java.util.*
 
 /**
  * RunPlanRouteBuilder - takes a Run Plan and builds camel routes to set up a data pipeline
@@ -207,8 +210,9 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
     }
 
     private fun getQueryParams(proc: ProcessorRunModel): String {
-        val nvp = proc.properties?.entries?.map { BasicNameValuePair(it.key, it.value.toString()) }
-        return URLEncodedUtils.format(nvp, Charsets.UTF_8)
+        val propStr = MessageUtil.mapper.writeValueAsString(proc.properties)
+        val b64Props = Base64.getUrlEncoder().encodeToString(propStr.toByteArray())
+        return "properties=$b64Props"
     }
 
     /**
@@ -216,7 +220,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
      */
     private fun serviceCall(route: RouteDefinition, proc: ProcessorRunModel)  {
         val service = proc.properties?.get("serviceName").toString()
-        val params = getQueryParams(proc)
+
         route
                 .log("Making call to $service")
                 .circuitBreaker().inheritErrorHandler(true)
@@ -224,6 +228,7 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                     .serviceCallConfiguration("basicServiceCall")
                     .name(service)
                     .uri("http://$service/process?${getQueryParams(proc)}")
+                    .setHeader(Exchange.HTTP_METHOD, constant("POST"))
                     .end()
                 .endCircuitBreaker()
                 .log("completed call to $service")

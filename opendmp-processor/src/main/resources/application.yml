@@ -20,6 +20,10 @@ odmp:
     access-key: ${aws_access_key:minio_access_key}
     secret-key: ${aws_secret_key:minio_secret_key}
 
+server:
+  port: ${http_port:8080}
+  max-http-header-size: 1024KB
+
 camel:
   threadpool:
     pool-size: 20
@@ -45,10 +49,12 @@ spring:
   servlet:
     multipart:
       max-request-size: 2000MB
+
   main:
     web-application-type: none
   application:
     name: opendmp-processor-service
+
 logging:
   level:
     org:

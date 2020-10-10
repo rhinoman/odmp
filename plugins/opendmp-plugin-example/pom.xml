@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.opendmp.plugin</groupId>
     <artifactId>example</artifactId>
-    <version>${odmp.version}</version>
+    <version>${opendmp.version}</version>
     <name>opendmp-plugin-example</name>
     <description>Example Plugin for OpenDMP</description>
 

@@ -48,6 +48,7 @@ class FailureHandler {
         log.info("Sending Run plan failure notification for run plan: $runPlanId," +
                 " with processor Id: $procId")
         runPlanStatusDispatcher.sendFailureMessage(msg)
+        exchange.getIn().body = cause
     }
 
 }
