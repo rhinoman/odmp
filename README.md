@@ -6,7 +6,7 @@ See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data
 
 ## Documentation:
 
-- Attempts at documentation will be found int he [wiki](https://github.com/rhinoman/odmp/wiki)
+- Attempts at documentation will be found in the [wiki](https://github.com/rhinoman/odmp/wiki)
 
 ## Rationale:
 
