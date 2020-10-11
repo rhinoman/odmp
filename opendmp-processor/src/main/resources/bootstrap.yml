@@ -4,6 +4,3 @@ spring:
       host: ${consul_host:localhost}
       port: ${consul_port:8500}
       scheme: ${consul_scheme:http}
-      discovery:
-        prefer-ip-address: true
-

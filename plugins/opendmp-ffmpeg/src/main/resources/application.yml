@@ -30,3 +30,4 @@ spring:
         instance-id: ${spring.application.name}:${random.value}
         register-health-check: true
         health-check-path: /config
+        prefer-ip-address: true

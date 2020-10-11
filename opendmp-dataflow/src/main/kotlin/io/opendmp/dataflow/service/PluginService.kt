@@ -73,12 +73,14 @@ class PluginService(private val producerTemplate: ProducerTemplate) : RouteBuild
                 .bean(javaClass, "handleError")
 
         from("direct:plugin-config")
+                .circuitBreaker()
                   .serviceCall()
                     .setHeader(Exchange.HTTP_METHOD, constant("GET"))
                     .name("\$simple{body}")
                     .uri("\$simple{body}/config?bridgeEndpoint=true")
                     .serviceCallConfiguration("basicServiceCallConfiguration")
                     .bean(javaClass,"processConfig").end()
+                .endCircuitBreaker()
 
     }
 

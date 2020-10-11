@@ -44,8 +44,6 @@ spring:
         enabled: true
         instance-id: opendmp-processor-service:${random.value}
         register: false
-      port: ${consul_port:8500}
-      host: ${consul_host:localhost}
   servlet:
     multipart:
       max-request-size: 2000MB

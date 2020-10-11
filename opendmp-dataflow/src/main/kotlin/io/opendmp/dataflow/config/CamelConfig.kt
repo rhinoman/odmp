@@ -19,23 +19,29 @@ package io.opendmp.dataflow.config
 import org.apache.camel.component.ribbon.RibbonConfiguration
 import org.apache.camel.component.ribbon.cloud.RibbonServiceLoadBalancer
 import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition
+import org.apache.camel.processor.loadbalancer.RoundRobinLoadBalancer
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
 class CamelConfig() {
 
+    @Value("\${spring.cloud.consul.host}")
+    lateinit var consulHost: String
+    @Value("\${spring.cloud.consul.port}")
+    lateinit var consulPort: String
+    @Value("\${spring.cloud.consul.scheme}")
+    lateinit var consulScheme: String
+
     @Bean
     fun basicServiceCallConfiguration() : ServiceCallConfigurationDefinition {
         val conf = ServiceCallConfigurationDefinition()
-        val rc = RibbonConfiguration()
-        rc.addProperty("MaxAutoRetries", "0")
-        rc.addProperty("MaxAutoRetriesNextServer", "1")
-        rc.addProperty("ReadTimeout", "1000")
+        val consulUrl = "$consulScheme://$consulHost:$consulPort"
         conf
                 .component("netty-http")
-                .loadBalancer(RibbonServiceLoadBalancer(rc))
                 .consulServiceDiscovery()
+                .url(consulUrl)
                 .blockSeconds(5)
                 .connectTimeoutMillis(1000)
                 .readTimeoutMillis(1000)

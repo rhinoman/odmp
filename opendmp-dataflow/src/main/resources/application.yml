@@ -34,9 +34,6 @@ spring:
         enabled: true
         instance-id: opendmp-dataflow-service:${random.value}
         register: false
-      port: ${consul_port:8500}
-      host: ${consul_host:localhost}
-      scheme: ${consul_scheme:http}
 
   security:
     oauth2:
