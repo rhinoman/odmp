@@ -4,6 +4,10 @@
 
 See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data-management-thing/) introducing the project
 
+## Documentation:
+
+- Attempts at documentation will be found int he [wiki](https://github.com/rhinoman/odmp/wiki)
+
 ## Rationale:
 
 - Eliminate/Reduce bespoke data management systems being implemented for every organization/program/project and concomitant duplication of effort.
