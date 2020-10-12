@@ -44,6 +44,9 @@ See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data
 ### Processor Editor Screen
 ![Processor Editor](/doc/screenshots/processor_editor.jpg)
 
+### Processed Dataset Detail
+![Dataset Detail](/doc/screenshots/dataset_detail2.jpg)
+
 ## Developer Setup
 
 The backend services are mostly written in Kotlin.  There may be cause to mix in other languages (most likely Python, R, and/or Clojure) in the future for individual plugins and extensions, but the core services should remain Kotlin.
