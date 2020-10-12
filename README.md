@@ -72,3 +72,11 @@ There is an `odmp-realm.json` file located under kc-data/ you can use to import 
 ### Mongo setup
 
 There is a mongo-init.js script in mongo-data/ which should automatically run the first time mongo is started.  You may have to dump your docker volume if changes to the mongo schema are made.
+
+### Help needed
+
+Contributions are welcome!  Any help would be appreciated, in particular:
+
+- Use, testing, and feedback (bug reports, feature requests, etc).
+- Documentation help
+- And of course, (quality) code :)
