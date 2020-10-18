@@ -50,6 +50,7 @@
 (defn app-routes []
   (secretary/set-config! :prefix "#")
   (re-frame/dispatch [::window/start-on-resize])
+  
   ;; --------------------
   ;; define routes here
   (defroute "/" []

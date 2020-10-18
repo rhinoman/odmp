@@ -22,6 +22,8 @@
    [ajax.core :as ajax]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [day8.re-frame.forward-events-fx]
+   [superstructor.re-frame.fetch-fx]
+   [odmp-ui.util.network :refer [basic-headers]]
    [secretary.core :as secretary]
    [cljs.core.async :refer [<! timeout]]
    ["keycloak-js" :as Keycloak]))
@@ -95,6 +97,27 @@
                         :dispatch-to [::auth-complete]}})))
 
 (re-frame/reg-event-fx
+  ::fetch-stream
+  (fn [{:keys [db]} _]
+    {:fetch {:method                :get
+             :url                   "/dataflow_api/event/stream"
+             :headers               (basic-headers db)
+             :on-success            [::handle-event-success]
+             :on-failure            [::handle-event-failure]}}))
+
+(re-frame/reg-event-db
+  ::handle-event-success
+  (fn [db [_ result]]
+    (println result)
+    db))
+
+(re-frame/reg-event-db
+  ::handle-event-failure
+  (fn [db [_ result]]
+    (println result)
+    db))
+
+(re-frame/reg-event-fx
  ::logout
  (fn [{:keys [db]}]
    (let [^js keycloak (get-in db [:auth-state :keycloak])]
@@ -119,16 +142,6 @@
  ::set-sidebar-expanded
  (fn-traced [db [_ _]]
    (assoc db :sidebar-expanded (not (:sidebar-expanded db)))))
-
-;; Network events, eh.
-
-(defn get-token [db]
-  (let [keycloak (get-in db [:auth-state :keycloak])]
-    (.-token keycloak)))
-
-(defn basic-headers [db]
-  {:Authorization (str "Bearer " (get-token db))})
-
 
 (re-frame/reg-event-db
  ::clear-collection-list

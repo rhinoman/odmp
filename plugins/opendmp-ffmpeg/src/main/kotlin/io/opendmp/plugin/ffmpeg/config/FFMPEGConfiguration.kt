@@ -5,13 +5,11 @@ import io.opendmp.common.model.plugin.FieldDescription
 import io.opendmp.common.model.plugin.FieldType
 import io.opendmp.common.model.plugin.PluginConfiguration
 import io.opendmp.sdk.plugin.config.PluginConfigurationProvider
-import org.apache.camel.CamelContext
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class FFMPEGConfiguration(@Autowired private val camelContext: CamelContext) : PluginConfigurationProvider {
+class FFMPEGConfiguration : PluginConfigurationProvider {
 
     private val fields = mapOf(
             "command" to FieldDescription(

@@ -16,7 +16,6 @@
 
 package io.opendmp.dataflow.api.controller
 
-import io.opendmp.dataflow.model.HelloModel
 import io.opendmp.dataflow.model.event.EventModel
 import io.opendmp.dataflow.service.EventService
 import kotlinx.coroutines.flow.Flow
@@ -24,17 +23,17 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Flux
 
 @RestController
-@RequestMapping("/")
-class MainController() {
+@RequestMapping("/dataflow_api/event")
+class EventController(private val eventService: EventService) {
 
-    /**
-     * This is mainly used to provide a "heartbeat" method for HAProxy, et al.
-     */
-    @GetMapping
-    fun hello() : HelloModel {
-        return HelloModel()
+    @GetMapping("/stream",
+            produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    suspend fun stream() : Flow<EventModel> {
+        return eventService.eventStream()
     }
+
 
 }

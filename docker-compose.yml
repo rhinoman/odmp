@@ -16,7 +16,8 @@ services:
     volumes:
       - ./mongo-data:/docker-entrypoint-initdb.d
       - mongo_dev_data:/data/db
-    
+    command: --bind_ip_all --replSet=rs0 --enableMajorityReadConcern false
+
   keycloak:
     image: jboss/keycloak:10.0.2
     container_name: odmp_keycloak

@@ -27,6 +27,7 @@ import io.opendmp.dataflow.model.runplan.RunPlanModel
 import io.opendmp.dataflow.service.DataflowService
 import io.opendmp.dataflow.service.RunPlanService
 import kotlinx.coroutines.flow.Flow
+import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.validation.BindingResult
 import org.springframework.validation.annotation.Validated
@@ -43,7 +44,7 @@ class DataflowController(private val dataflowService: DataflowService,
     suspend fun findAll(@RequestParam(required = false) enabled: Boolean?) : Flow<DataflowListItem> {
         return dataflowService.getList(enabled)
     }
-
+    
     @GetMapping("/{id}")
     fun findOne(@PathVariable("id") id: String) : Mono<DataflowModel> {
         return dataflowService.get(id)

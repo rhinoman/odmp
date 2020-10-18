@@ -42,10 +42,12 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import java.time.LocalDateTime
 import java.time.ZoneId
+import javax.xml.crypto.Data
 
 @Service
 class DataflowService (private val mongoTemplate: ReactiveMongoTemplate,

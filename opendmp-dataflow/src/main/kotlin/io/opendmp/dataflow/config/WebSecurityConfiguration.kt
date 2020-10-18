@@ -47,8 +47,10 @@ class WebSecurityConfiguration {
                 .pathMatchers("/dataflow_api/collection/**").hasAnyAuthority("user")
                 .pathMatchers("/dataflow_api/dataset/download").permitAll()
                 .pathMatchers("/dataflow_api/dataset/**").hasAnyAuthority("user")
+                .pathMatchers("/dataflow_api/event/**").hasAnyAuthority("user")
                 .pathMatchers("/").permitAll()
                 .pathMatchers("/dataflow_api/doc/**").permitAll()
+
                 .anyExchange().authenticated()
                 .and()
                 .exceptionHandling()
