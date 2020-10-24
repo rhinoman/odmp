@@ -17,7 +17,6 @@
 package io.opendmp.processor.run.processors
 
 import io.opendmp.processor.exception.ServiceCallException
-import org.apache.camel.CamelException
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.slf4j.Logger

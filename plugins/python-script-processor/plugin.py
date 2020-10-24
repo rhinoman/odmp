@@ -29,20 +29,26 @@ logger = logging.getLogger()
 
 
 @plugin.route("/config", methods=['GET'])
-def getConfig():
+def get_config():
     plugin.logger.info('Config Requested')
     return config
 
 
 @plugin.route("/process", methods=['GET', 'POST'])
 def proc():
-    props = decode_headers(request)
+    props = decode_properties(request)
     code = props['code']
     data = request.get_data(cache=False, as_text=False, parse_form_data=False)
     return execute(code, data)
 
 
 def execute(code, data):
+    """
+    Executes a block of python code
+    :param code: the code to execute - must include a function named 'process'
+    :param data: the data to process
+    :return: the modified data, or an error, and the http response code
+    """
     try:
         exec(code)
         return locals()['process'](data), 200
@@ -51,7 +57,12 @@ def execute(code, data):
         return f'Error:{str(err)}', 500
 
 
-def decode_headers(http_req):
+def decode_properties(http_req):
+    """
+    Takes an http request and decodes the properties query parameter
+    :param http_req:
+    :return: a dict of properties
+    """
     enc_props = http_req.args.get('properties')
     byte_props = base64.urlsafe_b64decode(enc_props).decode('UTF-8')
     props = json.loads(byte_props)
@@ -60,8 +71,14 @@ def decode_headers(http_req):
 
 # Register this plugin with Consul
 def register_plugin():
+    """
+    Registers this plugin with Consul
+    :return: None
+    """
     logger.info("Registering plugin with Consul")
-    c = Consul()
+    consul_host = getenv("CONSUL_HOST", "localhost")
+    consul_port = getenv("CONSUL_PORT", 8500)
+    c = Consul(host=consul_host, port=consul_port)
 
     hname = socket.gethostname()
     ipaddr = socket.gethostbyname(hname)
@@ -82,13 +99,15 @@ def register_plugin():
 def deregister(c, service_id):
     """
     Deregister the service on exit
-    | c - Consul connection
-    | service_id - The service id of this instance registered with Consul
+    :param c: Consul connection
+    :param service_id: The service id of this instance registered with Consul
+    :return: None
     """
     logging.info("De-registering plugin")
     c.agent.service.deregister(service_id)
 
 
+register_plugin()
+
 if __name__ == "__main__":
-    register_plugin()
     plugin.run(host='0.0.0.0', port=port)

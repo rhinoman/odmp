@@ -1,2 +1,4 @@
 Flask~=1.1.2
 gunicorn~=20.0.4
+python-consul2~=0.1.5
+numpy~=1.19.2
