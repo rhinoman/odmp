@@ -16,7 +16,6 @@
 
 package io.opendmp.processor.run.processors
 
-import io.opendmp.common.exception.ProcessorDefinitionException
 import io.opendmp.common.exception.ScriptExecutionException
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
@@ -24,7 +23,6 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.properties.ScriptLanguage
 import io.opendmp.processor.domain.DataEnvelope
 import io.opendmp.processor.executors.ClojureExecutor
-import io.opendmp.processor.executors.PythonExecutor
 import org.apache.camel.Exchange
 
 class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
@@ -40,7 +38,6 @@ class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processo
                 ClojureExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
             ScriptLanguage.PYTHON ->
                 exchange.getIn().body
-//                PythonExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
             else -> throw ScriptExecutionException("Script language $language is unsupported")
         }
         envelope.history.add(DataEvent(

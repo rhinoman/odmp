@@ -24,9 +24,10 @@ class TestPluginFunctions(unittest.TestCase):
                 "  upcased = ba.upper()\n"
                 "  return bytearray(upcased, 'utf-8')\n")
         data = b'The best books... are those that tell you what you know already.'
-        result = plugin.execute(code, data)
+        result, status = plugin.execute(code, data)
         expected = b'THE BEST BOOKS... ARE THOSE THAT TELL YOU WHAT YOU KNOW ALREADY.'
         print(result)
+        self.assertEqual(status, 200)
         self.assertEqual(result, expected)
 
 

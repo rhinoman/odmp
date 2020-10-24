@@ -39,13 +39,16 @@ def proc():
     props = decode_headers(request)
     code = props['code']
     data = request.get_data(cache=False, as_text=False, parse_form_data=False)
-    result = execute(code, data)
-    return result
+    return execute(code, data)
 
 
 def execute(code, data):
-    exec(code)
-    return locals()['process'](data)
+    try:
+        exec(code)
+        return locals()['process'](data), 200
+    except Exception as err:
+        plugin.logger.error(err)
+        return f'Error:{str(err)}', 500
 
 
 def decode_headers(http_req):
@@ -63,7 +66,7 @@ def register_plugin():
     hname = socket.gethostname()
     ipaddr = socket.gethostbyname(hname)
 
-    health_check = Check.http(url=f'http://{ipaddr}:{port}/config', interval="20s")
+    health_check = Check.http(url=f'http://{ipaddr}:{port}/config', interval="20s", deregister=True)
     service_name = config['serviceName']
     service_id = f'{service_name}-{str(uuid.uuid4())}'
 

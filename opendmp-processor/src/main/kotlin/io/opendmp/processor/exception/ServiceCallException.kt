@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
+ * Copyright (c) 2020. The Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.executors
+package io.opendmp.processor.exception
 
-import jep.SharedInterpreter
+import org.apache.camel.CamelException
 
-class PythonExecutor : Executor{
-    override fun executeScript(code: String, data: ByteArray): ByteArray {
-        val interpreter = SharedInterpreter()
-        interpreter.use { interp ->
-            interp.exec("from array import array")
-            interp.exec(code)
-            val output = interp.invoke("process", data)
-            return output as ByteArray
-        }
-    }
-}
+class ServiceCallException(message: String) : CamelException(message)

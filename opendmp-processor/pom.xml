@@ -157,13 +157,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- JEP for python support -->
-		<dependency>
-			<groupId>black.ninia</groupId>
-			<artifactId>jep</artifactId>
-			<version>3.9.0</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.clojure</groupId>
 			<artifactId>clojure</artifactId>
@@ -222,26 +215,6 @@
 						<version>${kotlin.version}</version>
 					</dependency>
 				</dependencies>
-			</plugin>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>dockerfile-maven-plugin</artifactId>
-				<version>1.4.12</version>
-				<executions>
-					<execution>
-						<id>default</id>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<repository>opendmp/opendmp-processor</repository>
-					<tag>${project.version}</tag>
-					<buildArgs>
-						<JAR_FILE>opendmp-processor.jar</JAR_FILE>
-					</buildArgs>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

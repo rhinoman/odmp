@@ -35,6 +35,7 @@ import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.DefaultErrorHandlerBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.component.aws.s3.S3Constants
+import org.apache.camel.http.base.HttpOperationFailedException
 import org.apache.camel.model.*
 import org.apache.camel.spi.IdempotentRepository
 import org.apache.http.client.utils.URLEncodedUtils
@@ -238,11 +239,12 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
                 .serviceCallConfiguration("basicServiceCall")
                 .name(service)
-                .uri("http://$service/process?${getQueryParams(proc)}")
+                .uri("http://$service/process?throwExceptionOnFailure=false&${getQueryParams(proc)}")
                 .end()
                 .endCircuitBreaker()
                 .log("completed call to $service")
                 .removeHeaders("CamelServiceCall*")
+                .process(ServiceCallResponseProcessor())
     }
 
 }
