@@ -67,6 +67,7 @@ springdoc:
 
 server:
   port: ${odmp_dataflow_port:8080}
+
 camel:
   cloud:
     ribbon:

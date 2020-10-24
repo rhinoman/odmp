@@ -39,7 +39,8 @@ class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processo
             ScriptLanguage.CLOJURE ->
                 ClojureExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
             ScriptLanguage.PYTHON ->
-                PythonExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
+                exchange.getIn().body
+//                PythonExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
             else -> throw ScriptExecutionException("Script language $language is unsupported")
         }
         envelope.history.add(DataEvent(
