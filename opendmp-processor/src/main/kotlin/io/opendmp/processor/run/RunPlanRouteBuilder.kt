@@ -25,6 +25,7 @@ import io.opendmp.common.model.ProcessorRunModel
 import io.opendmp.common.model.ProcessorType
 import io.opendmp.common.model.SourceModel
 import io.opendmp.common.model.SourceType
+import io.opendmp.common.model.properties.ScriptLanguage
 import io.opendmp.common.util.MessageUtil
 import io.opendmp.processor.config.SpringContext
 import io.opendmp.processor.domain.RunPlan
@@ -34,6 +35,7 @@ import org.apache.camel.LoggingLevel
 import org.apache.camel.builder.DefaultErrorHandlerBuilder
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.component.aws.s3.S3Constants
+import org.apache.camel.http.base.HttpOperationFailedException
 import org.apache.camel.model.*
 import org.apache.camel.spi.IdempotentRepository
 import org.apache.http.client.utils.URLEncodedUtils
@@ -186,10 +188,8 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
                 .startupOrder(Utils.getNextStartupOrder())
                 .setHeader("processor", constant(curProc.id))
 
-        // If this processor has a service name, we need to do an external service call
-        if(curProc.properties?.get("serviceName") != null) {
-            serviceCall(contRoute, curProc)
-        }
+        // Make a service call, if applicable
+        serviceCall(contRoute, curProc)
 
         // Execute this processor
         contRoute.process(proc).id(curProc.id)
@@ -219,21 +219,32 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
      * Make a service call!
      */
     private fun serviceCall(route: RouteDefinition, proc: ProcessorRunModel)  {
-        val service = proc.properties?.get("serviceName").toString()
+        val props = proc.properties!!
+        //Find a service to call
+        val service = when {
+            //Do we have a service in the header (plugins)?
+            props.containsKey("serviceName") ->
+                props["serviceName"].toString()
+            //Python script processor?
+            proc.type == ProcessorType.SCRIPT &&
+                    ScriptLanguage.valueOf(props["language"].toString()) == ScriptLanguage.PYTHON ->
+                "python-script-processor"
+            else -> return //Don't service call
+        }
 
         route
                 .log("Making call to $service")
                 .circuitBreaker().inheritErrorHandler(true)
-                  .serviceCall()
-                    .serviceCallConfiguration("basicServiceCall")
-                    .name(service)
-                    .uri("http://$service/process?${getQueryParams(proc)}")
-                    .setHeader(Exchange.HTTP_METHOD, constant("POST"))
-                    .end()
+                .serviceCall()
+                .setHeader(Exchange.HTTP_METHOD, constant("POST"))
+                .serviceCallConfiguration("basicServiceCall")
+                .name(service)
+                .uri("http://$service/process?throwExceptionOnFailure=false&${getQueryParams(proc)}")
+                .end()
                 .endCircuitBreaker()
                 .log("completed call to $service")
                 .removeHeaders("CamelServiceCall*")
-
+                .process(ServiceCallResponseProcessor())
     }
 
 }
