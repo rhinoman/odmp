@@ -126,6 +126,15 @@ services:
     depends_on:
       - consul-bootstrap
 
+  clojure-script-runner:
+    image: 'opendmp/clojure-script-runner:0.4.0'
+    ports:
+      - '8018:8018'
+    environment:
+      CONSUL_HOST: consul-bootstrap
+    depends_on:
+      - consul-bootstrap
+
   haproxy:
     image: 'haproxy:2.1-alpine'
     network_mode: host

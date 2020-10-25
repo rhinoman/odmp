@@ -11,23 +11,57 @@
     </parent>
  
     <groupId>io.opendmp</groupId>
-    <artifactId>opendmp-parent</artifactId>
-    <version>0.4.0</version>
+    <artifactId>opendmp</artifactId>
+    <version>${revision}</version>
     <packaging>pom</packaging>
  
     <name>OpenDMP Parent</name>
     <url>http://maven.apache.org</url>
 
     <properties>
-      <opendmp.version>0.4.0</opendmp.version>
+      <revision>0.4.0</revision>
       <java.version>11</java.version>
       <kotlin.version>1.4.0</kotlin.version>
       <camel.version>3.5.0</camel.version>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <kotlin.code.style>official</kotlin.code.style>
       <spring.cloud.version>2.2.4.RELEASE</spring.cloud.version>
     </properties>
  
     <dependencies>
          
     </dependencies>
+    <modules>
+      <module>plugins</module>
+    </modules>
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <configuration>
+            <updatePomFile>true</updatePomFile>
+            <flattenMode>resolveCiFriendliesOnly</flattenMode>
+          </configuration>
+          <executions>
+            <!-- enable flattening -->
+            <execution>
+              <id>flatten</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>flatten</goal>
+              </goals>
+            </execution>
+            <!-- ensure proper cleanup -->
+            <execution>
+              <id>flatten.clean</id>
+              <phase>clean</phase>
+              <goals>
+                <goal>clean</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </build>
 </project>

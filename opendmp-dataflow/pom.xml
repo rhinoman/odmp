@@ -4,12 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>io.opendmp</groupId>
-		<artifactId>opendmp-parent</artifactId>
-		<version>0.4.0</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<artifactId>opendmp</artifactId>
+		<version>${revision}</version>
 	</parent>
 	<artifactId>opendmp-dataflow</artifactId>
-	<version>${opendmp.version}</version>
 	<name>dataflow</name>
 	<description>Dataflow Service for the Open Data Management Platform</description>
 
@@ -18,7 +16,7 @@
 		<dependency>
 			<groupId>io.opendmp</groupId>
 			<artifactId>opendmp-common</artifactId>
-			<version>${opendmp.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>

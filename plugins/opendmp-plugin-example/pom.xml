@@ -4,21 +4,20 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.opendmp</groupId>
-        <artifactId>opendmp-parent</artifactId>
+        <artifactId>plugin</artifactId>
         <version>0.4.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.opendmp.plugin</groupId>
     <artifactId>example</artifactId>
-    <version>${opendmp.version}</version>
+    
     <name>opendmp-plugin-example</name>
     <description>Example Plugin for OpenDMP</description>
 
     <dependencies>
         <dependency>
-            <groupId>io.opendmp.sdk</groupId>
-            <artifactId>plugin</artifactId>
-            <version>${opendmp.version}</version>
+            <groupId>io.opendmp</groupId>
+            <artifactId>plugin-sdk</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

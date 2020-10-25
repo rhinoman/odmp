@@ -3,20 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>opendmp-parent</artifactId>
+        <artifactId>opendmp</artifactId>
         <groupId>io.opendmp</groupId>
-        <version>0.4.0</version>
+        <version>${revision}</version>
     </parent>
-    <groupId>io.opendmp.sdk</groupId>
-    <artifactId>plugin</artifactId>
-    <version>${opendmp.version}</version>
-    <name>plugin</name>
+    <artifactId>plugin-sdk</artifactId>
+    <name>plugin-sdk</name>
     <description>Plugin SDK for OpenDMP</description>
-
-    <properties>
-        <java.version>11</java.version>
-        <kotlin.version>1.3.72</kotlin.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -31,7 +24,7 @@
         <dependency>
             <groupId>io.opendmp</groupId>
             <artifactId>opendmp-common</artifactId>
-            <version>${opendmp.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>

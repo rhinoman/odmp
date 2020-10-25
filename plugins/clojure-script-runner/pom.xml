@@ -4,13 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.opendmp</groupId>
-        <artifactId>opendmp-parent</artifactId>
-        <version>0.4.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <artifactId>plugin</artifactId>
+        <version>${revision}</version>
     </parent>
     <groupId>io.opendmp.plugin</groupId>
     <artifactId>clojure</artifactId>
-    <version>${opendmp.version}</version>
     <name>clojure-script-processor</name>
     <description>Clojure script runner for OpenDMP</description>
     <packaging>clojure</packaging>
@@ -25,9 +23,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.opendmp.sdk</groupId>
-            <artifactId>plugin</artifactId>
-            <version>${opendmp.version}</version>
+            <groupId>io.opendmp</groupId>
+            <artifactId>plugin-sdk</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
