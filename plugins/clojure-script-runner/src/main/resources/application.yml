@@ -1,0 +1,33 @@
+odmp:
+  plugin:
+    name: "clojure-script-processor"
+
+camel:
+  rest:
+    api-host: 0.0.0.0
+    component: servlet
+  health:
+    enabled: true
+    registry-enabled: true
+  component:
+    servlet:
+      mapping:
+        context-path: /*
+        enabled: true
+
+
+server:
+  port: ${plugin_port:8080}
+
+spring:
+  application:
+    name: ${odmp.plugin.name}
+  cloud:
+    consul:
+      enabled: true
+      discovery:
+        enabled: true
+        instance-id: ${spring.application.name}:${random.value}
+        register-health-check: true
+        health-check-path: /config
+        prefer-ip-address: true

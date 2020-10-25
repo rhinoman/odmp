@@ -12,15 +12,6 @@
 	<version>${opendmp.version}</version>
 	<name>opendmp-processor</name>
 	<description>Processor Management Service for the Open Data Management  Platform</description>
-	<packaging>clojure</packaging>
-
-	<!-- repo for clojure dependencies -->
-	<repositories>
-		<repository>
-			<id>clojars.org</id>
-			<url>https://repo.clojars.org</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -157,19 +148,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.clojure</groupId>
-			<artifactId>clojure</artifactId>
-			<version>1.10.1</version>
-		</dependency>
-		<!-- Common/popular CLOJURE packages we want to support in scripting -->
-		<dependency>
-			<!-- Cheshire for JSON support -->
-			<groupId>cheshire</groupId>
-			<artifactId>cheshire</artifactId>
-			<version>5.10.0</version>
-		</dependency>
-		<!-- END CLOJURE packages -->
 	</dependencies>
 
 	<build>
@@ -190,12 +168,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.theoryinpractise</groupId>
-				<artifactId>clojure-maven-plugin</artifactId>
-				<version>1.8.3</version>
-				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>

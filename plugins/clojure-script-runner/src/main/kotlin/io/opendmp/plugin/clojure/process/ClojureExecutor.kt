@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.executors
+package io.opendmp.plugin.clojure.process
 
 import clojure.java.api.Clojure
 import clojure.lang.IFn
 
 
-class ClojureExecutor: Executor {
+class ClojureExecutor {
 
-    private val crNs = "io.opendmp.processor.clj-runner"
+    private val crNs = "io.opendmp.plugin.clojure.clj-runner"
 
     init {
         val require: IFn = Clojure.`var`("clojure.core", "require")
         require.invoke(Clojure.read(crNs))
     }
 
-    override fun executeScript(code: String, data: ByteArray): ByteArray  {
+    fun executeScript(code: String, data: ByteArray): ByteArray  {
         val runnerFn: IFn = Clojure.`var`(crNs, "execute")
         return runnerFn.invoke(code, data) as ByteArray
     }

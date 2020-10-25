@@ -16,13 +16,13 @@
 
 ; Executes a block of clojure
 ; Bringing a few very common/popular data-handling libraries into the namespace
-(ns io.opendmp.processor.clj-runner
+(ns io.opendmp.plugin.clojure.clj-runner
   (:require [cheshire.core :as cheshire]))
 
 (defn execute
   "Executes a block of clojure code and returns the result as a byte array"
   #^bytes [^String code #^bytes data]
-  (binding [*ns* (find-ns 'io.opendmp.processor.clj-runner)]
+  (binding [*ns* (find-ns 'io.opendmp.plugin.clojure.clj-runner)]
     (load-string code)
     (let [proc-fun (resolve (symbol "process"))]
       (into-array Byte/TYPE (proc-fun data)))))

@@ -16,30 +16,18 @@
 
 package io.opendmp.processor.run.processors
 
-import io.opendmp.common.exception.ScriptExecutionException
 import io.opendmp.common.model.DataEvent
 import io.opendmp.common.model.DataEventType
 import io.opendmp.common.model.ProcessorRunModel
-import io.opendmp.common.model.properties.ScriptLanguage
 import io.opendmp.processor.domain.DataEnvelope
-import io.opendmp.processor.executors.ClojureExecutor
 import org.apache.camel.Exchange
 
 class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processor) {
     override fun process(exchange: Exchange?) {
         val props = processor.properties!!
-        val language = ScriptLanguage.valueOf(props["language"].toString())
-        val code = props["code"].toString()
 
         val envelope = exchange?.getProperty("dataEnvelope") as DataEnvelope
 
-        val result = when(language) {
-            ScriptLanguage.CLOJURE ->
-                ClojureExecutor().executeScript(code, exchange.getIn().getBody(ByteArray::class.java))
-            ScriptLanguage.PYTHON ->
-                exchange.getIn().body
-            else -> throw ScriptExecutionException("Script language $language is unsupported")
-        }
         envelope.history.add(DataEvent(
                 dataTag = envelope.tag,
                 eventType = DataEventType.TRANSFORMED,
@@ -47,6 +35,5 @@ class ScriptProcessor(processor: ProcessorRunModel) : AbstractProcessor(processo
                 processorName = processor.name))
 
         exchange.setProperty("dataEnvelope", envelope)
-        exchange.getIn().body = result
     }
 }

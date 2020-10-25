@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. The Open Data Management Platform contributors.
+ * Copyright (c) 2020. James Adam and the Open Data Management Platform contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package io.opendmp.processor.executors
+package io.opendmp.plugin.clojure.process
 
-import io.opendmp.processor.config.PulsarConfig
-import io.opendmp.processor.config.RedisConfig
-import io.opendmp.processor.handler.RunPlanRequestHandler
-import io.opendmp.processor.messaging.RunPlanRequestRouter
-import io.opendmp.processor.messaging.RunPlanStatusDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest

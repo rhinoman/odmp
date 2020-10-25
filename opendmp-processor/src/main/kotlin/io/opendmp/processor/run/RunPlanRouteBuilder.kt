@@ -229,6 +229,9 @@ class RunPlanRouteBuilder(private val runPlan: RunPlan,
             proc.type == ProcessorType.SCRIPT &&
                     ScriptLanguage.valueOf(props["language"].toString()) == ScriptLanguage.PYTHON ->
                 "python-script-processor"
+            proc.type == ProcessorType.SCRIPT &&
+                    ScriptLanguage.valueOf(props["language"].toString()) == ScriptLanguage.CLOJURE ->
+                "clojure-script-processor"
             else -> return //Don't service call
         }
 
