@@ -12,8 +12,8 @@ branches:
 jobs:
   include:
     - script: mvn clean test --file opendmp-dataflow/pom.xml
-    - script: mvn clean test --file opendmp-processor/pom.xml -Dtest=!TestPythonExecutor
+    - script: mvn clean test --file opendmp-processor/pom.xml
 
-before_script: mvn install --file opendmp-common/pom.xml
+before_script: mvn install && mvn install --file opendmp-common/pom.xml
 
 
