@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.opendmp</groupId>
         <version>${revision}</version>
-        <artifactId>opendmp-parent</artifactId>
+        <artifactId>opendmp</artifactId>
     </parent>
     <artifactId>opendmp-common</artifactId>
     <packaging>jar</packaging>
