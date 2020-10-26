@@ -132,6 +132,7 @@ services:
       - '8018:8018'
     environment:
       CONSUL_HOST: consul-bootstrap
+      PLUGIN_PORT: 8018
     depends_on:
       - consul-bootstrap
 

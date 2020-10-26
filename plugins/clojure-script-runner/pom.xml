@@ -70,6 +70,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <imageName>opendmp/clojure-script-runner:${project.version}</imageName>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.theoryinpractise</groupId>

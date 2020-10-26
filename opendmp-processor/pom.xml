@@ -119,6 +119,11 @@
 			<artifactId>camel-aws-s3-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.apache.camel.springboot</groupId>-->
+<!--			<artifactId>camel-elasticsearch-rest-starter</artifactId>-->
+<!--			<version>${camel.version}</version>-->
+<!--		</dependency>-->
 
 		<!-- test containers -->
 
@@ -155,17 +160,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>repackage</id>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-						<configuration>
-							<finalName>opendmp-processor</finalName>
-						</configuration>
-					</execution>
-				</executions>
+				<configuration>
+					<imageName>opendmp/opendmp-processor:${project.version}</imageName>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
