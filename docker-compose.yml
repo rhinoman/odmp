@@ -19,7 +19,7 @@ services:
     command: --bind_ip_all --replSet=rs0 --enableMajorityReadConcern false
 
   keycloak:
-    image: jboss/keycloak:10.0.2
+    image: jboss/keycloak:11.0.2
     container_name: odmp_keycloak
     networks:
       - keycloak-net
@@ -115,13 +115,13 @@ services:
     depends_on:
       - consul-bootstrap
 
-  # ffmpeg-plugin:
-  #   image: opendmp/opendmp-plugin-ffmpeg:0.4.0
-  #   environment:
-  #     PLUGIN_PORT: 80
-  #     CONSUL_HOST: consul-bootstrap
-  #   depends_on:
-  #     - consul-bootstrap
+  ffmpeg-plugin:
+    image: opendmp/opendmp-plugin-ffmpeg:0.4.0
+    environment:
+      PLUGIN_PORT: 80
+      CONSUL_HOST: consul-bootstrap
+    depends_on:
+      - consul-bootstrap
     
 
   python-script-runner:
