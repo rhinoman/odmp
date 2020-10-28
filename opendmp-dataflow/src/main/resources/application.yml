@@ -14,6 +14,10 @@ odmp:
     secret-key: ${aws_secret_key:minio_secret_key}
     region: ${aws_region:us-east-1}
     endpoint: ${aws_s3_endpoint:#{null}}
+  elastic:
+    host: ${ELASTIC_HOST:localhost}
+    port: ${ELASTIC_PORT:9200}
+    protocol: ${ELASTIC_PROTOCOL:http}
   plugins-enabled: ${odmp_plugins_enabled:}
 
 spring:

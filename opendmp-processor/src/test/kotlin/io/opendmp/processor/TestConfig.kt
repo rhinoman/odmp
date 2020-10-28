@@ -21,10 +21,12 @@ import io.opendmp.processor.handler.RunPlanRequestHandler
 import io.opendmp.processor.messaging.RunPlanRequestRouter
 import io.opendmp.processor.messaging.RunPlanStatusDispatcher
 import org.apache.camel.ProducerTemplate
+import org.elasticsearch.client.RestHighLevelClient
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.cloud.consul.serviceregistry.ConsulAutoServiceRegistration
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate
 import org.springframework.data.redis.core.RedisTemplate
 
 @Configuration
@@ -50,5 +52,8 @@ class TestConfig {
 
     @MockBean
     lateinit var redisTemplate: RedisTemplate<String, String>
+
+    @MockBean
+    lateinit var esClient: RestHighLevelClient
 
 }

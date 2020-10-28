@@ -22,6 +22,7 @@ import io.opendmp.dataflow.config.S3Config
 import io.opendmp.dataflow.messaging.ProcessRequester
 import io.opendmp.dataflow.messaging.RunPlanDispatcher
 import org.apache.camel.ProducerTemplate
+import org.elasticsearch.client.RestHighLevelClient
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -50,4 +51,7 @@ class TestConfig {
 
     @MockBean
     lateinit var pluginController: PluginController
+
+    @MockBean
+    lateinit var esClient: RestHighLevelClient
 }

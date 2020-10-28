@@ -86,6 +86,10 @@
 			<artifactId>opendmp-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
 
 		<!-- Camel adapters -->
 		<dependency>
@@ -119,11 +123,6 @@
 			<artifactId>camel-aws-s3-starter</artifactId>
 			<version>${camel.version}</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.apache.camel.springboot</groupId>-->
-<!--			<artifactId>camel-elasticsearch-rest-starter</artifactId>-->
-<!--			<version>${camel.version}</version>-->
-<!--		</dependency>-->
 
 		<!-- test containers -->
 

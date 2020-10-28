@@ -53,6 +53,7 @@
                      :theme "monokai"
                      :name "INPUT_SCRIPT_CODE"
                      :width "100%"
+                     :style {:line-height 1.5}
                      :showPrintMargin false
                      :focus true
                      :fontSize 14

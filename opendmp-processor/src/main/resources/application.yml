@@ -20,6 +20,11 @@ odmp:
     access-key: ${aws_access_key:minio_access_key}
     secret-key: ${aws_secret_key:minio_secret_key}
 
+  elastic:
+    host: ${ELASTIC_HOST:localhost}
+    port: ${ELASTIC_PORT:9200}
+    protocol: ${ELASTIC_PROTOCOL:http}
+
 server:
   port: ${http_port:8080}
   max-http-header-size: 1024KB
@@ -37,6 +42,7 @@ camel:
     aws-s3:
       amazon-s3-client: s3Client
       bridge-error-handler: true
+
 spring:
   cloud:
     consul:

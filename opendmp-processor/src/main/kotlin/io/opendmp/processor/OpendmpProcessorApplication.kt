@@ -17,13 +17,17 @@
 package io.opendmp.processor
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 
 @SpringBootApplication(exclude = [
-	RedisAutoConfiguration::class, RedisRepositoriesAutoConfiguration::class])
+	RedisAutoConfiguration::class,
+	RedisRepositoriesAutoConfiguration::class,
+	ElasticsearchDataAutoConfiguration::class
+])
 @EnableDiscoveryClient
 class OpendmpProcessorApplication
 

@@ -79,6 +79,7 @@
                       :name (str "INPUT_" name)
                       :width "100%"
                       :showPrintMargin false
+                      :style {:line-height 1.5}
                       :focus true
                       :fontSize 14
                       :value @editor-contents

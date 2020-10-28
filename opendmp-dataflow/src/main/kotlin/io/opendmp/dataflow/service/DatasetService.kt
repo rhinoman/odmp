@@ -37,6 +37,10 @@ import io.opendmp.dataflow.model.DataflowModel
 import io.opendmp.dataflow.model.DatasetModel
 import org.apache.tika.Tika
 import org.apache.tika.io.TikaInputStream
+import org.elasticsearch.action.get.GetRequest
+import org.elasticsearch.action.get.GetResponse
+import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.client.RestHighLevelClient
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.InputStreamResource
@@ -52,6 +56,7 @@ import org.webjars.NotFoundException
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.Instant
@@ -63,7 +68,8 @@ import java.util.*
 class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                       private val dataflowService: DataflowService,
                       private val collectionService: CollectionService,
-                      private val s3Client: AmazonS3) {
+                      private val s3Client: AmazonS3,
+                      private val esClient: RestHighLevelClient) {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -126,6 +132,7 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
             when(ds.destinationType) {
                 DestinationType.FOLDER -> requestDownloadToken(ds)
                 DestinationType.S3 -> requestDownloadLink(ds)
+                DestinationType.ELASTIC_SEARCH -> requestDownloadToken(ds)
                 DestinationType.NONE -> requestDownloadToken(ds)
             }
         }
@@ -181,6 +188,16 @@ class DatasetService (private val mongoTemplate: ReactiveMongoTemplate,
                             entity.header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"${ds.name}\"")
                                     .header(HttpHeaders.CONTENT_TYPE, mimeType)
                                     .body(InputStreamResource(inputStream))
+                        }
+                        DestinationType.ELASTIC_SEARCH -> {
+                            val locc = ds.location.split(":")
+                            val index = locc[0]
+                            val recordId = locc[1]
+                            val resp: GetResponse = esClient.get(GetRequest(index, recordId), RequestOptions.DEFAULT)
+
+                            entity.header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"${ds.name}.json\"")
+                                    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                                    .body(InputStreamResource(ByteArrayInputStream(resp.sourceAsBytes)))
                         }
                         DestinationType.NONE -> {
                             entity.body(InputStreamResource(InputStream.nullInputStream()))

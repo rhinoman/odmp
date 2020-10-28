@@ -85,6 +85,14 @@ services:
       timeout: 20s
       retries: 3
 
+  elastic:
+    image: 'elasticsearch:7.9.3'
+    ports:
+      - '9201:9200'
+      - '9301:9300'
+    environment:
+      discovery.type: single-node
+
   consul-bootstrap:
     image: 'consul:1.8.4'
     restart: unless-stopped

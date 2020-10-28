@@ -17,6 +17,7 @@
 package io.opendmp.dataflow
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
@@ -26,7 +27,9 @@ import javax.annotation.PreDestroy
 
 @SpringBootApplication(exclude = [
 	MongoAutoConfiguration::class,
-	MongoDataAutoConfiguration::class])
+	MongoDataAutoConfiguration::class,
+	ElasticsearchDataAutoConfiguration::class
+])
 @EnableConfigurationProperties(MongoProperties::class)
 class DataflowApplication
 

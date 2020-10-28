@@ -17,5 +17,5 @@
 package io.opendmp.common.model.properties
 
 enum class DestinationType {
-    NONE, FOLDER, S3
+    NONE, FOLDER, S3, ELASTIC_SEARCH
 }

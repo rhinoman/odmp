@@ -30,7 +30,16 @@ import org.apache.camel.CamelExecutionException
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.component.aws.s3.S3Constants
+import org.elasticsearch.action.index.IndexAction
+import org.elasticsearch.action.index.IndexRequest
+import org.elasticsearch.action.index.IndexRequestBuilder
+import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.client.RestHighLevelClient
+import org.elasticsearch.common.xcontent.XContentType
 import org.slf4j.LoggerFactory
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates
+import org.springframework.data.elasticsearch.core.query.IndexQuery
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -42,6 +51,8 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
             SpringContext.getBean(ProducerTemplate::class)
     private val runPlanStatusDispatcher: RunPlanStatusDispatcher =
             SpringContext.getBean(RunPlanStatusDispatcher::class)
+    private val esClient: RestHighLevelClient =
+        SpringContext.getBean(RestHighLevelClient::class)
 
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -95,6 +106,14 @@ class CollectProcessor(processor: ProcessorRunModel) : AbstractProcessor(process
                     producerTemplate.sendBodyAndHeaders(endpoint,
                             exchange.getIn().body,
                             headers)
+                }
+                DestinationType.ELASTIC_SEARCH -> {
+                    val indexName = props["index"].toString()
+                    val data = exchange.getIn().getBody(ByteArray::class.java)
+                    location = "$indexName:$recordId"
+                    val idxReq = IndexRequest()
+                    idxReq.id(recordId).source(data, XContentType.JSON).index(indexName)
+                    esClient.index(idxReq, RequestOptions.DEFAULT)
                 }
                 else -> throw CollectProcessorException("Destination type $destinationType is unsupported")
             }

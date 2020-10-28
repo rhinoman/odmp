@@ -50,6 +50,23 @@
                    :defaultValue loc-field-value
                    :onBlur #(rf/dispatch [::proc-events/set-processor-property :location (-> % .-target .-value)])}]))
 
+(defn elastic-property-fields
+  "Elastic Search destination properties"
+  [processor]
+  (let [index (:index @(rf/subscribe [::proc-subs/edit-properties]))
+        index-field-value (or index
+                              (get-in @processor [:properties :index])
+                              "")]
+    [:> TextField {:margin :dense
+                   :variant :filled
+                   :required true
+                   :fullWidth true
+                   :label "Index"
+                   :onKeyDown ignore-return
+                   :type :text
+                   :defaultValue index-field-value
+                   :onBlur #(rf/dispatch [::proc-events/set-processor-property :index (-> % .-target .-value)])}]))
+
 (defn s3-property-fields
   "S3 Destination properties"
   [processor]
@@ -151,6 +168,7 @@
          (case dest-type-field-value
            "FOLDER" (folder-property-fields processor)
            "S3" (s3-property-fields processor)
+           "ELASTIC_SEARCH" (elastic-property-fields processor)
            "NONE" "")
          ]))))
 
