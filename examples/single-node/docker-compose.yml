@@ -19,7 +19,7 @@ services:
       - mongo_dev_data_sn:/data/db
     
   keycloak:
-    image: jboss/keycloak:10.0.2
+    image: jboss/keycloak:11.0.2
     networks:
       - keycloak_net
       - default
@@ -105,7 +105,6 @@ services:
     depends_on:
       - consul-bootstrap
 
-
   consul-client:
     image: 'consul:1.8.4'
     restart: unless-stopped
@@ -113,18 +112,34 @@ services:
     depends_on:
       - consul-bootstrap
 
+  python-script-runner:
+    image: 'opendmp/python-script-runner:0.5.0'
+    environment:
+      CONSUL_HOST: consul-bootstrap
+      CONSUL_PORT: 8500
+    depends_on:
+      - consul-bootstrap
+
+  clojure-script-runner:
+    image: 'opendmp/clojure-script-runner:0.5.0'
+    environment:
+      CONSUL_HOST: consul-bootstrap
+      PLUGIN_PORT: 8018
+    depends_on:
+      - consul-bootstrap
+
   ffmpeg-plugin:
-    image: opendmp/opendmp-plugin-ffmpeg:0.4.0
+    image: opendmp/opendmp-plugin-ffmpeg:0.5.0
     environment:
       PLUGIN_PORT: 80
       CONSUL_HOST: consul-bootstrap
 
   opendmp-ui:
-    image: opendmp/opendmp-ui:0.4.0
+    image: opendmp/opendmp-ui:0.5.0
     restart: unless-stopped
 
   opendmp-dataflow:
-    image: opendmp/opendmp-dataflow:0.4.0
+    image: opendmp/opendmp-dataflow:0.5.0
     restart: unless-stopped
     depends_on:
       - keycloak
@@ -143,11 +158,12 @@ services:
       AWS_SECRET_KEY: ${S3_SECRET_KEY}
       AWS_S3_ENDPOINT: ${S3_ENDPOINT}
       CONSUL_HOST: consul-bootstrap
+      ELASTIC_HOST: elastic
     volumes:  
       - /odmp/data:/odmp/data
     
   opendmp-processor:
-    image: opendmp/opendmp-processor:0.4.0
+    image: opendmp/opendmp-processor:0.5.0
     depends_on:
       - pulsar
     restart: unless-stopped
@@ -160,8 +176,14 @@ services:
       AWS_S3_ENDPOINT: ${S3_ENDPOINT}
       AWS_S3_OVERRIDE_ENDPOINT: "true"
       CONSUL_HOST: consul-bootstrap
+      ELASTIC_HOST: elastic
     volumes:
       - /odmp/data:/odmp/data
+      
+  elastic:
+    image: 'elasticsearch:7.9.3'
+    environment:
+      discovery.type: single-node
     
 volumes:
   auth_postgres_data_sn:
