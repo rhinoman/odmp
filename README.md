@@ -1,5 +1,6 @@
 # Open Data Management Platform
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build Status](https://travis-ci.org/rhinoman/odmp.svg?branch=master)](https://travis-ci.org/rhinoman/odmp)
 
 See this [blog post](https://jamesadam.me/2020/09/08/my-lock-down-project-a-data-management-thing/) introducing the project
