@@ -16,25 +16,44 @@
 
 package io.opendmp.dataflow.service
 
+import com.mongodb.client.model.changestream.OperationType
 import io.opendmp.dataflow.model.event.EventModel
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import org.springframework.data.mongodb.core.ChangeStreamOptions
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import java.time.Duration
+import java.time.Instant
+import kotlin.concurrent.fixedRateTimer
 
 @Service
 class EventService(private val mongoTemplate: ReactiveMongoTemplate) {
 
     // TODO: Additional filtering (security, events we don't care about, etc.)
-    suspend fun eventStream() : Flow<EventModel> {
-        return mongoTemplate.changeStream(ChangeStreamOptions.empty(), Any::class.java).map {
-            EventModel(
-                    eventType = it.operationType,
-                    data = it.body,
-                    dataType = it.collectionName,
-                    timestamp = it.timestamp)
-        }.asFlow()
-    }
+    fun eventStream() : Flux<EventModel> {
 
+        val cs = mongoTemplate.changeStream(ChangeStreamOptions.empty(), Any::class.java).map {
+               EventModel(
+                       eventType = it.operationType,
+                       data = it.body,
+                       dataType = it.collectionName,
+                       timestamp = it.timestamp)
+        }
+
+        val heartbeat = Flux.interval(Duration.ofSeconds(7))
+                .map { EventModel(
+                        eventType = OperationType.OTHER,
+                        data = "tick",
+                        dataType = "HEARTBEAT",
+                        timestamp = Instant.now())}
+
+        return Flux.merge(cs, heartbeat)
+    }
 }

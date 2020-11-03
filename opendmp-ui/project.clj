@@ -15,7 +15,6 @@
                  [ns-tracker "0.4.0"]
                  [re-pressed "0.3.1"]
                  [breaking-point "0.1.2"]
-                 [superstructor/re-frame-fetch-fx "0.0.2"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]
                  [cider/cider-nrepl "0.24.0"]]
 
@@ -29,7 +28,7 @@
 
   :jvm-opts ["-Xmx1G"]
 
-  :source-paths ["src/cljs"]
+  :source-paths ["src/cljs" "src/js"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 

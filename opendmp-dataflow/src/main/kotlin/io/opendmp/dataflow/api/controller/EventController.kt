@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 
@@ -31,7 +32,7 @@ class EventController(private val eventService: EventService) {
 
     @GetMapping("/stream",
             produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    suspend fun stream() : Flow<EventModel> {
+    fun stream() : Flux<EventModel> {
         return eventService.eventStream()
     }
 

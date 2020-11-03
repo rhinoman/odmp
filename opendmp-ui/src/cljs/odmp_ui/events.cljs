@@ -19,10 +19,10 @@
    [reagent.core :as r]
    [odmp-ui.db :as db]
    [odmp-ui.util.data :as dutil]
+   [odmp-ui.util.stream :as stream]
    [ajax.core :as ajax]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [day8.re-frame.forward-events-fx]
-   [superstructor.re-frame.fetch-fx]
    [odmp-ui.util.network :refer [basic-headers]]
    [secretary.core :as secretary]
    [cljs.core.async :refer [<! timeout]]
@@ -68,6 +68,7 @@
    (re-frame/dispatch [::lookup-trigger-types])
    (re-frame/dispatch [::fetch-user-info])
    (re-frame/dispatch [::auth-refresh])
+   (re-frame/dispatch [::stream/start-event-stream])
    (secretary/dispatch! (-> js/window .-location .-hash))
    {:db db
     :forward-events {:unregister :auth-complete-listener}}))
@@ -99,11 +100,7 @@
 (re-frame/reg-event-fx
   ::fetch-stream
   (fn [{:keys [db]} _]
-    {:fetch {:method                :get
-             :url                   "/dataflow_api/event/stream"
-             :headers               (basic-headers db)
-             :on-success            [::handle-event-success]
-             :on-failure            [::handle-event-failure]}}))
+    {:db db}))
 
 (re-frame/reg-event-db
   ::handle-event-success
