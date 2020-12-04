@@ -5,7 +5,7 @@
     "@material-ui/lab": "^4.0.0-alpha.56",
     "@microsoft/fetch-event-source": "^1.0.0",
     "ace-builds": "^1.4.12",
-    "highlight.js": "9.18.1",
+    "highlight.js": "10.4.1",
     "keycloak-js": "^11.0.2",
     "react": "16.14.0",
     "react-ace": "^9.2.0",
